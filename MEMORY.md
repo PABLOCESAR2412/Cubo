@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-12, vertical local y preparación cloud.
+Última actualización significativa: 2026-10-13, rediseño local del workspace terminado y comprobado.
 
 ## Autoridad y decisiones
 
@@ -44,7 +44,8 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   sin overflow y shell PWA offline. No demuestra ejecución cloud.
 - Revisión UI detectó selección/detalle desincronizados y errores borrados por polling;
   corregidos junto con anuncio accesible del estado. Reviewer confirmó cuatro fixes resueltos.
-  Validación final local: 18 tests, 71 comprobaciones; lint, typecheck, build y navegador pasan.
+  Validación final: 20 tests, 78 comprobaciones; lint, typecheck y build pasan.
+  Prueba cloud real de PWA/API/runner, cierre del cliente y recuperación también pasó.
 - README y docs/architecture.md, cost-policy.md, cloud-setup.md y validation.md describen el estado real.
 - DESIGN.md y .impeccable/design.json documentan tokens y patrones observados del diseño final.
 
@@ -54,26 +55,69 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   invocar con XDG_CONFIG_HOME y account ID explícitos.
 - D1 cubo-dev-db creada y migrada local/remota:
   7b9b60fc-5255-42a3-835f-2ec0f05a393c.
-- Worker previsto cubo-dev, Workflow cubo-dev-tasks; todavía no desplegados.
-- URL prevista https://cubo-dev.pctg.workers.dev.
+- Worker cubo-dev y Workflow cubo-dev-tasks desplegados con Static Assets y D1.
+  Versión vigente: 7fb87fe9-70da-4a79-87e0-ddc8580ce2f1.
+- URL activa https://cubo-dev.pctg.workers.dev. Workers Free confirmado en dashboard
+  personal: Gratuito, USD 0, Plan actual. Navegador personal conectado mediante perfil 2.
 - Usuario creó https://github.com/PABLOCESAR2412/Cubo.git privado.
-- Git local inicializado en main y origin configurado para ese repositorio.
-  Todavía no hay commits ni publicación. Comprobación actual: remoto vacío y archivo
-  privado cubo-dev.secrets.json ausente. El conector GitHub no sustituye un PAT del Worker.
+- Git local en main y origin configurado para ese repositorio. Usuario publicó el
+  bootstrap d4ffeb095da1abf1b128fdf057693830bbc814fb; main remota coincide con HEAD.
+  Workflow y runner incluidos. Archivo privado cubo-dev.secrets.json validado;
+  identidad, repo y workflow comprobados sin imprimir secretos. Cambios posteriores
+  en backend, tests, validación y docs siguen locales sin commit/push automático.
+  El conector GitHub no sustituye un PAT del Worker.
 - GitHub: presupuesto Actions USD 0, Stop usage Yes y alertas de uso incluido On
   verificados por lectura de la cuenta. No se modificó facturación ni plan.
 - La cuenta mostró GitHub Pro con descuento USD 0; no asumir que su cuota coincide
   necesariamente con GitHub Free. El bloqueo de uso adicional es obligatorio.
 
-## Bloqueos y próximos pasos
+## Prueba cloud y errores resueltos
 
-1. Usuario publica manualmente la base en main, incluido .github/workflows/cubo-runner.yml.
-2. Usuario prepara token fine-grained Actions read/write, Checks read, Metadata read
-   y claves privadas fuera del repo según docs/cloud-setup.md. Nunca pedir valores en chat.
-3. Configurar variable GitHub CUBO_URL y verificar Workers Free antes de desplegar
-   PWA/API/Workflow juntos. No crear un Worker vacío.
-4. Probar ejecución real con navegador cerrado, resultado 91 y pausa/reanudación
-   desde checkpoint con run_id nuevo. Registrar evidencia; apagar dispositivo requiere prueba del usuario.
+- CUBO_URL del repo configurado y verificado con la URL activa; sin ampliar el PAT.
+- Tarea aceptada: 6c644134-73f6-4648-b25d-77b381f9ea9a.
+- Ejecución: 6c644134-73f6-4648-b25d-77b381f9ea9a-1.
+- GitHub workflow_run_id: 38351620464; job ubuntu-latest completado con success.
+- Workflow Cloudflare: 6c644134-73f6-4648-b25d-77b381f9ea9a-1-dispatch-0, complete/success.
+- Browser de prueba cerrado completamente 05:29:21.903 UTC; runner reclamó la tarea
+  05:29:25.984 y guardó seis checkpoints después del cierre.
+- D1 conserva SUCCEEDED, progreso 6/6 y resultado {sum:91,steps:6}, fechado
+  05:30:30.205 UTC. Consulta SQL remota independiente confirma IDs, estado y resultado.
+- Browser nuevo abrió Cubo 05:30:37.947 UTC y recuperó la misma tarea/resultado.
+  API privada rechaza solicitudes sin sesión; PWA móvil y shell offline verificados.
+- Evidencia durable resumida en docs/cloud-validation.md. JSON/capturas locales en
+  artifacts/ quedan fuera de Git y no contienen credenciales.
+- Dos fallos del adaptador aparecieron solo en Workers: fetch guardado como método
+  causaba Illegal invocation; redirect:error no soportado. Corregidos con wrapper
+  de fetch y redirect:manual que rechaza 3xx. Regresiones añadidas; tareas fallidas preservadas.
+- Hook global Stop Impeccable usaba sintaxis Unix en Windows y devolvía 1 antes del
+  motor. Wrapper Windows conserva códigos y pasa pruebas PowerShell/cmd con 0;
+  también corregido PostToolUse. Backup y evidencia en docs/hook-incident.md.
+  No se alteraron hashes de confianza; cierre automático final depende del host.
+
+## Próximos pasos
+
+- Rediseño estructural inspirado en las siete capturas de Telo implementado:
+  sidebar persistente, barra contextual, cinco módulos, listado e inspector compactos,
+  conservando la paleta oscura de Cubo. Ver docs/design-workspace.md.
+- Tareas conserva el backend real; lógica UI extraída a workspace.ts con selección
+  estable y protección ante respuestas atrasadas. Motor durable sin cambios en esta fase.
+- Chat, Proyectos y proveedores preparados visualmente, pendientes/deshabilitados.
+  Analíticas solo utiliza historial real de tareas; no inventa métricas de modelos.
+- Navegación y detalle móviles usan dialog nativo: foco aislado, Escape, retorno
+  visible y apertura desde Recientes. QA visual con API cloud en modo solo lectura.
+- Validación actual: 20 tests/82 comprobaciones, lint, typecheck y build pasan.
+  Creación local, cierre/reapertura, móvil y shell offline pasan en D1 aislada;
+  la D1 local anterior respondió 429 por tareas pendientes y no se borró.
+- Rediseño aún local, pendiente de revisión del usuario antes de publicar. URL cloud
+  sigue sirviendo la versión anterior; no se hicieron commit, push ni deploy de la UI.
+- DESIGN.md y su sidecar actualizados; reviewer confirmó las cuatro correcciones
+  finales resueltas. Metadatos de 9–10px registrados como deuda, no norma de diseño.
+
+- La prioridad de ejecución durable solicitada está demostrada. No se añadieron agentes.
+- Publicación manual de los cambios posteriores cuando el usuario lo decida.
+- Pausa/aprobación/nuevo runner está probada localmente, pendiente de prueba cloud específica.
+- Apagar físicamente PC/teléfono no se probó; el cierre completo del navegador sí.
+- Continuar los hitos de proyectos GitHub y agentes únicamente por nueva instrucción.
 
 ## Límites y funcionalidades pendientes
 

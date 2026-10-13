@@ -202,5 +202,10 @@ Pasos 1 a 3 configurados. Pasos 4 y 5 acordados: Biome, Tailwind, consola oscura
 primera tarea durable mediante arquitectura real y validación local/cloud.
 PWA, API, D1, motor durable, backend GitHub Actions y demo implementados localmente.
 D1 cubo-dev-db creada y migrada en la cuenta personal. Validación local documentada
-en [docs/validation.md](docs/validation.md). Faltan publicación inicial del workflow,
-credenciales privadas y prueba cloud real. Pasos 4 y 5 siguen abiertos hasta demostrarla.
+en [docs/validation.md](docs/validation.md). Vertical mínima desplegada y comprobada:
+runner GitHub real, cliente cerrado, checkpoints y resultado 91 recuperado de D1.
+Ver [docs/cloud-validation.md](docs/cloud-validation.md). Agentes reales siguen pendientes;
+pausa/aprobación tiene tests locales y requiere su propia comprobación cloud.
+Rediseño UI del workspace implementado y validado localmente; conserva el backend.
+Chat, Proyectos y proveedores siguen pendientes. Ver [docs/design-workspace.md](docs/design-workspace.md).
+La UI nueva no está desplegada; requiere revisión del usuario antes de publicar.

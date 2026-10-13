@@ -1,6 +1,6 @@
 ---
 name: Cubo
-description: Consola oscura, compacta y responsive para consultar trabajo persistido.
+description: Workspace oscuro y compacto para consultar ejecuciones persistentes.
 colors:
   base: "#101416"
   surface: "#171d20"
@@ -10,8 +10,6 @@ colors:
   ink: "#e9f0f3"
   accent-hover: "#e7fab4"
   accent-ink: "#182010"
-  quiet-hover: "#ffffff"
-  row-hover: "#1c2428"
   notice: "#20292b"
   error-bg: "#321f23"
   error-ink: "#ffc7ca"
@@ -23,53 +21,49 @@ colors:
 typography:
   headline:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "1.875rem"
-    fontWeight: 500
-    lineHeight: 1.2
+    fontSize: "24px"
+    fontWeight: 600
+    lineHeight: 1.3
     letterSpacing: "-0.025em"
-  title:
+  inspector-title:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "1.25rem"
-    fontWeight: 500
-    lineHeight: 1.4
-  section:
-    fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "1.125rem"
-    fontWeight: 500
-    lineHeight: "calc(1.75 / 1.125)"
+    fontSize: "16px"
+    fontWeight: 600
+    lineHeight: 1.5
   body:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "1rem"
+    fontSize: "14px"
     fontWeight: 400
+    lineHeight: 1.5
+  title:
+    fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
+    fontSize: "14px"
+    fontWeight: 500
     lineHeight: 1.5
   label:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "0.875rem"
+    fontSize: "12px"
     fontWeight: 400
-    lineHeight: "calc(1.25 / 0.875)"
-  metadata:
-    fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "0.75rem"
-    fontWeight: 400
-    lineHeight: "calc(1 / 0.75)"
+    lineHeight: 1.5
   mono:
-    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
-    fontSize: "0.75rem"
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontSize: "11px"
     fontWeight: 400
-    lineHeight: "calc(1 / 0.75)"
+    lineHeight: 1.5
   brand:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "22px"
+    fontSize: "23px"
     fontWeight: 600
     lineHeight: 1.5
     letterSpacing: "-0.03em"
 rounded:
   badge: "4px"
+  icon: "5px"
   control: "6px"
-  approval: "8px"
-  panel: "12px"
+  task: "7px"
+  panel: "8px"
+  dialog: "10px"
 spacing:
-  unit: "0.25rem"
   xs: "8px"
   sm: "12px"
   md: "16px"
@@ -77,53 +71,58 @@ spacing:
   xl: "24px"
   panel: "28px"
   section: "32px"
-  wide: "40px"
 components:
   button-primary:
     backgroundColor: "{colors.accent}"
     textColor: "{colors.accent-ink}"
     rounded: "{rounded.control}"
-    padding: "12px 18px"
+    padding: "9px 13px"
   button-primary-hover:
     backgroundColor: "{colors.accent-hover}"
-  button-quiet:
-    textColor: "{colors.accent}"
-    padding: "2px 0"
-  button-quiet-hover:
-    textColor: "{colors.quiet-hover}"
+  button-secondary:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    padding: "9px 13px"
+  button-secondary-hover:
+    backgroundColor: "{colors.notice}"
   input:
     backgroundColor: "{colors.base}"
     textColor: "{colors.ink}"
     rounded: "{rounded.control}"
-    padding: "12px"
-  task-row:
+    padding: "9px 11px"
+  nav-item:
+    textColor: "{colors.muted}"
+    rounded: "{rounded.control}"
+    padding: "9px 11px"
+  nav-item-active:
+    backgroundColor: "{colors.notice}"
     textColor: "{colors.ink}"
-    padding: "16px 12px"
-    width: "100%"
-  task-row-hover:
-    backgroundColor: "{colors.row-hover}"
-  task-row-selected:
-    backgroundColor: "{colors.surface}"
-  status-label:
+  tag:
+    textColor: "{colors.muted}"
     rounded: "{rounded.badge}"
-    padding: "6px 9px"
-  detail:
+    padding: "2px 7px"
+  panel:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.panel}"
-    padding: "{spacing.panel}"
+  new-task-dialog:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.dialog}"
+    width: "min(480px, calc(100vw - 32px))"
   notice:
     backgroundColor: "{colors.notice}"
     textColor: "{colors.ink}"
     rounded: "{rounded.control}"
-    padding: "14px 16px"
+    padding: "11px 12px"
   notice-error:
     backgroundColor: "{colors.error-bg}"
     textColor: "{colors.error-ink}"
   approval:
     backgroundColor: "{colors.approval-bg}"
-    rounded: "{rounded.approval}"
-    padding: "18px"
+    rounded: "{rounded.control}"
+    padding: "11px 12px"
 ---
 
 # Design System: Cubo
@@ -132,16 +131,17 @@ components:
 
 **Creative North Star: "Consola de trabajo persistido"**
 
-Cubo usa carbón, gris frío y lima suave para una consola operativa. La densidad compacta permite leer tareas, progreso y acciones sin perder la jerarquía. La tarea guardada es el centro de la experiencia y el detalle amplía la selección.
+Cubo usa carbón, gris frío y lima suave para una consola operativa. La densidad compacta permite leer tareas, progreso y acciones sin perder la jerarquía. La navegación estable permite cambiar entre módulos y volver a las ejecuciones recientes. El inspector amplía la tarea seleccionada.
 
-Las superficies son planas, delimitadas por líneas y cambios de tono. La tipografía local y las esquinas discretas mantienen una lectura sobria. El sistema documenta la implementación local aprobada; las capturas no demuestran continuidad cloud.
+Las superficies son planas, delimitadas por líneas y cambios de tono. La tipografía local y las esquinas discretas mantienen una lectura sobria. La estructura inspirada en Telo conserva la paleta de Cubo. Los módulos preparados distinguen funciones pendientes de los datos disponibles. Las capturas documentan la UI local.
 
 **Key Characteristics:**
 
 - Fondo carbón y superficies de gris frío.
 - Lima suave para acciones, selección y progreso.
 - Filas compactas y detalle legible.
-- Lectura secuencial en móvil.
+- Navegación lateral y barra contextual estables.
+- Diálogos nativos para navegación e inspector en móvil.
 - Estados explícitos con texto y foco visible.
 
 ## Colors
@@ -156,21 +156,19 @@ La paleta combina neutrales oscuros con un acento luminoso y colores semánticos
 
 ### Secondary
 
-- **Ámbar de espera**, token `waiting`: texto de aprobación pendiente.
-- **Rosa de fallo**, token `failed`: estado fallido.
+- **Ámbar de espera**, token `waiting`: aprobación y funciones pendientes.
+- **Rosa de fallo**, token `failed`: estado fallido o cancelado.
 - **Aviso de error**, tokens `error-bg`, `error-ink` y `error-line`: mensaje de error visible con fondo, texto y borde específicos.
-- **Superficie de aprobación**, tokens `approval-bg` y `approval-line`: recinto de revisión y continuación.
+- **Superficie de aprobación**, tokens `approval-bg` y `approval-line`: recinto de revisión y continuación; el borde también distingue la tarea seleccionada.
 
 ### Neutral
 
 - **Carbón**, token `base`: fondo general e inputs.
-- **Gris de superficie**, token `surface`: detalle, acceso personal y fila seleccionada.
+- **Gris de superficie**, token `surface`: sidebar, tareas, paneles y diálogos.
 - **Tinta clara**, token `ink`: lectura principal.
 - **Gris de lectura secundaria**, token `muted`: contexto, tiempos y estado neutral.
 - **Gris de separación**, token `line`: bordes, divisores y pista de progreso.
-- **Gris de aviso**, token `notice`: contexto operativo.
-- **Gris de interacción**, token `row-hover`: fila bajo el puntero.
-- **Blanco**, token `quiet-hover`: respuesta de la acción textual.
+- **Gris de aviso**, token `notice`: avisos, pestañas activas y hover de acciones secundarias.
 
 **The Estado con texto Rule.** Cada estado mantiene una etiqueta comprensible; el color acompaña su significado.
 
@@ -183,66 +181,69 @@ La jerarquía distingue títulos por tamaño y peso sin recurrir a mayúsculas o
 
 ### Hierarchy
 
-- **Headline:** encabezado principal; la cifra del resultado comparte su tamaño, con peso normal y cifras tabulares.
-- **Title:** detalle, acceso y estado vacío.
-- **Section:** título del formulario.
-- **Body:** lectura y título de cada fila; títulos pequeños de sección usan peso medio.
-- **Label:** descripciones, controles y mensajes.
-- **Metadata:** tiempos, contador secundario, badge y pie.
-- **Mono:** registro y datos técnicos desplegables.
+- **Headline:** título de módulo; en móvil se reduce a 22px.
+- **Inspector-title:** nombre de la tarea dentro del inspector.
+- **Title:** nombre de tarea y títulos compactos.
+- **Body:** base de lectura y controles que heredan la raíz.
+- **Label:** etiquetas de campos, descripciones y mensajes.
+- **Mono:** tiempos e identificadores técnicos.
 - **Brand:** nombre Cubo junto al cubo lineal SVG.
 
-**The Lectura numérica Rule.** Los contadores de progreso y resultados usan cifras tabulares; los tiempos del registro usan monospace.
+Los contadores usan 26px, peso 500 y línea 1.3; en móvil usan 24px. Las acciones comunes usan 13px y peso 500. Los tags y estados usan 11px. Los metadatos de 9–10px presentes son deuda de legibilidad y no forman una escala normativa para nuevas superficies.
+
+**The Lectura numérica Rule.** Los contadores de progreso y resultados usan cifras tabulares; los tiempos e identificadores técnicos usan monospace.
 
 ## Layout
 
-El contenedor se centra y tiene un máximo de 80rem. Usa 20px de margen interior horizontal y 32px verticales; desde 48rem el margen interior horizontal pasa a 40px. La cabecera usa 20px verticales y el mismo cambio horizontal.
+El workspace ocupa el viewport. La sidebar fija de escritorio mide 232px y el contenido usa una columna flexible con `minmax(0, 1fr)`. La barra contextual permanece arriba, mide 56px y lleva 28px de padding horizontal. El módulo tiene ancho máximo de 1680px y padding de 28px 28px 32px.
 
-La consola tiene una columna hasta 64rem. Desde ese ancho muestra una columna lateral de 320px y otra flexible con `minmax(0, 1fr)`, separadas por 32px. Ambas admiten reducción de ancho. En móvil, formulario y lista preceden al detalle; no se añade navegación móvil independiente.
+Tareas separa registro e inspector mediante 22px. El inspector mide 330px, permanece a 78px del borde superior y limita su altura al viewport menos 100px. Desde 1600px mide 370px, la separación pasa a 26px y el módulo usa padding de 32px 36px. Hasta 1199px el inspector vuelve al flujo y Proyectos pasa a una columna.
 
-El ritmo parte de 0.25rem y usa pasos repetidos para separaciones entre texto, controles y secciones. El detalle lleva 28px de padding, reducido a 20px hasta 600px. El acceso tiene un ancho máximo de 400px. Los textos introductorios tienen un máximo de 36rem; el texto del vacío, 24rem.
+Hasta 767px desaparece la columna reservada a la sidebar. La barra mide 52px, el módulo usa padding de 20px 14px 28px y las métricas pasan de cuatro a dos columnas. La búsqueda ocupa toda la fila y los filtros se ajustan al ancho disponible. La navegación abre un diálogo lateral de 248px; el inspector abre un diálogo a 10px de los bordes laterales y 62px del superior. Ambos usan aislamiento de foco y cierre con Escape mediante `dialog` nativo.
 
-El estado vacío tiene altura mínima de 340px, reducida a 240px hasta 600px. Las cabeceras de detalle y el pie permiten salto de línea. El JSON puede desplazarse horizontalmente dentro de su propio contenedor.
+Chat separa conversación y compositor. Su configuración ocupa 320px en escritorio y 280px hasta 1199px; en móvil se muestra sobre el contenido. El compositor se limita a 920px. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios del workspace.
+
+**The Contexto estable Rule.** La navegación y la barra contextual mantienen su posición; cada módulo concentra filtros, datos y acciones en el contenido.
 
 ## Elevation & Depth
 
-La profundidad operativa se obtiene mediante tono y bordes de 1px. La fila seleccionada añade una línea interior lima mediante `box-shadow: inset 0 0 0 1px var(--color-accent)`. Es una señal de selección, no elevación física.
+La profundidad operativa se obtiene mediante tono y bordes de 1px. Las tareas seleccionadas cambian su borde al color de aprobación; las pestañas y navegación activa cambian la superficie. Los paneles y controles no usan sombras decorativas. Los diálogos de navegación e inspector oscurecen el fondo con negro al 55%; Nueva tarea usa 65%.
 
-**The Superficie plana Rule.** Los controles y paneles operativos se separan por líneas y tono; la selección mantiene su contorno interior.
-
-El pequeño cuadrado del estado vacío lleva una sombra aislada en el código. No se incorpora al vocabulario reutilizable: no aparece en controles ni paneles operativos.
+**The Superficie plana Rule.** Las superficies operativas se separan por líneas y tono. Los fondos modales marcan el contexto temporal de interacción.
 
 ## Shapes
 
-Los controles y avisos comparten esquinas discretas; los badges son más ajustados, la aprobación usa un radio intermedio y los paneles amplios usan el mayor radio del frontmatter. Las filas de tareas conservan esquinas rectas. El indicador de conexión es un círculo de 6px. La marca usa un cubo lineal SVG, sin imagen de fondo.
+Los controles y avisos tienen esquinas discretas; los badges son más ajustados y los diálogos más amplios. Los radios del frontmatter describen las familias presentes. Las tareas tienen un radio propio y los paneles comparten el siguiente paso. Los indicadores de estado son círculos pequeños. Marca e iconos usan SVG lineal.
 
 ## Components
 
 ### Buttons
 
-La acción principal es sólida, legible y compacta. Su tamaño de texto es 14px, su peso es 600 y su altura mínima es 44px. El botón del formulario ocupa toda la columna; otros botones conservan ancho de contenido. La acción textual usa lima y subrayado mediante borde inferior.
+La acción principal usa lima sólida y tinta oscura; la secundaria usa borde neutral y fondo transparente. Ambas tienen altura mínima de 36px. La variante compacta usa altura mínima de 30px y padding de 5px 9px. Los botones de icono miden 32px por lado y tienen nombre accesible.
 
-Las transiciones cambian fondo y color durante 160ms con `ease`. El foco visible tiene contorno lima de 2px y separación de 4px. Los botones deshabilitados mantienen una opacidad de 0.5 y cursor de bloqueo. Con movimiento reducido se eliminan las transiciones.
+El hover principal aclara el fondo; el secundario añade tono de aviso. Las transiciones de fondo y borde duran 150ms con `ease`. El foco visible usa contorno lima de 2px y separación de 3px. Los controles deshabilitados usan opacidad 0.5 y cursor de bloqueo. Movimiento reducido elimina las transiciones.
 
 ### Chips
 
-El badge de estado tiene borde neutral de 1px y texto pequeño. Es informativo; el estado se escribe completo. El color depende del estado, con neutral para cola o cancelación, lima para ejecución o éxito, ámbar para espera y rosa para fallo.
+Los tags informativos usan borde neutral, radio de badge y texto compacto. Los estados de ejecución se muestran como punto y etiqueta sin recinto propio. Las funciones pendientes usan ámbar y una explicación textual cuando corresponde.
 
 ### Cards / Containers
 
-El detalle y el acceso comparten superficie, borde y radio de panel. Los avisos operativos usan menor radio. El aviso de error cambia fondo, tinta y borde. La aprobación tiene un recinto propio; su acción permanece dentro de ese contexto.
+Los paneles comparten superficie, borde y radio de panel. Sus cabeceras separan título y acciones mediante un divisor. Resumen y contenido del inspector usan padding de 16px. Las tareas llevan padding de 14px 15px y separación de 10px; la selección cambia el borde. En móvil el padding de tareas pasa a 12px. Los avisos usan menor radio. La aprobación conserva su acción dentro de la tarea seleccionada.
 
 ### Inputs / Fields
 
-Los campos usan fondo carbón, borde neutral de 1px, texto claro y caret lima. Conservan el mismo foco visible que los botones. El checkbox mide 18px, usa acento lima y queda alineado con el comienzo del texto. El campo de acceso tiene etiqueta visible.
+Los campos usan fondo carbón, borde neutral, texto claro y caret lima. Las etiquetas visibles preceden a campos y selectores. El foco comparte el contorno de botones. Los checkboxes nativos usan acento lima y miden 16px. La búsqueda integra SVG y campo en un recinto de 33px de altura. Los filtros permiten salto de línea.
 
 ### Navigation
 
-La cabecera incluye marca enlazada al inicio, estado de conexión y acción textual de salida. La lista de tareas actúa como selección: cada fila es un botón con `aria-pressed`. Bajo el puntero cambia de tono; al seleccionar, muestra superficie y contorno interior lima. Este patrón se conserva en móvil dentro del flujo secuencial.
+La sidebar reúne marca, Nueva tarea, cinco módulos, recientes y estado del sistema. Cada enlace usa padding de 9px 11px y altura mínima de 38px. El módulo activo tiene fondo de aviso, texto claro e icono lima; `aria-current` identifica la página. Recientes recupera la selección de una tarea. En móvil un diálogo nativo sustituye al aside y limita el foco al menú abierto.
 
-### Progreso y registro
+### Inspector y progreso
 
-El progreso es una barra nativa de 5px, con pista neutral y relleno lima, acompañada de etiqueta y contador. El registro alinea tiempos monospace con mensajes; separa eventos por 16px. Los identificadores y checkpoint se mantienen en un desplegable nativo. Los cambios de estado se anuncian en una región accesible; los errores usan `role="alert"`.
+El inspector muestra estado, tarea, ejecutor, intento, progreso y resultado disponible. Actividad, Checkpoint y Datos cambian el contenido dentro del mismo panel. El detalle usa un aside en escritorio y un diálogo modal en móvil. Nueva tarea también usa un diálogo nativo y conserva el formulario separado del registro.
+
+La barra nativa de progreso mide 4px; dentro de una tarea mide 3px. Lleva pista neutral y relleno lima, acompañada de información textual. El registro alinea tiempos con mensajes. Los identificadores y el checkpoint adicional usan un desplegable nativo. Los cambios de estado se anuncian en una región accesible y los errores usan `role="alert"`.
 
 ## Do's and Don'ts
 
@@ -251,8 +252,8 @@ El progreso es una barra nativa de 5px, con pista neutral y relleno lima, acompa
 - **Do** usar el acento para acciones y señales de estado.
 - **Do** mantener texto explícito junto a cada estado y contador de progreso.
 - **Do** conservar el foco visible y las etiquetas accesibles de los controles.
-- **Do** ordenar formulario, lista y detalle secuencialmente en móvil.
-- **Do** describir la configuración y los datos reales con honestidad.
+- **Do** mantener navegación e inspector accesibles mediante diálogos en móvil.
+- **Do** describir la configuración, los datos y las funciones pendientes con honestidad.
 
 ### Don't:
 

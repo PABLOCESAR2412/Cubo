@@ -9,11 +9,16 @@ runners Linux estándar. Containers y R2 no se utilizan.
 Implementados localmente: consola React/Vite/Tailwind, API Hono, contratos, persistencia,
 motor durable, GitHubActionsExecutionBackend, runner demostrativo, checkpoints,
 aprobación de continuación y control de cuota. Codex/OpenCode y proveedores reales
-siguen pendientes. Hay pruebas locales; la ejecución real en GitHub/cloud aún necesita
-publicación inicial del workflow y credenciales privadas. No hay Worker publicado.
+siguen pendientes. La vertical cloud ya fue validada: runner GitHub real, navegador
+cerrado, seis checkpoints en D1 y recuperación de resultado 91 en un navegador nuevo.
 
 Repositorio privado: https://github.com/PABLOCESAR2412/Cubo
-URL prevista (todavía sin despliegue): https://cubo-dev.pctg.workers.dev
+URL activa: https://cubo-dev.pctg.workers.dev
+
+Rediseño local: workspace oscuro con sidebar, Chat, Tareas, Proyectos, Analíticas
+y Ajustes. Tareas usa el backend existente; las integraciones futuras aparecen
+como pendientes. El rediseño todavía no está publicado en la URL activa.
+Ver [alcance y comprobación de la interfaz](docs/design-workspace.md).
 
 ## Comandos
 
@@ -51,12 +56,14 @@ las tareas quedan en cola con un motivo explícito; no se simula ejecución clou
 - [Configuración cloud y credenciales](docs/cloud-setup.md).
 - [Política de coste cero](docs/cost-policy.md).
 - [Validación y pendientes](docs/validation.md).
+- [Prueba real con cliente cerrado](docs/cloud-validation.md).
+- [Incidente y corrección del hook Windows](docs/hook-incident.md).
 - [Memoria compartida del desarrollo](MEMORY.md).
 - [Sistema visual implementado](DESIGN.md).
 
 ## Próximos hitos
 
-1. Validación real del motor con GitHub Actions y cliente cerrado.
+1. Prueba cloud de pausa/aprobación y continuación en otro runner (demo ya implementada).
 2. GitHub y proyectos.
 3. Planner y agentes Codex/OpenCode.
 4. Checkpoints de agentes y continuación.

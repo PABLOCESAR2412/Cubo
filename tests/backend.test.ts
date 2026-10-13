@@ -19,9 +19,36 @@ const config = {
   token: "test-token-not-a-credential",
   zeroSpendVerified: true,
 };
+test("fetch global no recibe el backend como this en Workers", async () => {
+  const original = globalThis.fetch;
+  let calls = 0;
+  Object.defineProperty(globalThis, "fetch", {
+    configurable: true,
+    writable: true,
+    value: async function (this: unknown) {
+      if (this !== undefined && this !== globalThis) throw new TypeError("Illegal invocation");
+      calls++;
+      return calls === 1 ? Response.json({ private: true }) : new Response(null, { status: 204 });
+    },
+  });
+  try {
+    const backend = new GitHubActionsExecutionBackend(config, async () => execution);
+    expect(
+      (await backend.start({ executionId: execution.id, taskId: execution.taskId })).dispatched,
+    ).toBe(true);
+    expect(calls).toBe(2);
+  } finally {
+    Object.defineProperty(globalThis, "fetch", {
+      configurable: true,
+      writable: true,
+      value: original,
+    });
+  }
+});
 test("dispatch privado requiere guardia verificada y envía solo execution_id", async () => {
   const calls: Array<{ url: string; body: string | null }> = [];
   const request: HttpRequest = async (url, init) => {
+    expect(init?.redirect).toBe("manual");
     calls.push({ url: String(url), body: typeof init?.body === "string" ? init.body : null });
     return calls.length === 1
       ? Response.json({ private: true })
@@ -34,6 +61,19 @@ test("dispatch privado requiere guardia verificada y envía solo execution_id", 
     ref: "main",
     inputs: { execution_id: execution.id },
   });
+});
+test("redirecciones se rechazan sin reenviar credenciales", async () => {
+  let calls = 0;
+  const request: HttpRequest = async (_url, init) => {
+    calls++;
+    expect(init?.redirect).toBe("manual");
+    return new Response(null, { status: 302, headers: { Location: "https://example.invalid" } });
+  };
+  const backend = new GitHubActionsExecutionBackend(config, async () => execution, request);
+  await expect(
+    backend.start({ executionId: execution.id, taskId: execution.taskId }),
+  ).rejects.toThrow("HTTP 302");
+  expect(calls).toBe(1);
 });
 test("sin bloqueo de gasto no hace llamadas; errores de cuota no se confunden con credenciales", async () => {
   let calls = 0;

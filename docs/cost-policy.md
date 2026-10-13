@@ -17,6 +17,10 @@ Actions tiene presupuesto **USD 0**, **Stop usage: Yes** y alertas de uso inclui
 La cuenta muestra GitHub Pro con descuento; no se contrató ni cambió ese plan.
 El usuario además confirmó que el repo y controles estaban listos.
 
+El 2026-10-13 se verificó el dashboard de la cuenta personal Cloudflare, desde su
+perfil de navegador conectado: Workers Gratuito, 0 USD y Plan actual. La vertical
+se desplegó después de esa comprobación. Evidencia de ejecución en cloud-validation.md.
+
 GitHub Free incluye 2.000 minutos/mes para repositorios privados estándar. Una cuenta
 puede tener otra cuota según su plan y uso en otros repositorios. El control duro de
 GitHub impide gasto adicional; los límites internos de Cubo no sustituyen ese control.

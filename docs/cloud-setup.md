@@ -7,18 +7,20 @@
 - Account ID: 6fcab192a8cc2a3458247ef5c8108a07.
 - D1 cubo-dev-db creado: 7b9b60fc-5255-42a3-835f-2ec0f05a393c.
 - Migración inicial aplicada localmente y en esa D1 de desarrollo.
-- Repo PABLOCESAR2412/Cubo verificado como privado y vacío.
+- Repo PABLOCESAR2412/Cubo privado, main publicado por el usuario.
 - Presupuesto de Actions USD 0 con bloqueo de uso y alertas verificados.
-- URL prevista: https://cubo-dev.pctg.workers.dev.
-- Worker y Workflow cloud todavía no desplegados.
+- URL activa: https://cubo-dev.pctg.workers.dev.
+- Worker cubo-dev y Workflow cubo-dev-tasks desplegados en Workers Free.
+- Prueba real aceptada: ver [cloud-validation.md](cloud-validation.md).
 
 No es necesario Docker. No modificar la cuenta de trabajo ni recursos ajenos a Cubo.
 
 ## Publicación inicial del repositorio
 
 Git local está inicializado en main y origin apunta a
-https://github.com/PABLOCESAR2412/Cubo.git. El repositorio remoto sigue vacío en la
-última comprobación. Después de revisar los archivos, el usuario puede publicar:
+https://github.com/PABLOCESAR2412/Cubo.git. El usuario ya publicó el
+bootstrap d4ffeb0 en main. Para avances posteriores, después de revisar los archivos,
+el usuario puede publicar manualmente:
 
 ```bash
 git add .

@@ -8,6 +8,7 @@ try {
   let context = await browser.newContext({ viewport: { width: 1366, height: 900 } });
   let page = await context.newPage();
   await page.goto(base);
+  await page.getByRole("button", { name: "Nueva tarea", exact: true }).first().click();
   await expect(page.getByRole("button", { name: "Crear tarea", exact: true })).toBeVisible();
   const created = page.waitForResponse(
     (response) => response.url().endsWith("/api/tasks") && response.request().method() === "POST",
@@ -28,6 +29,10 @@ try {
   });
   page = await context.newPage();
   await page.goto(`${base}/#${task.id}`);
+  await page
+    .locator(".task-item.selected")
+    .getByRole("button", { name: "Ver logs", exact: true })
+    .click();
   await expect(page.getByRole("heading", { name: "Prueba durable", exact: true })).toBeVisible();
   const restored = await context.request.get(`${base}/api/tasks/${task.id}`);
   const data = (await restored.json()) as { task: { id: string } };
@@ -42,7 +47,7 @@ try {
   await page.evaluate(() => navigator.serviceWorker.ready);
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Tu trabajo sigue.", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Acceso a Cubo", exact: true })).toBeVisible();
   console.log(
     "PWA/API verificadas: tarea local persistida al cerrar el cliente, móvil sin overflow y shell offline. Ejecución cloud aún no cubierta.",
   );

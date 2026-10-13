@@ -30,7 +30,7 @@ export class GitHubActionsExecutionBackend implements ExecutionBackend {
   constructor(
     private readonly config: GitHubActionsConfig,
     private readonly loadExecution: (id: string) => Promise<Execution | null>,
-    private readonly request: HttpRequest = fetch,
+    private readonly request: HttpRequest = (url, init) => fetch(url, init),
   ) {
     if (
       !/^[\w.-]+\/[\w.-]+$/.test(config.repository) ||
@@ -55,7 +55,7 @@ export class GitHubActionsExecutionBackend implements ExecutionBackend {
           "Content-Type": "application/json",
         },
         signal: AbortSignal.timeout(15000),
-        redirect: "error",
+        redirect: "manual",
       },
     );
     if (!response.ok) {

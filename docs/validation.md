@@ -2,8 +2,8 @@
 
 ## Evidencia local actual
 
-Validación del 2026-10-12: bun test (18 tests, 71 comprobaciones), lint, typecheck,
-build y check:browser pasaron. La revisión UI confirmó resueltos sus cuatro hallazgos:
+Validación local del 2026-10-13: bun test (20 tests, 78 comprobaciones), lint, typecheck
+y build pasaron. check:browser pasó en la fase local del 2026-10-12. La revisión UI confirmó resueltos sus cuatro hallazgos:
 identidad selección/detalle, errores persistentes, anuncio accesible y contrato de diseño.
 
 - Contratos y paquetes compilan con TypeScript.
@@ -17,7 +17,7 @@ identidad selección/detalle, errores persistentes, anuncio accesible y contrato
 - Node 24 ejecutó directamente el módulo TypeScript del runner sin instalar dependencias:
   resultado 91. No cubre autenticación OIDC ni callbacks remotos.
 - Detector de diseño sin hallazgos; ambos iconos geométricos conservan procedencia embebida.
-- D1 real de desarrollo creado y migrado; no hay tareas remotas ejecutadas todavía.
+- D1 real de desarrollo creada, migrada y consultada después de una tarea cloud real.
 
 ## Puertas de entrega
 
@@ -32,15 +32,29 @@ bun run check:browser
 El último comando requiere bun dev activo. Debe ejecutarse después de construir
 los assets actuales para que las capturas correspondan al código vigente.
 
-## Pendiente para aceptación cloud
+## Aceptación cloud comprobada
 
-Publicación inicial manual en main, token fine-grained, clave de acceso y secreto
-de sesión privados, variable CUBO_URL del repositorio y despliegue completo.
+El 2026-10-13, bun run scripts/cloud-check.ts pasó contra el Worker publicado:
+API protegida, tarea creada desde PWA, GitHub Actions ubuntu-latest, cierre completo
+del navegador, seis checkpoints posteriores, SUCCEEDED/91 y recuperación en otro
+navegador. Consulta SQL remota confirma task_id, workflow_run_id, estado y resultado.
+Ver [cloud-validation.md](cloud-validation.md) para IDs, tiempos y errores corregidos.
 
-Después se ejecutará el protocolo de docs/cloud-setup.md. No marcar pasos 4/5
-completos ni atribuir continuidad cloud a pruebas locales o mocks.
+La prueba usa claves del archivo privado; nunca genera traces ni guarda cookies.
+Solo ejecutarla expresamente para aceptación: crea una tarea real y consume cuota
+incluida. artifacts/ contiene evidencia local ignorada por Git.
+
+Pendientes específicos: apagado físico del dispositivo por el usuario y prueba
+cloud de pausa/aprobación/continuación. No atribuir esas pruebas a la aceptación actual.
 
 ## Limitaciones
+
+El rediseño de workspace tiene una comprobación adicional de los cinco módulos,
+filtros y diálogos accesibles en móvil con datos cloud de solo lectura. El build
+actual también pasó creación/recuperación local y shell offline en D1 aislada,
+sin borrar las tareas anteriores que alcanzaron el límite de concurrencia (429).
+Ver [diseño del workspace](design-workspace.md). Esta revisión no es un nuevo
+despliegue ni una prueba de agentes reales.
 
 - Una respuesta de dispatch perdida puede crear un job duplicado; D1 evita efectos
   duplicados, pero no elimina los minutos usados por el job rechazado.
