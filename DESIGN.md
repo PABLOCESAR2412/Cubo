@@ -201,7 +201,7 @@ Tareas separa registro e inspector mediante 22px. El inspector mide 330px, perma
 
 Hasta 767px desaparece la columna reservada a la sidebar. La barra mide 52px, el módulo usa padding de 20px 14px 28px y las métricas pasan de cuatro a dos columnas. La búsqueda ocupa toda la fila y los filtros se ajustan al ancho disponible. La navegación abre un diálogo lateral de 248px; el inspector abre un diálogo a 10px de los bordes laterales y 62px del superior. Ambos usan aislamiento de foco y cierre con Escape mediante `dialog` nativo.
 
-Chat separa conversación y compositor. Su configuración ocupa 320px en escritorio y 280px hasta 1199px; en móvil se muestra sobre el contenido. El compositor se limita a 920px. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios del workspace.
+Chat separa historial, conversación y compositor. El historial ocupa 220px en escritorio; hasta 1199px lo sustituye un diálogo nativo de ancho máximo 420px, con 12px de margen mínimo al viewport. Su configuración ocupa 320px en escritorio y 280px hasta 1199px; hasta 767px abre un diálogo nativo que ocupa el contenido bajo la barra de 52px. Mensajes y compositor se limitan a 920px. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios del workspace.
 
 **The Contexto estable Rule.** La navegación y la barra contextual mantienen su posición; cada módulo concentra filtros, datos y acciones en el contenido.
 
@@ -244,6 +244,12 @@ La sidebar reúne marca, Nueva tarea, cinco módulos, recientes y estado del sis
 El inspector muestra estado, tarea, ejecutor, intento, progreso y resultado disponible. Actividad, Checkpoint y Datos cambian el contenido dentro del mismo panel. El detalle usa un aside en escritorio y un diálogo modal en móvil. Nueva tarea también usa un diálogo nativo y conserva el formulario separado del registro.
 
 La barra nativa de progreso mide 4px; dentro de una tarea mide 3px. Lleva pista neutral y relleno lima, acompañada de información textual. El registro alinea tiempos con mensajes. Los identificadores y el checkpoint adicional usan un desplegable nativo. Los cambios de estado se anuncian en una región accesible y los errores usan `role="alert"`.
+
+### Historial y mensajes
+
+Las conversaciones del historial son botones de fondo carbón, borde neutral y radio de control, separados por 8px. La selección cambia el borde a lima; el título puede partir palabras largas y la fecha usa texto secundario. El mismo listado aparece en el diálogo de historial cuando desaparece la columna lateral.
+
+Los mensajes forman una lista con separadores de 1px y separación de 18px. Cada mensaje reúne autor, fecha y estado textual Guardado, conserva los saltos de línea y permite copiar el contenido. El compositor tiene etiqueta visible y una acción Guardar mensaje; los controles de integraciones pendientes permanecen deshabilitados y su estado se explica con texto. La configuración usa campos existentes para nombre y acciones de conversación. La eliminación requiere confirmación nativa del navegador. Los avisos de guardado se anuncian con `role="status"`; los errores mantienen `role="alert"`.
 
 ## Do's and Don'ts
 

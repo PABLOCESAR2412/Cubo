@@ -1,0 +1,35 @@
+import { z } from "zod";
+
+export interface Conversation {
+  id: string;
+  title: string;
+  pinned: boolean;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface ChatMessage {
+  id: string;
+  conversationId: string;
+  sequence: number;
+  role: "user";
+  content: string;
+  status: "STORED";
+  createdAt: string;
+}
+export interface ConversationDetail {
+  conversation: Conversation;
+  messages: ChatMessage[];
+  inference: "unavailable";
+}
+export const conversationInputSchema = z
+  .object({ title: z.string().trim().min(1).max(120) })
+  .strict();
+export const conversationUpdateSchema = z
+  .object({
+    version: z.number().int().positive(),
+    title: z.string().trim().min(1).max(120),
+    pinned: z.boolean(),
+  })
+  .strict();
+export const chatMessageSchema = z.object({ content: z.string().trim().min(1).max(2000) }).strict();

@@ -16,12 +16,18 @@ export type Detail = {
   approvals: Approval[];
 };
 async function api<T>(path: string, body?: unknown, key?: string): Promise<T> {
+  return requestApi<T>(path, {
+    method: body === undefined ? "GET" : "POST",
+    headers: { ...(key ? { "Idempotency-Key": key } : {}) },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  });
+}
+export async function requestApi<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`/api/${path}`, {
+    ...init,
     credentials: "same-origin",
     cache: "no-store",
-    method: body === undefined ? "GET" : "POST",
-    headers: { "Content-Type": "application/json", ...(key ? { "Idempotency-Key": key } : {}) },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    headers: { "Content-Type": "application/json", ...init.headers },
   });
   const data = (await response.json()) as T & { error?: string };
   if (!response.ok) throw new Error(data.error ?? "No fue posible contactar Cubo.");

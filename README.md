@@ -18,6 +18,9 @@ URL activa: https://cubo-dev.pctg.workers.dev
 Rediseño publicado: workspace oscuro con sidebar, Chat, Tareas, Proyectos, Analíticas
 y Ajustes. Tareas usa el backend existente; las integraciones futuras aparecen
 como pendientes. El rediseño está publicado en la URL activa de desarrollo.
+Chat tiene ahora una primera vertical de persistencia: conversaciones, mensajes,
+renombrado, fijado, eliminación y exportación. La inferencia sigue pendiente.
+Ver [alcance real de Chat](docs/chat.md) y su estado de publicación.
 Ver [alcance y comprobación de la interfaz](docs/design-workspace.md).
 
 ## Comandos
@@ -43,7 +46,8 @@ bun run deploy
 - `bun run check:browser`: con `bun dev` activo, verifica el build servido en 8787,
   cierre/reapertura del cliente, viewport móvil y shell offline. No prueba cloud.
 - `bun run deploy`: valida cuenta personal, coste cero, token, repo privado y workflow
-  activo antes de ejecutar todos los checks y desplegar la vertical.
+  activo antes de ejecutar todos los checks, verificar secretos existentes, aplicar
+  migraciones D1 pendientes y desplegar la vertical. No modifica secretos.
 - `bun run db:migrate`: aplica migraciones solo a D1 local.
 
 La PWA guarda el shell offline, no las respuestas privadas de API. Al volver a tener
@@ -52,6 +56,7 @@ las tareas quedan en cola con un motivo explícito; no se simula ejecución clou
 
 ## Arquitectura y configuración
 
+- [Alcance funcional objetivo y roadmap](docs/functional-scope.md).
 - [Arquitectura durable](docs/architecture.md).
 - [Configuración cloud y credenciales](docs/cloud-setup.md).
 - [Política de coste cero](docs/cost-policy.md).

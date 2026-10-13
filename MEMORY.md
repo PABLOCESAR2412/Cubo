@@ -1,6 +1,15 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-13, rediseño publicado en GitHub y cubo-dev, verificado.
+Última actualización significativa: 2026-10-13, primera vertical de Chat implementada y comprobada localmente.
+
+Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
+funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
+motor durable, UI, Chat, Proyectos/GitHub, agentes, aprobaciones Git, memoria,
+proveedores, notificaciones y analíticas/cuotas. Una ejecución activa global,
+cancelación completa y métricas exact/estimated/stale/unavailable son requisitos
+objetivo, no capacidades implementadas. Próxima vertical: Chat persistente.
+Mantener USD 0, aislamiento y aprobación Git como reglas transversales; conservar
+motor validado. Esta actualización documental no implementa nuevas funciones.
 
 ## Autoridad y decisiones
 
@@ -97,12 +106,22 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 
 ## Próximos pasos
 
+- Chat persistente implementado: conversaciones/mensajes en D1, renombrar, fijar,
+  eliminar con confirmación, copiar y exportar. Inferencia unavailable; no lanza agentes.
+- Migración 0002 aditiva, idempotencia de creación/mensajes y CAS de cambios/eliminación.
+  Prueba local real de D1/browser: cierre completo, recuperación móvil, edición,
+  exportación, eliminación, 409 por conflicto y 400/403 por token/origen inválido pasan.
+- Revisión visual final aprobó la corrección del layout de mensajes. DESIGN actualizado.
+  Ver docs/chat.md. Publicación autorizada por el usuario; pendiente de ejecutar.
+- Deploy ahora verifica secretos existentes por nombre sin modificar valores y
+  aplica migraciones D1 antes de publicar. Motor durable y tablas de tareas preservados.
+
 - Rediseño estructural inspirado en las siete capturas de Telo implementado:
   sidebar persistente, barra contextual, cinco módulos, listado e inspector compactos,
   conservando la paleta oscura de Cubo. Ver docs/design-workspace.md.
 - Tareas conserva el backend real; lógica UI extraída a workspace.ts con selección
   estable y protección ante respuestas atrasadas. Motor durable sin cambios en esta fase.
-- Chat, Proyectos y proveedores preparados visualmente, pendientes/deshabilitados.
+- Proyectos y proveedores preparados visualmente, pendientes/deshabilitados.
   Analíticas solo utiliza historial real de tareas; no inventa métricas de modelos.
 - Navegación y detalle móviles usan dialog nativo: foco aislado, Escape, retorno
   visible y apertura desde Recientes. QA visual con API cloud en modo solo lectura.

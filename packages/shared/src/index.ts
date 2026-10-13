@@ -1,4 +1,6 @@
 import { z } from "zod";
+
+export * from "./chat";
 export const taskStatuses = [
   "QUEUED",
   "RUNNING",

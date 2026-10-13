@@ -11,6 +11,7 @@ import {
   runnerAuthorized,
   sessionToken,
 } from "./auth.ts";
+import { chatRoutes } from "./chat";
 import type { Env } from "./env.ts";
 export async function dispatchOutbox(env: Env): Promise<void> {
   const store = new D1TaskStore(env.DB);
@@ -164,6 +165,7 @@ app.post("/api/executions/:id/progress", async (c) => {
   return c.json({ ok: true });
 });
 app.notFound((c) => c.json({ error: "Ruta desconocida." }, 404));
+app.route("/api/conversations", chatRoutes);
 app.onError((error, c) => {
   if (error instanceof StoreError)
     return c.json({ error: error.message }, error.code as 400 | 403 | 404 | 409 | 429);

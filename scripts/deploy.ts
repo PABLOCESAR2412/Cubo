@@ -70,17 +70,46 @@ for (const command of ["test", "lint", "typecheck", "build"]) {
   const process = spawn(["bun", "run", command], { stdout: "inherit", stderr: "inherit" });
   if ((await process.exited) !== 0) throw new Error("La validación falló; no se desplegó.");
 }
-const deploy = spawn(
+const registeredSecrets = spawn(
   [
     "bunx",
     "--no-install",
     "wrangler",
-    "deploy",
+    "secret",
+    "list",
     "--config",
     "apps/api/wrangler.jsonc",
-    "--secrets-file",
-    secretsPath,
+    "--format",
+    "json",
   ],
+  { env, stdout: "pipe", stderr: "inherit" },
+);
+const names = (await new Response(registeredSecrets.stdout).json()) as Array<{ name: string }>;
+if (
+  (await registeredSecrets.exited) !== 0 ||
+  !["GITHUB_TOKEN", "OWNER_PASSWORD", "SESSION_SECRET"].every((name) =>
+    names.some((item) => item.name === name),
+  )
+)
+  throw new Error("Faltan secretos del Worker. No se modificarán automáticamente.");
+const migration = spawn(
+  [
+    "bunx",
+    "--no-install",
+    "wrangler",
+    "d1",
+    "migrations",
+    "apply",
+    "cubo-dev-db",
+    "--remote",
+    "--config",
+    "apps/api/wrangler.jsonc",
+  ],
+  { env, stdout: "inherit", stderr: "inherit" },
+);
+if ((await migration.exited) !== 0) throw new Error("La migración falló; no se desplegó.");
+const deploy = spawn(
+  ["bunx", "--no-install", "wrangler", "deploy", "--config", "apps/api/wrangler.jsonc"],
   { env, stdout: "inherit", stderr: "inherit" },
 );
 process.exit(await deploy.exited);

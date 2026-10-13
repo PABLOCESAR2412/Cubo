@@ -50,6 +50,13 @@ manteniendo la separación entre UI, API, motor de tareas y adaptadores.
 
 ## Reglas de arquitectura
 
+El alcance funcional aprobado y el orden de implementación viven en
+[docs/functional-scope.md](docs/functional-scope.md). Avanzar por verticales:
+motor durable, UI, Chat, Proyectos/GitHub, agentes, aprobaciones Git, memoria,
+proveedores, notificaciones y analíticas/cuotas. No tratar requisitos como funciones
+terminadas. Una sola ejecución activa es el objetivo y debe aplicarse en el backend.
+Las métricas deben distinguir exact, estimated, stale y unavailable; no inventar cuotas.
+
 1. La identidad y el estado de una tarea viven en el backend. La sesión de la PWA
    nunca es necesaria para mantener la ejecución o reanudarla.
 2. El runner es temporal. Persistir el progreso fuera del runner permite
@@ -207,6 +214,7 @@ runner GitHub real, cliente cerrado, checkpoints y resultado 91 recuperado de D1
 Ver [docs/cloud-validation.md](docs/cloud-validation.md). Agentes reales siguen pendientes;
 pausa/aprobación tiene tests locales y requiere su propia comprobación cloud.
 Rediseño UI del workspace implementado y validado localmente; conserva el backend.
-Chat, Proyectos y proveedores siguen pendientes. Ver [docs/design-workspace.md](docs/design-workspace.md).
+Chat tiene una primera vertical de persistencia; inferencia, Proyectos y proveedores
+siguen pendientes. Ver [docs/chat.md](docs/chat.md) y [docs/design-workspace.md](docs/design-workspace.md).
 UI publicada en cubo-dev por instrucción explícita del usuario el 2026-10-13;
 cinco módulos, móvil, PWA y recuperación del resultado existente comprobados.

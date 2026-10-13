@@ -81,6 +81,9 @@ bun run deploy
 El script verifica destinos personales, repo privado, workflow activo, credenciales
 y guardia de gasto. Ejecuta tests, lint, typecheck y build antes de publicar la PWA,
 API y Workflow juntos. El primer despliegue no debe ser un health endpoint aislado.
+Antes de publicar aplica migraciones D1 pendientes y comprueba que los secretos
+requeridos existen por nombre. No reenvía sus valores ni los modifica; si faltan,
+se detiene y requiere una instalación explícitamente autorizada.
 
 Para operaciones manuales de Wrangler, seleccionar siempre el perfil correcto:
 
