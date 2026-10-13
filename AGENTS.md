@@ -218,3 +218,5 @@ Chat tiene una primera vertical de persistencia; inferencia, Proyectos y proveed
 siguen pendientes. Ver [docs/chat.md](docs/chat.md) y [docs/design-workspace.md](docs/design-workspace.md).
 UI publicada en cubo-dev por instrucción explícita del usuario el 2026-10-13;
 cinco módulos, móvil, PWA y recuperación del resultado existente comprobados.
+Chat persistente publicado y comprobado en cloud: cierre del cliente y recuperación
+de mensajes en otro navegador. Inferencia y sesiones de agentes aún no implementadas.

@@ -1,15 +1,16 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-13, primera vertical de Chat implementada y comprobada localmente.
+Última actualización significativa: 2026-10-13, primera vertical de Chat publicada y comprobada en cloud.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
 motor durable, UI, Chat, Proyectos/GitHub, agentes, aprobaciones Git, memoria,
 proveedores, notificaciones y analíticas/cuotas. Una ejecución activa global,
 cancelación completa y métricas exact/estimated/stale/unavailable son requisitos
-objetivo, no capacidades implementadas. Próxima vertical: Chat persistente.
+objetivo, no capacidades implementadas. Chat persistente ya entregado;
+inferencia y sesiones de agentes siguen pendientes.
 Mantener USD 0, aislamiento y aprobación Git como reglas transversales; conservar
-motor validado. Esta actualización documental no implementa nuevas funciones.
+motor validado. El alcance no equivale a capacidades implementadas.
 
 ## Autoridad y decisiones
 
@@ -65,7 +66,7 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - D1 cubo-dev-db creada y migrada local/remota:
   7b9b60fc-5255-42a3-835f-2ec0f05a393c.
 - Worker cubo-dev y Workflow cubo-dev-tasks desplegados con Static Assets y D1.
-  Versión vigente: 43e95747-8588-423d-a37d-3ab6f579cf40.
+  Versión vigente: db214341-8b7b-46ee-bdcd-77d94e597b59.
 - URL activa https://cubo-dev.pctg.workers.dev. Workers Free confirmado en dashboard
   personal: Gratuito, USD 0, Plan actual. Navegador personal conectado mediante perfil 2.
 - Usuario creó https://github.com/PABLOCESAR2412/Cubo.git privado.
@@ -112,7 +113,12 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   Prueba local real de D1/browser: cierre completo, recuperación móvil, edición,
   exportación, eliminación, 409 por conflicto y 400/403 por token/origen inválido pasan.
 - Revisión visual final aprobó la corrección del layout de mensajes. DESIGN actualizado.
-  Ver docs/chat.md. Publicación autorizada por el usuario; pendiente de ejecutar.
+  Ver docs/chat.md. Publicación autorizada: commit 43a8577 en main, migración 0002
+  remota y Worker nuevo publicados en cubo-dev sin modificar secretos.
+- Prueba cloud Chat 673bce9f-dd88-41ed-9043-5e1a61864cc7: cierre de cliente y
+  recuperación móvil, renombrado/fijado, exportación, idempotencia y eliminación
+  del registro recién creado pasan. API sin sesión 401; no inferencia ni runner nuevo.
+  Tarea durable anterior conserva SUCCEEDED/91. Evidencia artifacts/chat-proof-cloud.json.
 - Deploy ahora verifica secretos existentes por nombre sin modificar valores y
   aplica migraciones D1 antes de publicar. Motor durable y tablas de tareas preservados.
 
@@ -125,7 +131,7 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   Analíticas solo utiliza historial real de tareas; no inventa métricas de modelos.
 - Navegación y detalle móviles usan dialog nativo: foco aislado, Escape, retorno
   visible y apertura desde Recientes. QA visual con API cloud en modo solo lectura.
-- Validación actual: 20 tests/82 comprobaciones, lint, typecheck y build pasan.
+- Validación actual: 20 tests/83 comprobaciones, lint, typecheck y build pasan.
   Creación local, cierre/reapertura, móvil y shell offline pasan en D1 aislada;
   la D1 local anterior respondió 429 por tareas pendientes y no se borró.
 - Rediseño publicado en GitHub main y Cloudflare personal cubo-dev. Se conservan

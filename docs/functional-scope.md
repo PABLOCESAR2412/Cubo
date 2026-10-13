@@ -197,7 +197,7 @@ exige el adaptador de agente/proveedor correspondiente y no se simula como termi
 - Aprobación de continuación probada localmente; aprobación Git no implementada.
 - No considerar implementados por este documento el scheduler, cancelación completa,
   exclusión global, memoria por proyecto ni telemetría de modelos.
-- Primera vertical de Chat implementada y comprobada localmente; consultar
+- Primera vertical de Chat publicada y comprobada en cloud; consultar
   docs/chat.md para aceptación y publicación. Siguiente ampliación: inferencia y
   eventos de agente con dependencias explícitas, sin fingir una sesión conectada.
 

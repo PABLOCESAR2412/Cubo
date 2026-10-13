@@ -77,3 +77,22 @@ existentes; si faltan, detiene la publicación. No añade servicios pagos.
 
 La migración es aditiva: si la publicación falla, las tablas de tareas existentes
 siguen intactas. No borrar tablas ni revertir datos remotos automáticamente.
+
+## Publicación y aceptación cloud
+
+Publicado el 2026-10-13: commit 43a8577 en GitHub main y versión Worker
+db214341-8b7b-46ee-bdcd-77d94e597b59 en la cuenta personal cubo-dev.
+Migración 0002 aplicada a cubo-dev-db. Secretos existentes conservados.
+URL: https://cubo-dev.pctg.workers.dev.
+
+La misma vertical pasó en cloud con conversación de prueba
+673bce9f-dd88-41ed-9043-5e1a61864cc7: creación, mensaje, idempotencia, renombrado,
+fijado, exportación, cierre completo del cliente y recuperación en otro navegador
+móvil. También se verificaron los rechazos 409/400/403 y eliminación de esa
+conversación recién creada; no se borraron conversaciones previas. Evidencia local
+ignorada en artifacts/chat-proof-cloud.json. No se ejecutó inferencia ni otro runner.
+
+La API de Chat devuelve 401 sin sesión. La prueba de conservación de Tareas
+recuperó SUCCEEDED/91 de 6c644134-73f6-4648-b25d-77b381f9ea9a. Cinco módulos,
+manifest PWA y móvil pasan; bundle actual index-CiP8oFGt.js. Puertas del despliegue:
+20 tests/83 comprobaciones, lint, typecheck y build correctos.
