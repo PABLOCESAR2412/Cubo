@@ -1,0 +1,9 @@
+{
+  "name": "@cubo/runner",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@cubo/shared": "workspace:*"
+  }
+}

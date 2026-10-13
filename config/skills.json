@@ -1,0 +1,567 @@
+{
+  "schemaVersion": 1,
+  "kind": "installation-snapshot",
+  "globalLibrary": "~/.agents/skills",
+  "baseline": [
+    "caveman",
+    "ponytail",
+    "graphify"
+  ],
+  "policy": {
+    "thirdPartyDefaultScope": "global",
+    "localOnly": [
+      "graphify"
+    ],
+    "preserveExistingSkills": true,
+    "loadSkillsOnDemand": true,
+    "skillsGrantPermissions": false
+  },
+  "graphifyRuntime": {
+    "location": ".tools/graphify/.venv",
+    "python": "3.12",
+    "package": "graphifyy",
+    "version": "0.9.88",
+    "dependencyLock": "config/graphify-requirements.txt",
+    "useGlobalRuntime": false,
+    "environment": {
+      "GRAPHIFY_NO_AUTO_REFRESH": "1"
+    }
+  },
+  "skills": [
+    {
+      "name": "cavecrew",
+      "scope": "global",
+      "location": "~/.agents/skills/cavecrew",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "c05f8e8d16bd8ae1c8d0b0abf6e8b9671051bde61653c4986304c2de3a1cf5d4",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman",
+      "source": "juliusbrussee/caveman",
+      "sourceUrl": "https://github.com/juliusbrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "0bf09a0a9a017d004a81d4b693e5a2d830e1a28230a5885df773e1ed9c0571cc",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Claude Code",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-commit",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-commit",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "c788a282fc75b981b421dfdad5d84ea7f83f946c126daa39cfc7d3f97845e193",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-compress",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-compress",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "377b0b8682d9db1a832c20ee6732ed0f19f55e4f7048955296128244c869c916",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-discover",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-discover",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "0483d17fce14ca5bbfcf1e085c180412dc20a672f5e8e4171fd0bbbb6f42b81a",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-evidence-review",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-evidence-review",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "05bd896c76a41918fe7b87113dabe852117727a579a7e445891aa41391ed57c2",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-explore",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-explore",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "908f504ce45f5f8517ac7b64dc89fef57c4519d26f92b0b1843febf4b6fe2ac8",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-help",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-help",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "e704f9504ebe9da3b527d5df3ca5a940efc34a18c61854102da5fe69e8f24b98",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-learn",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-learn",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "8b210c266f5c14cfded85b1c32b3742b4b23b4a0628b9cafa6627fd954609026",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-manage",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-manage",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "3404a3c8651d63b6a7c02ccda17fcb4fca2489e931bb814580979a9ff548a48e",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-optimize",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-optimize",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "93f391beb93198b5bf9c0c21bc8b7b194e57cb7855fbf05384a4a5d6dd8c06cb",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-review",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-review",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "599330563f19b5c59c3efddffcd7e8d9098b74c29817ab422ccd3253b103fcb8",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-setup",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-setup",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "42c8b8eeba19c6d4ffd3c421be60a7e8b5c0e5108fd4496f0be3c7ced90bfd5f",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "caveman-stats",
+      "scope": "global",
+      "location": "~/.agents/skills/caveman-stats",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "c17fceb216fd3124a48821139d0ed2b71b4392d9a9de7bd1e939be2b334a96aa",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "cloudflare",
+      "scope": "global",
+      "location": "~/.agents/skills/cloudflare",
+      "source": "cloudflare/skills",
+      "sourceUrl": "https://github.com/cloudflare/skills.git",
+      "sourceType": "github",
+      "skillFileSha256": "6299e862c09f1990706d73e732e625d7422de42822fef27a8a14f719f05c32d8",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "frontend-design",
+      "scope": "global",
+      "location": "~/.agents/skills/frontend-design",
+      "source": "anthropics/skills",
+      "sourceUrl": "https://github.com/anthropics/skills.git",
+      "sourceType": "github",
+      "skillFileSha256": "b8009ae690dfa69edc7f08bb8715f32db8817112cfa4388741dbaf876c237df8",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "impeccable",
+      "scope": "global",
+      "location": "~/.agents/skills/impeccable",
+      "source": null,
+      "sourceUrl": null,
+      "sourceType": null,
+      "skillFileSha256": "38c2e839e130008b6da814ab9c16f3fcbbedfdf721a9638eebd31a9e65341a7a",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "investigate-first",
+      "scope": "global",
+      "location": "~/.agents/skills/investigate-first",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "7cc19dd2fc457eb20d65c44dee4d1b72dcdfcd1617182f5bff666700f2a055d8",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "lean-build",
+      "scope": "global",
+      "location": "~/.agents/skills/lean-build",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "4d498073c6312858b220e9a04b7456c2485c734edb077f6bb17d88a7ed96ad7a",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "migration",
+      "scope": "global",
+      "location": "~/.agents/skills/migration",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "fe7cf96a58b0521130fbb886dab2a326869d6ed0001e0306fd244014ba7a9662",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "playwright-cli",
+      "scope": "global",
+      "location": "~/.agents/skills/playwright-cli",
+      "source": "microsoft/playwright-cli",
+      "sourceUrl": "https://github.com/microsoft/playwright-cli.git",
+      "sourceType": "github",
+      "skillFileSha256": "d35ea2029ba6ecae932e3de46444472861f5095ec9093207f494834e741e104d",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "ponytail",
+      "scope": "global",
+      "location": "~/.agents/skills/ponytail",
+      "source": "DietrichGebert/ponytail",
+      "sourceUrl": "https://github.com/DietrichGebert/ponytail.git",
+      "sourceType": "github",
+      "skillFileSha256": "fc12a0b9588a7fa3543d31ddc41541f735a5626105781643873110f2da1bd52a",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "safe-refactor",
+      "scope": "global",
+      "location": "~/.agents/skills/safe-refactor",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "cd52867aba26aafb53379d43068cef9b2feca3a3fff850f877a99f710ccd02c0",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "surgical-patch",
+      "scope": "global",
+      "location": "~/.agents/skills/surgical-patch",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "81ea9f7b51409970099e04b98875dd65806cd35472f9a774b847030328187387",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "verify-and-stop",
+      "scope": "global",
+      "location": "~/.agents/skills/verify-and-stop",
+      "source": "JuliusBrussee/caveman",
+      "sourceUrl": "https://github.com/JuliusBrussee/caveman.git",
+      "sourceType": "github",
+      "skillFileSha256": "3d5599f49771b864eba94f27f456fda295c48c1a37fa6ba2f65fdcb13cc32acb",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "wrangler",
+      "scope": "global",
+      "location": "~/.agents/skills/wrangler",
+      "source": "cloudflare/skills",
+      "sourceUrl": "https://github.com/cloudflare/skills.git",
+      "sourceType": "github",
+      "skillFileSha256": "89684e5c984c41c9b370999aa1d4030a638585c988a766351c7566ff8784ef9a",
+      "status": "installed",
+      "agents": [
+        "Antigravity",
+        "Antigravity CLI",
+        "Codex",
+        "Cursor",
+        "Gemini CLI",
+        "GitHub Copilot",
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "supabase",
+      "scope": "global",
+      "location": "~/.config/opencode/skills/supabase",
+      "source": null,
+      "sourceUrl": null,
+      "sourceType": null,
+      "skillFileSha256": "f207aef0962817121512de305dd10b00ed2604292f3251bdafc0ae4bd98c3f6f",
+      "status": "installed",
+      "agents": [
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "supabase-postgres-best-practices",
+      "scope": "global",
+      "location": "~/.config/opencode/skills/supabase-postgres-best-practices",
+      "source": null,
+      "sourceUrl": null,
+      "sourceType": null,
+      "skillFileSha256": "4d7d1bd60f2ad7fd0d510269279519059dcc630d832f4c241d90735244c70525",
+      "status": "installed",
+      "agents": [
+        "OpenCode"
+      ]
+    },
+    {
+      "name": "graphify",
+      "scope": "project",
+      "location": ".agents/skills/graphify",
+      "source": "Graphify-Labs/graphify",
+      "sourceUrl": "https://github.com/Graphify-Labs/graphify",
+      "sourceType": "github",
+      "skillFileSha256": "12312b6689de086c3d9e519028c47127d082aa0902e8359ff95b3ee5069f5d49",
+      "status": "installed",
+      "agents": [
+        "Codex",
+        "OpenCode"
+      ]
+    }
+  ]
+}

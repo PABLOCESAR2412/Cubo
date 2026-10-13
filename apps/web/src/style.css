@@ -1,0 +1,223 @@
+@import "tailwindcss";
+@theme {
+  --color-base: #101416;
+  --color-surface: #171d20;
+  --color-muted: #a6b3bb;
+  --color-line: #303b42;
+  --color-accent: #d9ed91;
+  --color-ink: #e9f0f3;
+  --font-sans: "Cubo Geist", ui-sans-serif, system-ui, sans-serif;
+}
+@font-face {
+  font-family: "Cubo Geist";
+  src: url("/fonts/geist-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+:root {
+  color-scheme: dark;
+  background: var(--color-base);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+body {
+  margin: 0;
+}
+button,
+input {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+::selection {
+  background: var(--color-accent);
+  color: var(--color-base);
+}
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+.brand {
+  color: var(--color-accent);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.connection {
+  color: var(--color-muted);
+}
+.online::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--color-accent);
+  margin-right: 8px;
+  border-radius: 100%;
+}
+.quiet {
+  color: var(--color-accent);
+  border-bottom: 1px solid currentColor;
+  padding: 2px 0;
+}
+.quiet:hover {
+  color: white;
+}
+.primary {
+  background: var(--color-accent);
+  color: #182010;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  min-height: 44px;
+}
+.primary:hover:not(:disabled) {
+  background: #e7fab4;
+}
+input:not([type="checkbox"]) {
+  border: 1px solid var(--color-line);
+  background: var(--color-base);
+  padding: 12px;
+  border-radius: 6px;
+  caret-color: var(--color-accent);
+}
+input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.notice {
+  padding: 14px 16px;
+  background: #20292b;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.notice.error {
+  background: #321f23;
+  color: #ffc7ca;
+  border-color: #734247;
+}
+.composer {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-line);
+}
+.task-row {
+  padding: 16px 12px;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid var(--color-line);
+}
+.task-row:hover {
+  background: #1c2428;
+}
+.task-row.selected {
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+.state {
+  color: var(--color-muted);
+}
+.running,
+.succeeded {
+  color: var(--color-accent);
+}
+.waiting_approval {
+  color: #f6cb7a;
+}
+.failed {
+  color: #ffb3b7;
+}
+.detail {
+  background: var(--color-surface);
+  padding: 28px;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+.empty {
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+.empty-mark {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-line);
+  margin-bottom: 32px;
+  box-shadow: 8px 8px 20px #080c0d;
+}
+.status-label {
+  font-size: 12px;
+  border: 1px solid var(--color-line);
+  padding: 6px 9px;
+  border-radius: 4px;
+}
+progress {
+  appearance: none;
+  height: 5px;
+  border: 0;
+  background: var(--color-line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+progress::-webkit-progress-bar {
+  background: var(--color-line);
+}
+progress::-webkit-progress-value {
+  background: var(--color-accent);
+}
+progress::-moz-progress-bar {
+  background: var(--color-accent);
+}
+.approval {
+  padding: 18px;
+  background: #262b20;
+  border: 1px solid #65764c;
+  border-radius: 8px;
+}
+.result {
+  padding-top: 20px;
+  border-top: 1px solid var(--color-line);
+}
+.login {
+  max-width: 400px;
+  padding: 28px;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+* {
+  scrollbar-color: #546069 var(--color-base);
+  scrollbar-width: thin;
+}
+@media (max-width: 600px) {
+  .detail {
+    padding: 20px;
+  }
+  .empty {
+    min-height: 240px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "status": "design-only",
+  "agents": [
+    { "id": "codex", "adapterStatus": "pending" },
+    { "id": "opencode", "adapterStatus": "pending" }
+  ],
+  "providers": [
+    { "id": "gemini", "adapterStatus": "pending", "models": [] },
+    { "id": "groq", "adapterStatus": "pending", "models": [] },
+    { "id": "nvidia", "adapterStatus": "pending", "models": [] }
+  ],
+  "preserveExistingProviders": true,
+  "validatedCompatibility": [],
+  "defaults": { "agent": null, "provider": null, "model": null },
+  "selection": {
+    "requireValidatedCompatibility": true,
+    "respectExplicitSelection": true,
+    "allowSilentFallback": false,
+    "requireProjectContextScope": true,
+    "requirePersistedDecision": true
+  },
+  "permissions": {
+    "default": "deny",
+    "requireCuboApproval": ["git.commit", "git.push", "github.pull-request.create"],
+    "neverAutomatic": [
+      "secrets.write",
+      "credentials.write",
+      "production-env.write",
+      "sensitive-infrastructure.write",
+      "git.history.rewrite",
+      "git.remote-branch.delete"
+    ],
+    "skillsGrantPermissions": false
+  }
+}

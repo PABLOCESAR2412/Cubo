@@ -1,0 +1,35 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "cubo-dev",
+  "main": "src/index.ts",
+  "account_id": "6fcab192a8cc2a3458247ef5c8108a07",
+  "compatibility_date": "2026-10-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cubo-dev-db",
+      "database_id": "7b9b60fc-5255-42a3-835f-2ec0f05a393c",
+      "migrations_dir": "../../packages/database/migrations"
+    }
+  ],
+  "workflows": [
+    { "name": "cubo-dev-tasks", "binding": "TASK_WORKFLOW", "class_name": "TaskWorkflow" }
+  ],
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "vars": {
+    "GITHUB_REPOSITORY": "PABLOCESAR2412/Cubo",
+    "GITHUB_WORKFLOW": "cubo-runner.yml",
+    "GITHUB_REF": "main",
+    "GITHUB_ZERO_SPEND_VERIFIED": "true",
+    "CUBO_URL": "https://cubo-dev.pctg.workers.dev",
+    "LOCAL_DEV": "false"
+  }
+}

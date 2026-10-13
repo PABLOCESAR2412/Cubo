@@ -1,0 +1,35 @@
+{
+  "name": "cubo",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run scripts/dev.ts",
+    "test": "bun test tests",
+    "lint": "biome check apps packages scripts tests package.json tsconfig.json biome.json",
+    "format": "biome check --write apps packages scripts tests package.json tsconfig.json biome.json",
+    "typecheck": "tsc --noEmit",
+    "build": "bun run scripts/build.ts",
+    "deploy": "bun run scripts/deploy.ts",
+    "db:migrate": "wrangler d1 migrations apply cubo-dev-db --local --config apps/api/wrangler.jsonc",
+    "check:browser": "bun run scripts/browser-check.ts"
+  },
+  "devDependencies": {
+    "@cubo/shared": "workspace:*",
+    "@cubo/runner": "workspace:*",
+    "@cubo/database": "workspace:*",
+    "@cubo/tasks": "workspace:*",
+    "wrangler": "4.149.0",
+    "@biomejs/biome": "^2.0.0",
+    "typescript": "^5.9.0",
+    "@types/bun": "^1.3.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@cloudflare/workers-types": "5.20261013.1",
+    "@playwright/test": "^1.58.0"
+  }
+}

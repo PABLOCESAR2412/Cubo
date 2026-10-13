@@ -1,0 +1,20 @@
+# Dependencias y resultados locales
+node_modules/
+dist/
+coverage/
+.wrangler/
+.tools/
+graphify-out/
+.playwright-cli/
+playwright-report/
+test-results/
+
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+*.secrets.json
+.impeccable/
+artifacts/

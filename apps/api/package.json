@@ -1,0 +1,14 @@
+{
+  "name": "@cubo/api",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@cubo/shared": "workspace:*",
+    "@cubo/runner": "workspace:*",
+    "@cubo/database": "workspace:*",
+    "@cubo/tasks": "workspace:*",
+    "hono": "^4.0.0",
+    "jose": "^6.0.0",
+    "zod": "^4.0.0"
+  }
+}
