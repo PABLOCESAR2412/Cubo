@@ -15,9 +15,9 @@ cerrado, seis checkpoints en D1 y recuperación de resultado 91 en un navegador 
 Repositorio privado: https://github.com/PABLOCESAR2412/Cubo
 URL activa: https://cubo-dev.pctg.workers.dev
 
-Rediseño local: workspace oscuro con sidebar, Chat, Tareas, Proyectos, Analíticas
+Rediseño publicado: workspace oscuro con sidebar, Chat, Tareas, Proyectos, Analíticas
 y Ajustes. Tareas usa el backend existente; las integraciones futuras aparecen
-como pendientes. El rediseño todavía no está publicado en la URL activa.
+como pendientes. El rediseño está publicado en la URL activa de desarrollo.
 Ver [alcance y comprobación de la interfaz](docs/design-workspace.md).
 
 ## Comandos

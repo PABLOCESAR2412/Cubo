@@ -58,3 +58,17 @@ del foco al cerrarse, apertura desde Recientes, foco/Escape/retorno del inspecto
 y actualización de DESIGN.md con su sidecar. Dictamen ship para esas correcciones;
 no equivale a autorización de despliegue. Los metadatos de 9–10px existentes se
 registran como deuda de legibilidad, sin convertirlos en norma para nuevas vistas.
+
+## Publicación autorizada
+
+Después de la revisión, el usuario ordenó commit, push y deploy. El 2026-10-13
+se publicó el commit a5c21ae en main de PABLOCESAR2412/Cubo y se desplegó cubo-dev
+en la cuenta personal, versión 43e95747-8588-423d-a37d-3ab6f579cf40.
+No se reenviaron ni modificaron secretos, ni se crearon recursos nuevos.
+
+La comprobación sobre https://cubo-dev.pctg.workers.dev confirmó el bundle
+index-CZe-IC6e.js, navegación de los cinco módulos, diálogos móviles sin overflow,
+manifest PWA y respuesta 401 de la API sin sesión. Con sesión se recuperó la tarea
+6c644134-73f6-4648-b25d-77b381f9ea9a con SUCCEEDED y resultado {sum:91,steps:6}.
+No se lanzó otra ejecución cloud. Capturas locales en
+artifacts/deployed-workspace-desktop.png y deployed-workspace-mobile.png.

@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-13, rediseño local del workspace terminado y comprobado.
+Última actualización significativa: 2026-10-13, rediseño publicado en GitHub y cubo-dev, verificado.
 
 ## Autoridad y decisiones
 
@@ -56,15 +56,16 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - D1 cubo-dev-db creada y migrada local/remota:
   7b9b60fc-5255-42a3-835f-2ec0f05a393c.
 - Worker cubo-dev y Workflow cubo-dev-tasks desplegados con Static Assets y D1.
-  Versión vigente: 7fb87fe9-70da-4a79-87e0-ddc8580ce2f1.
+  Versión vigente: 43e95747-8588-423d-a37d-3ab6f579cf40.
 - URL activa https://cubo-dev.pctg.workers.dev. Workers Free confirmado en dashboard
   personal: Gratuito, USD 0, Plan actual. Navegador personal conectado mediante perfil 2.
 - Usuario creó https://github.com/PABLOCESAR2412/Cubo.git privado.
 - Git local en main y origin configurado para ese repositorio. Usuario publicó el
-  bootstrap d4ffeb095da1abf1b128fdf057693830bbc814fb; main remota coincide con HEAD.
+  bootstrap d4ffeb095da1abf1b128fdf057693830bbc814fb. Rediseño y correcciones cloud
+  publicados en a5c21ae por orden explícita del usuario para commit, push y deploy.
   Workflow y runner incluidos. Archivo privado cubo-dev.secrets.json validado;
-  identidad, repo y workflow comprobados sin imprimir secretos. Cambios posteriores
-  en backend, tests, validación y docs siguen locales sin commit/push automático.
+  identidad, repo y workflow comprobados sin imprimir secretos. La publicación de
+  desarrollo no sustituye las aprobaciones de acciones de tareas ejecutadas por Cubo.
   El conector GitHub no sustituye un PAT del Worker.
 - GitHub: presupuesto Actions USD 0, Stop usage Yes y alertas de uso incluido On
   verificados por lectura de la cuenta. No se modificó facturación ni plan.
@@ -108,13 +109,16 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - Validación actual: 20 tests/82 comprobaciones, lint, typecheck y build pasan.
   Creación local, cierre/reapertura, móvil y shell offline pasan en D1 aislada;
   la D1 local anterior respondió 429 por tareas pendientes y no se borró.
-- Rediseño aún local, pendiente de revisión del usuario antes de publicar. URL cloud
-  sigue sirviendo la versión anterior; no se hicieron commit, push ni deploy de la UI.
+- Rediseño publicado en GitHub main y Cloudflare personal cubo-dev. Se conservan
+  secretos, D1 y Workflows existentes; sin servicios pagos ni nuevas tareas cloud.
+- Comprobación posterior: bundle index-CZe-IC6e.js actual, cinco módulos, diálogos
+  móviles, manifest PWA y API privada (401 sin sesión). Tarea 6c644134 recuperada
+  con SUCCEEDED y resultado 91. Capturas ignoradas artifacts/deployed-workspace-*.png.
 - DESIGN.md y su sidecar actualizados; reviewer confirmó las cuatro correcciones
   finales resueltas. Metadatos de 9–10px registrados como deuda, no norma de diseño.
 
 - La prioridad de ejecución durable solicitada está demostrada. No se añadieron agentes.
-- Publicación manual de los cambios posteriores cuando el usuario lo decida.
+- Cambios de desarrollo publicados por autorización explícita del usuario.
 - Pausa/aprobación/nuevo runner está probada localmente, pendiente de prueba cloud específica.
 - Apagar físicamente PC/teléfono no se probó; el cierre completo del navegador sí.
 - Continuar los hitos de proyectos GitHub y agentes únicamente por nueva instrucción.

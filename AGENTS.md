@@ -208,4 +208,5 @@ Ver [docs/cloud-validation.md](docs/cloud-validation.md). Agentes reales siguen 
 pausa/aprobación tiene tests locales y requiere su propia comprobación cloud.
 Rediseño UI del workspace implementado y validado localmente; conserva el backend.
 Chat, Proyectos y proveedores siguen pendientes. Ver [docs/design-workspace.md](docs/design-workspace.md).
-La UI nueva no está desplegada; requiere revisión del usuario antes de publicar.
+UI publicada en cubo-dev por instrucción explícita del usuario el 2026-10-13;
+cinco módulos, móvil, PWA y recuperación del resultado existente comprobados.
