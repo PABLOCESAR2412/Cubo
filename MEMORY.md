@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-14, proyectos persistentes y chats asociados publicados y comprobados en cloud.
+Última actualización significativa: 2026-10-14, instalación y avisos de actualización PWA publicados y comprobados.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
@@ -222,6 +222,12 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - 1440/390 sin overflow. Tests 20/87, lint, typecheck y build pasan.
   docs/pwa.md documenta que ventanas antiguas necesitan cerrarse/reabrirse una vez.
   Backend/motor sin cambios; importación GitHub continúa pendiente.
+- Commit c99fa84 en main, cubo-dev personal versión
+  4edfee3f-544e-426d-8f64-dcab50670c51. Bundle index-Ksojf9oq.js comprobado.
+  Cloud: guía en Ajustes, SW registrado y servido 200/text/javascript con
+  max-age=0/must-revalidate; cinco vistas, móvil, PWA y API privada pasan.
+  Demo SUCCEEDED/91 preservada, sin runners nuevos ni secretos cambiados.
+  Ciclo v1→v2 validado en loopback; no se provocó otro deploy cloud solo para probarlo.
 
 ## Mantenimiento
 

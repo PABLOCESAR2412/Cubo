@@ -47,3 +47,14 @@ invoca prompt una vez y desaparece después. No demuestra instalación real en P
 o móvil. La primera prueba falló por Content-Encoding gzip incorrecto del proxy
 local de QA; se corrigió solo ese proxy y la prueba completa pasó después.
 No se modificó backend ni se lanzaron nuevos runners para esta prueba.
+
+## Publicación comprobada
+
+Commit c99fa84 publicado en main; Worker cubo-dev de la cuenta personal, versión
+4edfee3f-544e-426d-8f64-dcab50670c51. URL: https://cubo-dev.pctg.workers.dev.
+Bundle index-Ksojf9oq.js comprobado. SW servido con 200, text/javascript y
+Cache-Control public, max-age=0, must-revalidate; registro real confirmado.
+La guía aparece en Ajustes → Apariencia. Cinco vistas, móvil, manifest y API privada
+pasan; la tarea durable anterior conserva SUCCEEDED/91. No hubo migraciones,
+secretos modificados ni nuevos runners. Ciclo de actualización v1→v2 probado en
+loopback; no se realizó un despliegue cloud adicional solo para inducir una versión.
