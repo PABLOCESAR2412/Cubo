@@ -257,6 +257,12 @@ El menú de tres puntos de la cabecera concentra Renombrar chat, Fijar/Desfijar 
 
 Las métricas de tareas y actividad se derivan del historial disponible y explican su alcance. Costes, tokens, modelos y cuotas sin integración muestran indisponibilidad, nunca cifras inventadas. Agentes y proveedores reutilizan campos y estados del sistema, con acciones pendientes deshabilitadas. Nueva tarea separa el formulario futuro de IA de la validación durable existente mediante un desplegable.
 
+### Instalación y actualización PWA
+
+El aviso de actualización es una superficie compacta fija en la esquina inferior derecha, con fondo de superficie, borde neutral y texto claro. Usa radio de 12px, padding de 14px, separación de 12px y margen de 18px al borde; su ancho máximo es el viewport menos 28px. Hasta 767px reduce margen a 14px, padding a 12px y separación a 9px. El icono SVG, título y contexto acompañan la acción lima Actualizar y el control de cierre con nombre accesible. Anuncia disponibilidad mediante `role="status"`; los errores usan `role="alert"`.
+
+Posponer retira el aviso y deja una acción secundaria compacta Actualizar en la barra global. Actualizar abre una confirmación nativa antes de recargar y recuerda guardar borradores. Instalar aparece en la barra únicamente cuando el navegador ofrece la instalación; Ajustes → Apariencia conserva la guía para buscar la opción en el navegador. Estos controles reutilizan la paleta, el foco y los estados de los botones existentes; no cambian el shell ni reservan una columna adicional.
+
 ### Proyectos y contexto
 
 El listado reúne nombre y repositorio a la izquierda; contador de chats, fecha y Abrir proyecto a la derecha, con separación de 14px y texto secundario de 12px. En móvil la metadata ocupa una fila propia y permite salto de línea. Las URLs largas pueden partir palabras para conservar el ancho disponible. Nuevo proyecto abre un formulario dentro del módulo, con nombre y URL opcional; esta se presenta como referencia, sin prometer importación de GitHub.

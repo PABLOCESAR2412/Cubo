@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Icon, type IconName } from "./Icon";
 import { NewTask } from "./NewTask";
 import { Analytics, Chat, Projects, Settings } from "./PreparedViews";
+import { PwaControls } from "./PwaControls";
 import { Tasks } from "./Tasks";
 import { AppShell, Sidebar, TopBar } from "./ui";
 import { labels, requestApi, taskIdFromHash, time, useWorkspace } from "./workspace";
@@ -179,6 +180,7 @@ export default function App() {
           </span>
         </div>
         <div className="systembar-status">
+          <PwaControls />
           <span
             className={
               w.online && w.lastSync && !w.pollError ? "system-dot" : "system-dot inactive"

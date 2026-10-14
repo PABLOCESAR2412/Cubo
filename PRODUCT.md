@@ -35,6 +35,9 @@ aislados por proyecto, historial aislado por chat. Ver [PLAN.md](PLAN.md).
 Base de proyectos implementada: creación/listado, instrucciones/memoria manual y
 chats propios. URL GitHub guardada como referencia; importación y conexión pendientes.
 Ver [docs/projects.md](docs/projects.md) para el alcance verificable.
+PWA muestra instalación cuando el navegador la ofrece y actualizaciones de assets
+publicados con recarga confirmada. Ver [docs/pwa.md](docs/pwa.md). No compara commits
+no desplegados ni detiene tareas remotas al actualizar la interfaz.
 Groq con Q; no Grok. Modelos/cuentas gratuitas o suscripciones requieren verificar
 compatibilidad y condiciones antes de habilitarse. Sin registro público; conservar
 acceso privado existente. Analíticas, modo claro y herramientas avanzadas siguen

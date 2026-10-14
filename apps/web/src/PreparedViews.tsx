@@ -231,6 +231,12 @@ export function Settings({ w }: { w: Workspace }) {
             </label>
           </div>
           <p className="hint">Paleta aprobada conservada. Preferencias persistentes pendientes.</p>
+          <h3>Instalación de Cubo</h3>
+          <p className="hint">
+            Usa Instalar cuando aparezca en la barra superior. Si no aparece, busca Instalar
+            aplicación o Añadir a la pantalla de inicio en el menú del navegador. La disponibilidad
+            depende del navegador.
+          </p>
         </SectionCard>
       ) : tab === "Skills" ? (
         <SectionCard title="Skills disponibles">

@@ -64,6 +64,7 @@ las tareas quedan en cola con un motivo explícito; no se simula ejecución clou
 - [Alcance funcional objetivo y roadmap](docs/functional-scope.md).
 - [Plan actual por verticales](PLAN.md).
 - [Proyectos y chats asociados](docs/projects.md).
+- [Instalación PWA y botón de actualización](docs/pwa.md).
 - [Arquitectura durable](docs/architecture.md).
 - [Configuración cloud y credenciales](docs/cloud-setup.md).
 - [Política de coste cero](docs/cost-policy.md).

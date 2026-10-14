@@ -21,6 +21,11 @@ Implementada y validada localmente. Publicación registrada en MEMORY.md al cier
 - Refinar burbujas, compositor y estados de foco con el sistema visual actual.
 - Verificar gestión real y responsive; no simular inferencia ni proyectos creados.
 
+Ampliación solicitada: instalación PWA y aviso de nueva versión publicada, botón
+Actualizar, recarga confirmada y tareas remotas conservadas. Implementado y probado
+con dos service workers reales; ver docs/pwa.md. La importación GitHub sigue siendo
+el siguiente trabajo funcional de Proyectos.
+
 ## Siguiente vertical: proyectos y chats asociados
 
 Base implementada: creación/listado D1, detalle, instrucciones y memoria manual,

@@ -209,6 +209,20 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   Chat anterior, cinco vistas, PWA, móvil y API privada (incluido projects 401) pasan.
   Demo anterior SUCCEEDED/91 conservada; sin nuevos runners o secretos modificados.
 
+## Instalación y actualizaciones PWA
+
+- Registro SW único con onNeedRefresh y botón Actualizar: activa versión publicada
+  y recarga tras confirmación; posponer mantiene botón en topbar. Borradores no
+  confirmados deben guardarse antes. Tareas remotas no se cancelan.
+- Comprobar al volver online/foco/visibilidad y cada 5 minutos visible/online.
+  No consultar GitHub; commits no desplegados no son actualizaciones del cliente.
+- Instalar usa beforeinstallprompt cuando existe. Guía alternativa en Ajustes.
+  Prueba SW real v1→v2 pasa; instalación solo prueba de evento sintético, no en
+  dispositivo real. Proxy QA gzip corregido; frontend no era la causa del fallo.
+- 1440/390 sin overflow. Tests 20/87, lint, typecheck y build pasan.
+  docs/pwa.md documenta que ventanas antiguas necesitan cerrarse/reabrirse una vez.
+  Backend/motor sin cambios; importación GitHub continúa pendiente.
+
 ## Mantenimiento
 
 Leer al iniciar sesión y actualizar solo decisiones, hitos, bloqueos o pendientes
