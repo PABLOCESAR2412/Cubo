@@ -235,3 +235,14 @@ UI publicada en cubo-dev por instrucción explícita del usuario el 2026-10-13;
 cinco módulos, móvil, PWA y recuperación del resultado existente comprobados.
 Chat persistente publicado y comprobado en cloud: cierre del cliente y recuperación
 de mensajes en otro navegador. Inferencia y sesiones de agentes aún no implementadas.
+
+Iteración actual por petición posterior: diagnóstico reúne estado técnico; inicio
+en Proyectos, tarjetas con acciones reales y Recientes solo chats agrupados. Chat
+se abre desde proyecto/recientes, sin pestaña ni historial duplicado. Paleta intacta.
+Ver [docs/workspace-project-flow.md](docs/workspace-project-flow.md).
+OpenRouter de texto gratuito implementado localmente; aceptación real pendiente de
+clave introducida por el usuario en la PWA. No confundirlo con Codex/OpenCode o
+herramientas. Contexto congelado por turno y clave cifrada por proyecto; sin fallback
+pago ni reinvocación automática tras entrega incierta. Cancelación revoca callbacks
+y solo marca CANCELLED tras confirmar ausencia de despacho o fin remoto.
+Ver [docs/openrouter-chat.md](docs/openrouter-chat.md). No solicitar claves por chat.

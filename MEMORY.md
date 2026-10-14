@@ -1,266 +1,138 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-14, importación pública GitHub validada en cloud; acceso privado pendiente de deploy key.
+Actualizado: 2026-10-14. Nueva UI centrada en proyectos y OpenRouter de texto
+implementados localmente; publicación y aceptación real de inferencia pendientes.
 
-Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
-funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
-motor durable, UI, Chat, Proyectos/GitHub, agentes, aprobaciones Git, memoria,
-proveedores, notificaciones y analíticas/cuotas. Una ejecución activa global,
-cancelación completa y métricas exact/estimated/stale/unavailable son requisitos
-objetivo, no capacidades implementadas. Chat persistente ya entregado;
-inferencia y sesiones de agentes siguen pendientes.
-Mantener USD 0, aislamiento y aprobación Git como reglas transversales; conservar
-motor validado. El alcance no equivale a capacidades implementadas.
+## Autoridad
 
-## Autoridad y decisiones
+Leer AGENTS.md, esta memoria y PLAN.md al iniciar. El alcance objetivo vive en
+docs/functional-scope.md; no equivale a funciones entregadas. Esta memoria describe
+el desarrollo de Cubo, no es la memoria funcional de proyectos ni concede aprobaciones.
 
-MEMORY.md comparte el estado de desarrollo entre Codex y OpenCode. AGENTS.md
-contiene las reglas principales. Esta memoria no concede permisos ni sustituye
-aprobaciones. La memoria de repositorios ejecutados por Cubo es una función futura separada.
+El usuario autorizó commit, push y deploy del trabajo de desarrollo de Cubo.
+Esto no autoriza acciones Git de las tareas ejecutadas por Cubo: commit, push y PR
+requieren aprobación registrada, vinculada al diff/destino exactos y ejecutada por
+el control plane. Esa integración Git de escritura sigue pendiente.
 
-- La tarea pertenece al backend y continúa sin una sesión del cliente.
-- MVP personal de un usuario. TypeScript, React/Vite PWA, Hono/Workers, D1 y Workflows.
-- Bun local, Biome, Tailwind y consola oscura compacta responsive.
-- Infraestructura USD 0: se descartaron Containers y Workers Paid. No activar servicios
-  pagos, R2, larger runners ni consumo adicional de Actions.
-- GitHub Actions con ubuntu-latest es el primer ExecutionBackend. TaskEngine usa la
-  interfaz independiente; agentes, modelos y skills son conceptos separados.
-- D1 conserva eventos, checkpoints y resultados pequeños de la primera demo.
-- Runners efímeros: checkpoint, WAITING_APPROVAL, terminar; aprobar crea una ejecución nueva.
-- Agentes futuros Codex/OpenCode; proveedores Gemini/Groq/NVIDIA contemplados mediante
-  contratos. No hay llamadas reales ni compatibilidad de modelos validada.
-- Commit, push y PR exigen aprobación explícita registrada por Cubo; no publicar
-  automáticamente el bootstrap. La aprobación de la demo solo autoriza continuar.
-- Mantener AGENTS.md y esta memoria como fuentes compartidas. Skills globales excepto Graphify local.
-- Elegir cuenta una vez al iniciar el proyecto; preguntar otra vez solo si cambia o falta.
-- Cloudflare personal pablocesar.t.g@gmail.com, account ID 6fcab192a8cc2a3458247ef5c8108a07.
-  simcod.ec es trabajo y nunca destino de Cubo.
-- Recursos autorizados únicamente cubo-dev* de desarrollo gratuitos. No producción,
-  DNS, dominios, otros proyectos ni eliminación de recursos existentes.
-- El primer despliegue debe incluir la vertical completa; no afirmar éxito cloud con pruebas locales.
+## Decisiones que se conservan
 
-## Implementado y validado localmente
+- PWA React/Vite/Tailwind, TypeScript, Bun local, Biome; Hono/Workers, D1,
+  Workflows y GitHub Actions estándar ubuntu-latest. Sin Containers, R2 ni Workers Paid.
+- Infraestructura USD 0. No planes pagos, larger runners, gasto adicional ni fallback
+  pago. GitHub mantiene presupuesto USD 0 con Stop usage y alertas verificados.
+- TaskEngine depende de ExecutionBackend; GitHubActionsExecutionBackend es la
+  implementación inicial. Agentes, proveedores y skills son conceptos separados.
+- Estado, eventos, checkpoints y resultados pequeños viven en D1, fuera del runner.
+  Cerrar el cliente no sostiene ni cancela la ejecución. Runner efímero.
+- Contexto, claves, APIs/MCPs y skills se autorizan por proyecto. Cada chat tiene
+  historial propio; no compartir conversaciones entre proyectos/chats automáticamente.
+- Mantener la paleta aprobada de seis tokens y el workspace de Telo. Refinar sobre
+  el shell existente, sin reescribir el motor por estética ni fabricar métricas.
+- Uso personal sin registro público. Conservar autenticación/autorización en URL pública.
 
-- Pasos 1–3: guía, skills, routing de desarrollo y memoria compartida.
-- Monorepo con web, api, shared, database, tasks, runner, agents y providers.
-- Contratos Task, TaskStatus, TaskEvent, Execution, Agent, Provider, Approval, Checkpoint, Project.
-- PWA, acceso personal, API de creación/consulta/continuación y demo determinista.
-- SQL D1, eventos, checkpoints versionados, aprobaciones de continuación y outbox.
-- TaskEngine con pasos durables y backend GitHub Actions sustituible.
-- Workflow Actions efímero, OIDC validado por repositorio/ref/workflow/run_id y callbacks idempotentes.
-- Guardia de gasto cero, cuota agotada en cola, reintento posterior sin fallback pago.
-- Comandos Bun implementados. Tests, lint, typecheck y build pasaron en validación local.
-- Prueba de navegador con D1 local: cerrar contexto, reabrir y recuperar tarea; móvil
-  sin overflow y shell PWA offline. No demuestra ejecución cloud.
-- Revisión UI detectó selección/detalle desincronizados y errores borrados por polling;
-  corregidos junto con anuncio accesible del estado. Reviewer confirmó cuatro fixes resueltos.
-  Validación final: 20 tests, 78 comprobaciones; lint, typecheck y build pasan.
-  Prueba cloud real de PWA/API/runner, cierre del cliente y recuperación también pasó.
-- README y docs/architecture.md, cost-policy.md, cloud-setup.md y validation.md describen el estado real.
-- DESIGN.md y .impeccable/design.json documentan tokens y patrones observados del diseño final.
+## Cuentas, recursos y comandos
 
-## Recursos y acceso verificados
-
-- Wrangler 4.149.0 local. OAuth personal aislado en ~/.config/cubo/cloudflare-personal;
-  invocar con XDG_CONFIG_HOME y account ID explícitos.
-- D1 cubo-dev-db creada y migrada local/remota:
+- Cloudflare personal pablocesar.t.g@gmail.com; account ID
+  6fcab192a8cc2a3458247ef5c8108a07. simcod.ec es trabajo y nunca destino de Cubo.
+- Perfil aislado: XDG_CONFIG_HOME=~/.config/cubo/cloudflare-personal. Verificar
+  identidad y account ID antes de mutaciones remotas; no volver a preguntar destino
+  mientras siga acordado. Solo recursos cubo-dev* de desarrollo/pruebas gratuitos.
+- Worker cubo-dev, Workflow cubo-dev-tasks; D1 cubo-dev-db:
   7b9b60fc-5255-42a3-835f-2ec0f05a393c.
-- Worker cubo-dev y Workflow cubo-dev-tasks desplegados con Static Assets y D1.
-  Versión vigente: 715b6ee7-a14d-4e4e-aaa6-e4cc1f0672b0.
-- URL activa https://cubo-dev.pctg.workers.dev. Workers Free confirmado en dashboard
-  personal: Gratuito, USD 0, Plan actual. Navegador personal conectado mediante perfil 2.
-- Usuario creó https://github.com/PABLOCESAR2412/Cubo.git privado.
-- Git local en main y origin configurado para ese repositorio. Usuario publicó el
-  bootstrap d4ffeb095da1abf1b128fdf057693830bbc814fb. Rediseño y correcciones cloud
-  publicados en a5c21ae por orden explícita del usuario para commit, push y deploy.
-  Workflow y runner incluidos. Archivo privado cubo-dev.secrets.json validado;
-  identidad, repo y workflow comprobados sin imprimir secretos. La publicación de
-  desarrollo no sustituye las aprobaciones de acciones de tareas ejecutadas por Cubo.
-  El conector GitHub no sustituye un PAT del Worker.
-- GitHub: presupuesto Actions USD 0, Stop usage Yes y alertas de uso incluido On
-  verificados por lectura de la cuenta. No se modificó facturación ni plan.
-- La cuenta mostró GitHub Pro con descuento USD 0; no asumir que su cuota coincide
-  necesariamente con GitHub Free. El bloqueo de uso adicional es obligatorio.
+- URL https://cubo-dev.pctg.workers.dev; repositorio privado PABLOCESAR2412/Cubo, main.
+  CUBO_URL de Actions verificado. No cambiar dominios, DNS, producción u otros proyectos.
+- Wrangler local 4.149.0. bun install/dev/test y bun run lint/typecheck/build/deploy.
+  build incluye dry-run, no demuestra continuidad cloud. deploy verifica identidad,
+  repo privado, workflow, guardia gratuita, secretos por nombre y migraciones.
+- Cuatro Secrets confirmados en Worker: GITHUB_TOKEN, OWNER_PASSWORD, SESSION_SECRET,
+  PROJECT_ENCRYPTION_KEY. El usuario configuró el último; no se leyó su valor ni se
+  modificaron secretos automáticamente. No rotar la maestra sin migrar ciphertext.
+- Archivo privado de acceso fuera del repo, en el perfil personal; no imprimir valores.
+  El conector GitHub devuelve 404; Git local/credenciales y Actions funcionan.
 
-## Prueba cloud y errores resueltos
+## Entregado y comprobado en cloud
 
-- CUBO_URL del repo configurado y verificado con la URL activa; sin ampliar el PAT.
-- Tarea aceptada: 6c644134-73f6-4648-b25d-77b381f9ea9a.
-- Ejecución: 6c644134-73f6-4648-b25d-77b381f9ea9a-1.
-- GitHub workflow_run_id: 38351620464; job ubuntu-latest completado con success.
-- Workflow Cloudflare: 6c644134-73f6-4648-b25d-77b381f9ea9a-1-dispatch-0, complete/success.
-- Browser de prueba cerrado completamente 05:29:21.903 UTC; runner reclamó la tarea
-  05:29:25.984 y guardó seis checkpoints después del cierre.
-- D1 conserva SUCCEEDED, progreso 6/6 y resultado {sum:91,steps:6}, fechado
-  05:30:30.205 UTC. Consulta SQL remota independiente confirma IDs, estado y resultado.
-- Browser nuevo abrió Cubo 05:30:37.947 UTC y recuperó la misma tarea/resultado.
-  API privada rechaza solicitudes sin sesión; PWA móvil y shell offline verificados.
-- Evidencia durable resumida en docs/cloud-validation.md. JSON/capturas locales en
-  artifacts/ quedan fuera de Git y no contienen credenciales.
-- Dos fallos del adaptador aparecieron solo en Workers: fetch guardado como método
-  causaba Illegal invocation; redirect:error no soportado. Corregidos con wrapper
-  de fetch y redirect:manual que rechaza 3xx. Regresiones añadidas; tareas fallidas preservadas.
-- Hook global Stop Impeccable usaba sintaxis Unix en Windows y devolvía 1 antes del
-  motor. Wrapper Windows conserva códigos y pasa pruebas PowerShell/cmd con 0;
-  también corregido PostToolUse. Backup y evidencia en docs/hook-incident.md.
-  No se alteraron hashes de confianza; cierre automático final depende del host.
+- Motor durable demostrativo, OIDC por repo/ref/workflow/run_id, callbacks
+  idempotentes, checkpoints, outbox y cuota agotada en cola sin fallback pago.
+- Prueba base: tarea 6c644134-73f6-4648-b25d-77b381f9ea9a, run 38351620464,
+  seis checkpoints posteriores al cierre del navegador, SUCCEEDED y {sum:91,steps:6}.
+  Recuperada desde navegador nuevo; ver docs/cloud-validation.md.
+- Chat persistente: crear, renombrar, fijar, eliminar, copiar/exportar y recuperar
+  mensajes tras cerrar el cliente. Hasta esta iteración solo guardaba mensajes de usuario.
+- Proyectos D1: nombre/repositorio opcional, instrucciones y memoria manual,
+  conversaciones con project_id inmutable. Chats anteriores conservados con NULL;
+  ocho accesos cruzados rechazados en aceptación previa. Ver docs/projects.md.
+- Importación pública GitHub real: tarea 690e3d24-be08-42f3-afc9-b1d4737d3a9a,
+  run 38594588505, SUCCEEDED 4/4. Cliente cerrado 16:02:05.525 UTC, runner conectado
+  16:02:22.773, resultado persistido 16:02:28.341. SHA Hello-World
+  7fd1a60b01f91b314f59955a4e4d4e80d8edf11d y README recuperados en 1440/390 px.
+  D1 confirma task_id, run, proyecto, estado y resultado. Demo 91 conservada.
+- SSH por proyecto: par Ed25519 válido OpenSSH, privada AES-GCM/AAD cifrada, pública
+  únicamente en API del propietario. Cifrado cloud y generación idempotente probados;
+  dueño sin OIDC no obtiene credenciales del runner. Importación privada pendiente.
+- Proyecto SSH 4e7f8f3e-dff2-4d84-9275-7d7e547459d7 espera que el usuario añada
+  la deploy key pública de solo lectura en GitHub. No asumir que ya lo hizo.
+- PWA: instalación cuando el navegador ofrece beforeinstallprompt, guía alternativa,
+  aviso y botón de actualización de assets publicados, recarga confirmada. Ciclo SW
+  real v1/v2 probado en loopback; instalación física aún no validada.
+- CSP/headers publicados, SW y shell offline comprobados, API privada 401 y
+  recuperación de importación sin violaciones CSP. Estilos inline permitidos para barras.
+- Último código publicado antes de esta iteración: b821214, documentación a5a6009.
+  Worker vigente antes del siguiente deploy: 715b6ee7-a14d-4e4e-aaa6-e4cc1f0672b0.
 
-## Estado entregado y próximos pasos
+## Iteración actual, todavía local
 
-- Shell Telo y paleta Cubo aprobados. Barra 42px, sidebar 208px, cinco módulos,
-  Chat con scroll propio/compositor inferior, Tareas con proceso abierto a petición.
-  Componentes compartidos en ui.tsx; legacy #task_id recupera Tareas correctamente.
-- Chat persistente D1 con renombrar, fijar, eliminar, copiar y exportar. Migración
-  0002 aditiva, idempotencia y CAS; inferencia unavailable. Ver docs/chat.md.
-- Pruebas cloud de Chat: cierre completo, recuperación móvil, gestión, exportación,
-  eliminación y rechazos por conflicto/origen/token pasan. API sin sesión 401.
-  Demo durable previa SUCCEEDED/91 conservada; no se ejecutaron agentes reales.
-- Deploy comprueba identidad, recursos gratuitos, secretos existentes por nombre
-  y migraciones; no reescribe credenciales. Ver docs/ui-refinement.md para versión.
-- Proyectos persisten registros, instrucciones, memoria manual y chats vinculados.
-  Proveedores, importación GitHub, MCPs, APIs y skills del proyecto pendientes.
-  Analíticas solo usa tareas reales. Seguir PLAN.md y docs/projects.md.
-- Pausa/aprobación/nuevo runner probados localmente; aceptación cloud pendiente.
-  Cierre completo del cliente probado; apagado físico de dispositivos no probado.
-- Metadata de 10px conservada como deuda de legibilidad, no norma de diseño.
+- Por petición posterior: Diagnóstico sustituye breadcrumb, hora y ajustes del topbar;
+  reúne API/cloud/Actions/presupuesto. Sidebar Nuevo proyecto, Recientes solo chats
+  agrupados, sin horas. Chat no figura en navegación; abre desde proyecto o recientes.
+- Proyectos inicia en listado de tarjetas con abrir/editar/renombrar reales.
+  Fuente de instrucciones/memoria desde AGENTS.md/CLAUDE.md y MEMORY.md de la raíz;
+  campos adicionales manuales no se sobrescriben. No hay aprendizaje automático.
+- Documentos de contexto hasta 64 KiB se escanean y pueden guardarse como extractos
+  de 4000 caracteres señalados. Clone público local de openai/openai-agents-python,
+  SHA 2938d87a2837537138dc7839003317a27ed3441f, recuperó AGENTS.md con esa marca.
+  La primera sonda openai/codex no tenía AGENTS.md raíz; no era fallo del importador.
+- Usuario eligió OpenRouter, solo modelos gratuitos. Adaptador de API de texto,
+  clave AES-GCM por proyecto, catálogo verificado, sin plugins ni fallback pago.
+  No equivale a Codex/OpenCode. GET /key muestra solo cuotas recibidas, fecha/calidad;
+  nunca convertir saldo en llamadas. UI marca datos stale tras cinco minutos.
+- CHAT_TURN crea usuario/tarea/contexto congelado atómicamente, usa el backend
+  efímero existente y guarda respuesta/uso. Contexto solo del proyecto y chat actual.
+  Entrega de solicitud/clave una vez; no reinvocar automáticamente tras incertidumbre.
+- Cancelación añade ledger de intención y solicitud durable. Revoca callbacks;
+  confirma CANCELLED solo sin despacho posible o tras estado remoto terminal.
+  Workflow/cron reconcilian; un fallo remoto conserva cancelación sin confirmar.
+- Migración 0005 aditiva aún sin aplicar en cloud. Conserva mensajes viejos como
+  user. Legacy writers inicializan intención conservadora; nuevos writers la ponen 0.
+  Runner compatible detecta protocolo 2; publicar runner primero y Worker después.
+  No hacer rollback a lectores que confundan roles o ignoren project_id.
+- 29 tests/168 comprobaciones, lint/typecheck/build pasan. QA local 1440/390:
+  tarjetas, edición, chat real guardado/fijado, cierre y recuperación, diagnóstico,
+  metadata real del catálogo; sin overflow ni errores JS. Inferencia aún no probada.
+- Ver docs/workspace-project-flow.md y docs/openrouter-chat.md. Falta finish reviewer,
+  documenter, commit/push/deploy, prueba cloud de cancelación y clave manual para
+  aceptar un turno real OpenRouter con cliente cerrado. No pedir claves por chat.
 
-## Refinamiento visual del 2026-10-14
+## Límites y próximos hitos
 
-- Segunda pasada sobre el shell aprobado, sin cambiar paleta ni backend.
-  Sidebar con acción primaria sólida, recientes y contadores más claros;
-  Chat con cabecera, burbujas y compositor refinados; Tareas con filas compactas
-  y bloque derecho alineado de ID, actualización, progreso y acción.
-- Chat desplaza los mensajes nuevos al final. Esfuerzo/modelos/agentes continúan
-  pendientes; no se simulan respuestas. Ver docs/ui-refinement.md.
-- 25 capturas en 1440×900 y 390×844, sin overflow horizontal. Chat D1 local
-  recuperado tras cerrar cliente; tareas cloud consultadas sin nuevos runners.
-  Reviewer final: ship, sin correcciones materiales. Paleta: seis tokens intactos.
-- Tests 20/85, lint, typecheck y build pasan. Commit 489f660 en main;
-  Worker cubo-dev versión b68049fd-b364-49bf-a78a-cfb7beaf2504, cuenta personal.
-  Bundle index-CrMG5Lq1.js comprobado, cinco módulos, móvil, PWA y API privada 401.
-  Tarea anterior SUCCEEDED/91 conservada; Chat D1 cloud recuperado tras cerrar
-  cliente y registro de prueba eliminado. Sin nuevos runners, migraciones o secretos.
-  Primer intento de deploy falló por ConnectionRefused en GitHub antes de mutar
-  Cloudflare; segundo intento completo correcto, sin cambiar código ni credenciales.
+- Codex/OpenCode, planner, herramientas remotas, skills/MCPs/APIs de agentes,
+  diff/aprobaciones Git, memoria aprendida, otros proveedores y notificaciones pendientes.
+  Router general de agentes/proveedores/skills/permisos sigue design-only.
+- Checkpoints/resultados pequeños en D1; sin artefactos grandes. Importador acota
+  inventario/textos y filtra patrones conocidos; no es detector universal de secretos.
+- Engine sondea unos 15 minutos; jobs de 10 minutos. Cuota Actions reintenta después
+  de 24 horas o acción explícita; no inventar fecha exacta de renovación.
+- Pausa/aprobación/nuevo runner probados localmente, aceptación cloud pendiente.
+  Cierre del cliente probado; apagado físico de dispositivos no probado.
+- No garantizar cancelación del cómputo interno de un proveedor de modelos; sí
+  detener runner, bloquear callbacks tardíos y no mostrar confirmación sin evidencia.
+- No eliminar proyectos con conexión/historial sin archivado, todavía pendiente.
+- Caveman/ponytail globales; Graphify skill/runtime local graphifyy 0.9.88. Definir
+  GRAPHIFY_NO_AUTO_REFRESH=1; su CLI puede modificar skills globales. No hay grafo
+  generado ni CodeGraphContext. Ponytail no hace poda automática del contexto.
+- Hook Impeccable Windows Stop/PostToolUse corregido; evidencia en docs/hook-incident.md.
+  No reescribir confianza global. Metadata 10px sigue como deuda, no norma de diseño.
 
-## Límites y funcionalidades pendientes
+Actualizar esta instantánea al cerrar hitos; conservar decisiones y bloqueos,
+no acumular un log de comandos ni memorias divergentes por agente.
 
-- Primera demo calcula sumas de cuadrados; Codex/OpenCode todavía no ejecutan tareas.
-- Router general de agentes/proveedores/skills/proyectos/permisos sigue design-only.
-- Pendientes: integración de proyectos GitHub, planner, agentes, diff, permisos de
-  commit/push/PR, notificaciones y aprendizaje/importación automáticos de memoria.
-  La memoria manual por proyecto ya está implementada.
-- Checkpoints/resultados pequeños viven en D1; no hay almacenamiento de artefactos grandes.
-- El motor limita sondeo de cada ejecución a unos 15 minutos; la demo usa jobs de 10 minutos.
-- Cuota agotada reintenta tras 24 horas o acción del propietario; no conoce fecha exacta de renovación.
-- Graphify local graphifyy 0.9.88 en .tools/graphify/.venv. Definir
-  GRAPHIFY_NO_AUTO_REFRESH=1 siempre. Su CLI puede actualizar skills globales.
-- Copia global anterior de Graphify restaurada tras actualización inicial accidental;
-  usar exclusivamente skill/runtime locales. No hay grafo generado ni CodeGraphContext.
-- Ponytail simplifica trabajo; no es un sistema automático de poda del contexto.
-
-## Alcance aclarado y siguiente vertical: 2026-10-14
-
-- Diseño actual y paleta aprobados: refinar Chat con interacciones de ChatGPT/Claude,
-  conservar shell y motor. PLAN.md registra secuencia, dependencias y aceptación.
-- Proyecto con nombre y repositorio opcional primero; chats y tareas asociados
-  después. Base de proyectos y chats implementada; importación pendiente. No perder chats existentes
-  al asociarlos ni compartir historial entre chats automáticamente.
-- APIs, MCPs, skills, variables, archivos y memoria autorizados por proyecto;
-  agentes/subagentes reciben solo contexto y permisos de su ejecución.
-  Compartir entre proyectos/chats queda fuera de alcance. Mantener acceso privado.
-- Groq con Q confirmado; Grok/xAI fue interpretación errónea. OpenCode Zen/Go,
-  cuentas ChatGPT/Codex, Google y Claude requieren compatibilidad y condiciones
-  verificadas. Herramientas remotas/multimedia y orquestación son capacidades futuras.
-- Analíticas 7/30/90/rango, modo claro, almacenamiento visible y versiones semánticas
-  registrados como objetivo. No inventar cuotas ni acceso gratis a APIs.
-- La iteración de acciones directas de Chat conservó endpoints existentes.
-  La ampliación posterior añade proyectos D1 y scope de conversaciones, sin proveedores.
-- Menú Acciones del chat: renombrar, fijar/desfijar y eliminar con confirmación;
-  cierre por Escape y salida de foco. Burbujas/compositor refinados sin cambiar
-  tokens de paleta. Layout flexible corrige recorte del compositor con avisos.
-- QA local: gestión desde menú, recuperación tras cerrar cliente, borrado del
-  registro de prueba, menú y compositor dentro de 390px con aviso activo; escritorio
-  1440px, cinco módulos y sin overflow. Reviewer ship, sin correcciones pendientes.
-  20 tests/85, lint, typecheck y build pasan. Commit 08b0581 en main;
-  Worker b94e3e55-2d74-4c4a-a859-bb4653c628ca, cubo-dev personal.
-  Bundle index-C1TF_vXu.js comprobado; PWA, móvil, cinco vistas y API privada pasan.
-  Menú y gestión de Chat probados en D1 cloud, cierre/reapertura y borrado del
-  registro propio; demo previa SUCCEEDED/91. Sin runners nuevos ni cambios de secretos.
-
-## Base de proyectos y chats asociados
-
-- Migración aditiva 0003: projects y conversations.project_id NULL para chats
-  anteriores. FK y trigger impiden reasignación; borrado de proyecto con chats bloqueado.
-- Crear/listar/detalle, nombre y URL GitHub opcional, instrucciones y memoria manual,
-  chats del proyecto y recuperación por URL implementados. No clona repositorios.
-- API autenticada y scope SQL obligatorio en consultas/mutaciones de Chat;
-  sin project= solo se accede a chats anteriores. No compartir historiales.
-  La sesión del propietario administra todos los proyectos; permisos de runner pendientes.
-- D1 local: dos proyectos/contextos distintos, chats, ocho accesos cruzados rechazados,
-  cliente cerrado y recuperación móvil; chats anteriores intactos. 1440/390 sin overflow.
-  Tests 20/86, lint, typecheck y build pasan; motor sin cambios, ningún runner nuevo.
-- Importación SSH/GitHub, secretos cifrados, herramientas y tareas por proyecto
-  pendientes. docs/projects.md define compatibilidad y rollback sin borrar datos.
-- Commit 3db24b3 publicado; migración 0003 aplicada a cubo-dev-db personal.
-  Worker a21025b3-ca79-49ab-bb0f-23c2a1afb21f; bundle index-d1baOXPe.js comprobado.
-  Prueba D1 cloud confirma dos proyectos, contextos/chats aislados, ocho rechazos
-  de scope, cierre y recuperación. Registros propios borrados; anteriores intactos.
-  Chat anterior, cinco vistas, PWA, móvil y API privada (incluido projects 401) pasan.
-  Demo anterior SUCCEEDED/91 conservada; sin nuevos runners o secretos modificados.
-
-## Instalación y actualizaciones PWA
-
-- Registro SW único con onNeedRefresh y botón Actualizar: activa versión publicada
-  y recarga tras confirmación; posponer mantiene botón en topbar. Borradores no
-  confirmados deben guardarse antes. Tareas remotas no se cancelan.
-- Comprobar al volver online/foco/visibilidad y cada 5 minutos visible/online.
-  No consultar GitHub; commits no desplegados no son actualizaciones del cliente.
-- Instalar usa beforeinstallprompt cuando existe. Guía alternativa en Ajustes.
-  Prueba SW real v1→v2 pasa; instalación solo prueba de evento sintético, no en
-  dispositivo real. Proxy QA gzip corregido; frontend no era la causa del fallo.
-- 1440/390 sin overflow. Tests 20/87, lint, typecheck y build pasan.
-  docs/pwa.md documenta que ventanas antiguas necesitan cerrarse/reabrirse una vez.
-  Backend/motor sin cambios; importación GitHub continúa pendiente.
-- Commit c99fa84 en main, cubo-dev personal versión
-  4edfee3f-544e-426d-8f64-dcab50670c51. Bundle index-Ksojf9oq.js comprobado.
-  Cloud: guía en Ajustes, SW registrado y servido 200/text/javascript con
-  max-age=0/must-revalidate; cinco vistas, móvil, PWA y API privada pasan.
-  Demo SUCCEEDED/91 preservada, sin runners nuevos ni secretos cambiados.
-  Ciclo v1→v2 validado en loopback; no se provocó otro deploy cloud solo para probarlo.
-
-## Importación GitHub en curso
-
-- Nuevo tipo REPOSITORY_IMPORT usa el motor existente y GitHub Actions. Cuatro
-  checkpoints, revisión fija, inventario y textos acotados en D1 por proyecto.
-  No ejecuta agentes ni scripts del repositorio; memoria manual separada.
-- Migración aditiva 0004 y slot global; jobs serializados, contendientes QUEUED.
-  Runner Node 24 comprobado mediante clone público real, SHA de Hello-World
-  7fd1a60b01f91b314f59955a4e4d4e80d8edf11d. No es prueba cloud.
-- Claves Ed25519 por proyecto, privadas AES-GCM con AAD proyecto/clave. OpenSSH
-  y aislamiento comprobados; ninguna privada se devuelve a la UI.
-- Usuario configuró PROJECT_ENCRYPTION_KEY como Secret en cubo-dev; Wrangler
-  confirmó su nombre. No se leyó el valor ni se modificaron secretos automáticamente.
-- 24 tests/114 comprobaciones, tipos y build pasan. UI 1440/390 sin overflow;
-  Ver proceso desde proyecto abre el inspector. Importación pública cloud pasa:
-  tarea 690e3d24-be08-42f3-afc9-b1d4737d3a9a, run 38594588505, SUCCEEDED 4/4.
-  Cliente cerrado 16:02:05.525 UTC; runner conectado 16:02:22.773 UTC y resultado
-  persistido 16:02:28.341 UTC. D1 confirma run, proyecto y resultado; reapertura
-  escritorio/móvil recupera README. Demo anterior SUCCEEDED/91 preservada.
-- Commit 7989798 publicado y Worker fce538cf-68d7-49a0-bb7d-21a230bcf47e.
-  Cifrado real en cloud y clave pública idempotente comprobados; propietario no
-  accede al endpoint privado del runner. Proyecto SSH 4e7f8f3e-dff2-4d84-9275-7d7e547459d7
-  espera que usuario añada deploy key de lectura. No lanzar importación privada
-  antes de confirmar; ver docs/repository-import.md. Agentes continúan pendientes.
-- QA detectó HTML sin CSP: corregido y publicado en b821214; Worker actual
-  715b6ee7-a14d-4e4e-aaa6-e4cc1f0672b0. CSP real, PWA/SW, shell offline,
-  recuperación de importación y aislamiento de snapshots pasan sin nuevos runners.
-  Cuatro secretos conservados; D1 confirma privada cifrada, sin devolver su valor.
-  Política solo permite scripts del origen; estilos inline necesarios para barras.
-- Publicar workflow/runner antes de Worker; no hacer rollback a código que ignore
-  importaciones o aislamiento. Rotación de claves y archivado aún no implementados.
-
-## Mantenimiento de la memoria
-
-Leer al iniciar sesión y actualizar solo decisiones, hitos, bloqueos o pendientes
-duraderos. Reemplazar estado obsoleto; no acumular comandos, secretos ni logs completos.

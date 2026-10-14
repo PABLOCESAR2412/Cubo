@@ -1,75 +1,115 @@
 # Workspace de Cubo
 
-Modo: Operate. Rediseño estructural aprobado por el usuario el 2026-10-13.
-Referencias: las siete capturas de Telo en capturas referencia/.
+Actualizado: 2026-10-14. Refinamiento local del workspace aprobado, con paleta
+intacta. Telo sigue siendo referencia directa de arquitectura, proporciones,
+densidad y comportamiento. Ver [comparación](telo-interface-comparison.md),
+[flujo actual](workspace-project-flow.md) y [sistema visual](../DESIGN.md).
 
-## Direction contract
+## Dirección conservada
 
-THESIS: Cubo es un lugar de trabajo persistente. La navegación y el estado operativo sustituyen a la pantalla centrada en una demo.
-OWN-WORLD: Conservar íntegramente carbón #101416, superficie #171d20, lima #d9ed91, texto y bordes de Cubo. Geist local, controles compactos, superficies planas, iconos geométricos y separadores finos.
-STORY: Entrar al workspace, filtrar ejecuciones reales, inspeccionar progreso y logs, revisar resultados y aprobar una continuación. Las integraciones futuras son visibles sin aparentar actividad inexistente.
-FIRST VIEWPORT: Barra global de 42px a todo el ancho. Sidebar de 208px debajo, cinco módulos, recientes y estado cloud. Chat ocupa todo el pane con cabecera compacta, conversación desplazable y compositor inferior; el historial no crea otra columna permanente. Tareas tiene tres métricas y listado de ancho completo; el proceso se abre a petición.
-FORM: Las siete capturas de Telo son referencia directa de arquitectura, densidad, jerarquía y comportamiento, junto con el esquema obligatorio del usuario. Construcción mediante código, sin comp inventada. Preservar la paleta de Cubo y adaptar únicamente las verdades del backend cloud; no reinterpretar libremente la distribución.
-QUALITY BAR: Paleta intacta, selección y acciones corresponden al mismo task_id, todos los módulos navegan, pendientes claros, métricas derivadas solo de tareas reales, sidebar accesible en móvil y controles sin desbordamientos.
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
+Cubo es una consola de trabajo persistido: carbón, superficie gris fría, acento
+lima, Geist local, controles compactos, bordes finos y superficies planas.
+El estado pertenece al backend y la UI muestra datos persistidos y capacidades
+disponibles. Una captura o una función implementada no sustituyen su aceptación cloud.
 
-## Alcance confirmado
+El shell conserva barra de 42px, sidebar de 208px y contenido flexible. Hasta
+767px, la navegación abre un diálogo lateral de 230px. Los módulos usan padding
+de 22px 28px 28px, reducido a 20px 14px 24px en móvil. La paleta y los tokens
+normativos existentes de DESIGN.md se conservan.
 
-El rediseño original fue solo UI. La vertical posterior de proyectos añade D1 y
-rutas de contexto/chats asociados; conserva motor durable y backend de ejecución.
-Telo es referencia directa, no inspiración libre. La paleta de Cubo no cambia.
-Conexiones sin backend permanecen explícitamente pendientes/deshabilitadas.
+## Composición actual
 
-Chat conserva crear, abrir, renombrar, fijar, eliminar, guardar mensajes, copiar y
-exportar. No hay respuestas de IA, modelos conectados ni acciones de agentes
-simuladas. Tareas usa estados, eventos, checkpoints, aprobaciones y resultado reales.
-La validación durable sigue disponible dentro de Nueva tarea como operación
-secundaria; ejecutar instrucciones de agentes todavía está deshabilitado.
+La barra global reúne controles de instalación/actualización PWA y Diagnóstico,
+además del menú móvil. Se retiraron Cubo/módulo duplicados, hora y acceso de Ajustes
+de esta barra. Diagnóstico abre un diálogo nativo centrado que reúne sincronización
+API, última observación, disponibilidad de la API, configuración de GitHub Actions, presupuesto
+USD 0 y bloqueo de gasto. Explica que sincronización no demuestra cuota ni
+disponibilidad de runners.
 
-## Arquitectura visual actual
+La sidebar conserva marca Cubo y acción principal Nuevo proyecto. Navega a Tareas,
+Proyectos, Analíticas y Ajustes. Chat mantiene su ruta y se abre desde un proyecto
+o Recientes. Recientes solo muestra títulos de chats agrupados en Fijados, Hoy,
+Ayer, Últimos 7 días y Anteriores, sin tareas, horas ni captions por conversación.
+Su área desplaza internamente; Cerrar sesión queda al fondo.
 
-- TopBar global a todo el ancho; Sidebar estrecha debajo y workspace restante.
-- Chat con cabecera, mensajes propios a la derecha, conversación desplazable,
-  compositor inferior y configuración a la derecha. Historial mediante acción y
-  recientes, sin tercera columna permanente. Capacidades futuras preparadas.
-- Tareas: tres métricas, filtros, listado completo y proceso abierto a petición.
-- Proyectos: listado y creación reales, detalle con instrucciones/memoria manual
-  editables y chats propios. GitHub/importación, herramientas, secretos, archivos
-  y tareas del proyecto permanecen pendientes. Ver projects.md.
-- Analíticas: filtros, tres métricas, actividad real de tareas y distribución
-  por modelo vacía. Gasto y tokens unavailable, sin números inventados.
-- Ajustes: seis tabs; agentes y proveedores separados, con estado pendiente real.
-- En móvil: drawer nativo, paneles de ancho completo, métricas en una columna y
-  compositor usable. El footer cloud permanece visible; recientes desplaza su área.
+Proyectos es el inicio. Navegar a Proyectos o pulsar Cubo vuelve al listado.
+Las tarjetas compactas muestran nombre, repositorio y número real de chats;
+Abrir, Editar y Renombrar usan las operaciones persistentes existentes. La cuadrícula
+usa columnas automáticas desde 290px cuando caben, separación de 14px, padding de
+16px y radio de 10px. Nuevo proyecto abre el formulario y enfoca el nombre.
 
-AppShell, Sidebar, TopBar, PageHeader, StatusBadge, MetricCard, SectionCard, Tabs,
-EmptyState, TaskRow, ProjectRow, AgentBadge, ProviderCard, ChatComposer, ProcessEvent
-y RightPanel comparten implementación y estilos en ui.tsx y style.css.
+El detalle conserva resumen, repositorio y acceso SSH, importación por revisión,
+archivos de solo lectura, chats y contexto editable. Instrucciones del repositorio
+identifica AGENTS.md o CLAUDE.md de la raíz; Memoria del repositorio identifica
+MEMORY.md. Ambos explicitan revisión, extracto o ausencia. Las instrucciones y
+memoria manual adicionales se guardan por separado. No hay aprendizaje automático
+de memoria. La aceptación pública cloud y la privada pendiente se describen en
+[importación de repositorios](repository-import.md).
 
-## Comparación y validación
+Chat ocupa el panel completo con cabecera, origen del proyecto, conversación
+desplazable y compositor inferior. No añade ventana Historial ni columna de
+conversaciones. Conserva renombrar, fijar, eliminar, copiar y exportar. El rol
+persistido determina Tú a la derecha y Asistente a la izquierda; las capturas
+actuales no contienen respuestas ficticias de un modelo. El selector obtiene
+modelos del catálogo API. Proveedor pendiente, Sin herramientas y los estados de
+turno expresan la capacidad disponible. Configuración abre a petición y ocupa
+todo el ancho en móvil.
 
-La revisión comparó las siete referencias con 25 capturas en 1440×900 y 390×844,
-incluidos paneles y zonas inferiores. Ver
-[comparación vista por vista](telo-interface-comparison.md).
-Los mensajes de Chat están guardados en D1 local; las tareas se consultaron en
-cloud por GET autenticado. No se lanzaron ejecuciones remotas para esta revisión.
+El panel Proveedor del proyecto permite configurar OpenRouter desde la PWA con
+un campo de contraseña. La integración de texto gratuito está implementada
+localmente; agentes, herramientas y escritura Git siguen pendientes. Sin clave,
+Chat permite guardar mensajes y muestra el proveedor pendiente. Con configuración
+válida, el código ofrece Enviar y turnos persistidos. La aceptación real de
+inferencia sigue pendiente de una clave introducida por el usuario; no se solicitan
+claves por chat. Ver [alcance y recuperación](openrouter-chat.md).
 
-El reviewer confirmó la composición general y pidió centrar Nueva tarea. Tras
-margin:auto y recaptura, dio ship a la corrección. DESIGN.md y su sidecar describen
-el sistema final. La procedencia de los dos iconos PNG existentes está completa;
-no se añadieron imágenes de referencia como assets del producto.
+Tareas conserva tres métricas, filtros, registro completo e inspector a petición.
+Analíticas conserva actividad derivada de tareas y calidades de datos explícitas;
+no inventa gasto, tokens ni cuota. Ajustes mantiene agentes y proveedores separados.
+La validación durable existente permanece como operación secundaria en Nueva tarea.
 
-Paleta comprobada contra Git: seis tokens idénticos. Lint, typecheck, build y 20
-tests/85 comprobaciones pasan. D1/browser confirma persistencia de Chat y recuperación
-de tareas después de cerrar el cliente. Una regresión de enlaces antiguos #task_id
-se detectó y corrigió; sigue abriendo Tareas aunque el inicio general sea Chat.
-Móvil sin overflow y shell PWA offline comprobados. El motor cloud previo conserva
-su aceptación independiente en cloud-validation.md.
+## Evidencia de esta iteración
 
-La publicación de esta corrección usa la cuenta personal y cubo-dev, con la
-autorización existente para commit, push y deploy. Su versión y aceptación remota
-se registran al terminar en MEMORY.md.
+Las capturas finales están en `artifacts/`, en escritorio (1440px) y móvil (390px):
 
-Corrección publicada: fba6305, Worker 31e51af7-74f0-42df-ada1-ea28b058c0dc.
-La aceptación remota conserva resultado 91 de la tarea previa y operaciones de
-Chat, con cinco módulos, móvil y PWA comprobados. Sin nuevas integraciones backend.
+| Superficie | Escritorio | Móvil |
+| --- | --- | --- |
+| Proyectos | [Listado](../artifacts/workspace-projects-1440.png) | [Listado](../artifacts/workspace-projects-390.png) |
+| Proyecto | [Detalle](../artifacts/workspace-project-1440.png) | [Detalle](../artifacts/workspace-project-390.png) |
+| Chat | [Conversación](../artifacts/workspace-chat-1440.png) | [Conversación](../artifacts/workspace-chat-390.png) |
+| Proveedor | [OpenRouter](../artifacts/workspace-provider-1440.png) | [OpenRouter](../artifacts/workspace-provider-390.png) |
+| Diagnóstico | [Modal](../artifacts/workspace-diagnostics-1440.png) | [Modal](../artifacts/workspace-diagnostics-390.png) |
+| Recientes | — | [Navegación](../artifacts/workspace-recents-390.png) |
+
+Estas imágenes documentan datos reales de una D1 local aislada y operaciones
+de UI. Los mensajes introducidos para validar persistencia no son respuestas de
+un modelo. El catálogo público de OpenRouter se consultó realmente: se observaron
+15 modelos gratuitos, una cantidad que puede cambiar. El formulario se comprobó
+sin clave; no demuestra inferencia ni uso de credenciales reales.
+
+La revisión local cubrió tarjetas, renombrado y edición persistentes, chat guardado
+y fijado, cierre y recuperación, retorno al listado, diagnóstico y proveedor. El
+registro de QA informa ausencia de overflow y errores JavaScript. La validación
+de implementación de esta iteración informa lint, typecheck, build y 29 tests con
+166 assertions. El bundle revisado es `index-jb7_0pFr.js`, con CSS `index-DwGuiYYU.css`.
+Este pase documental no volvió a ejecutar pruebas ni publicó recursos.
+
+DESIGN.md y `.impeccable/design.json` describen la composición implementada y
+conservan los tokens aprobados. Los metadatos heredados de 10px, incluido Solo ruta,
+siguen documentados como deuda de legibilidad; no se convierten en regla para
+nuevas superficies. Las rampas de color del sidecar son muestras sintetizadas,
+no nuevos tokens de aplicación.
+
+## Límites de aceptación
+
+Esta iteración está implementada y revisada localmente. Publicación y aceptación
+real del turno OpenRouter con cierre/reapertura siguen pendientes. Las pruebas de
+proveedor usan fixtures identificadas y no prueban inferencia real. El renderizado
+de mensajes de asistente y métricas refleja soporte del código, no una ejecución
+real completada durante esta revisión.
+
+La publicación anterior de la UI y Chat persistente corresponde a `fba6305`, Worker
+`31e51af7-74f0-42df-ada1-ea28b058c0dc`. Su aceptación remota conserva resultado 91
+de la tarea previa y persistencia de Chat. La continuidad cloud del motor tiene
+evidencia independiente en [validación cloud](cloud-validation.md). Esas pruebas
+anteriores no validan automáticamente el nuevo proveedor ni esta composición local.

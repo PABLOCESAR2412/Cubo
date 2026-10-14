@@ -148,7 +148,16 @@ export function Settings({ w }: { w: Workspace }) {
             <h2>Proveedores</h2>
             <span className="hint">Servicios de modelos; independientes de los agentes.</span>
           </div>
-          {["OpenAI", "Gemini", "Groq", "NVIDIA"].map((name) => (
+          <SectionCard title="OpenRouter">
+            <p className="hint">
+              API de texto con modelos gratuitos. Conexión, clave cifrada y cuota se gestionan por
+              proyecto.
+            </p>
+            <a className="secondary compact" href="/?panel=provider#/proyectos">
+              Configurar en un proyecto
+            </a>
+          </SectionCard>
+          {["OpenCode Zen", "OpenAI", "Gemini", "Groq", "NVIDIA"].map((name) => (
             <ProviderCard name={name} kind="PROVEEDOR" key={name} />
           ))}
         </>

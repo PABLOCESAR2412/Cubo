@@ -1,8 +1,11 @@
+import { OpenRouterProvider, ProviderRequestError } from "../packages/providers/src/openrouter.ts";
 import { executeDemo } from "../packages/runner/src/demo.ts";
 import { importRepository } from "../packages/runner/src/repository-import.ts";
+import type { ChatTurnContext } from "../packages/shared/src/chat-turn.ts";
+import { isChatTurnInput } from "../packages/shared/src/chat-turn-safety.ts";
 import type { RunnerContext, RunnerUpdate } from "../packages/shared/src/index.ts";
 import type { RepositorySnapshot } from "../packages/shared/src/repository.ts";
-import { isImportInput } from "../packages/shared/src/repository-safety.ts";
+import { isImportInput, looksLikeSecret } from "../packages/shared/src/repository-safety.ts";
 
 async function main(): Promise<void> {
   const executionId = process.env.EXECUTION_ID ?? "";
@@ -50,6 +53,40 @@ async function main(): Promise<void> {
   }
   await request("claim", {});
   const context = (await (await request("context")).json()) as RunnerContext;
+  if (isChatTurnInput(context.task.input)) {
+    try {
+      const input = (await (await request("chat-request", {})).json()) as {
+        apiKey: string;
+        model: string;
+        context: ChatTurnContext;
+      };
+      console.log(`::add-mask::${input.apiKey}`);
+      console.log("Turno adquirido; solicitud al modelo gratuito.");
+      const output = await new OpenRouterProvider().complete(
+        input.apiKey,
+        input.model,
+        input.context.messages,
+      );
+      if (looksLikeSecret(output.content) || output.content.includes(input.apiKey))
+        throw new Error("Contenido sensible.");
+      await request("chat-result", output);
+      console.log("Respuesta y uso guardados en Cubo.");
+      return;
+    } catch (error) {
+      const allowed = [
+        "PROVIDER_QUOTA_EXHAUSTED",
+        "PROVIDER_CREDENTIAL_REJECTED",
+        "FREE_MODEL_REQUIRED",
+        "UNEXPECTED_PROVIDER_COST",
+      ];
+      const reason =
+        error instanceof ProviderRequestError && allowed.includes(error.reason)
+          ? error.reason
+          : "PROVIDER_REQUEST_FAILED";
+      await request("chat-error", { reason });
+      throw new Error("El turno no se completó; consulta Cubo.");
+    }
+  }
   if (isImportInput(context.task.input)) {
     const snapshot = (await (await request("import-checkpoint")).json()) as {
       snapshot: RepositorySnapshot | null;
@@ -60,10 +97,16 @@ async function main(): Promise<void> {
         .privateKey;
       for (const line of privateKey.trim().split("\n")) console.log(`::add-mask::${line}`);
     }
-    await importRepository(context.task.input, snapshot.snapshot, privateKey, async (update) => {
-      await request("import-progress", update);
-      console.log(`Etapa ${update.sequence} de importación guardada.`);
-    });
+    await importRepository(
+      context.task.input,
+      snapshot.snapshot,
+      privateKey,
+      async (update) => {
+        await request("import-progress", update);
+        console.log(`Etapa ${update.sequence} de importación guardada.`);
+      },
+      { contextDocuments: context.protocolVersion === 2 },
+    );
     return;
   }
   await executeDemo(

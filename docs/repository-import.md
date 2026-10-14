@@ -9,7 +9,10 @@ No ejecuta agentes, scripts del repositorio, instalación de dependencias ni acc
 de escritura en Git. La memoria manual del proyecto no se sobrescribe.
 
 El snapshot contiene SHA, inventario de hasta 100 rutas, hasta 12 textos de hasta
-4000 bytes y un resumen de hechos. No es análisis generado por un modelo. Archivos
+4000 caracteres y un resumen de hechos. Los documentos raíz AGENTS.md, CLAUDE.md y
+MEMORY.md tienen prioridad: se examinan hasta 64 KiB y se conservan extractos de
+4000 caracteres, marcados si se truncaron. El protocolo anterior conserva su límite
+de 4000 bytes. No es análisis generado por un modelo. Archivos
 grandes, binarios, symlinks, submódulos y rutas sensibles se excluyen. El filtro de
 patrones conocidos reduce exposición de secretos; no constituye un detector universal.
 El escaneo requerido para futuras operaciones Git sigue pendiente.

@@ -15,7 +15,8 @@ Primera vertical: crear tarea demostrativa, persistir, ejecutar remotamente, gua
 Checkpoint antes de aprobación; nueva ejecución para continuar. Codex/OpenCode se incorporan después.
 Infraestructura del MVP USD 0. Cuenta Cloudflare personal y repositorio privado PABLOCESAR2412/Cubo.
 ## Confirmed visual preference
-Chat dispone de persistencia y gestión de conversaciones/mensajes, sin inferencia.
+Chat dispone de persistencia y gestión de conversaciones/mensajes. La integración
+de texto OpenRouter está implementada localmente; inferencia real pendiente de clave.
 Ver [docs/chat.md](docs/chat.md) para el estado de aceptación y publicación.
 Consola oscura, compacta y responsive. Sin datos ficticios presentados como ejecuciones reales.
 Telo es referencia directa de arquitectura de interfaz, distribución, densidad,
@@ -41,7 +42,7 @@ comprobaron localmente; la clave maestra está configurada como Secret remoto.
 La importación pública se comprobó en cloud con el navegador cerrado antes de
 arrancar el runner y recuperación en escritorio/móvil. La privada sigue pendiente. Añadir
 una deploy key pública en GitHub no demuestra acceso privado: lo confirma una
-importación completada. Inferencia y acciones de escritura Git siguen pendientes.
+importación completada. Agentes y acciones de escritura Git siguen pendientes.
 Ver [docs/projects.md](docs/projects.md) y
 [docs/repository-import.md](docs/repository-import.md) para el alcance verificable.
 PWA muestra instalación cuando el navegador la ofrece y actualizaciones de assets
@@ -51,4 +52,12 @@ Groq con Q; no Grok. Modelos/cuentas gratuitas o suscripciones requieren verific
 compatibilidad y condiciones antes de habilitarse. Sin registro público; conservar
 acceso privado existente. Analíticas, modo claro y herramientas avanzadas siguen
 siendo funcionalidades objetivo, no integraciones disponibles.
+
+Refinamiento solicitado: proyectos como inicio, tarjetas con acciones reales,
+Nuevo proyecto en sidebar, Recientes solo de chats agrupados y sin horas. Se elimina
+Chat de la navegación principal; se abre desde proyecto o Recientes. Diagnóstico
+reúne información técnica que antes ocupaba topbar y footer. Paleta intacta.
+Ver [flujo de workspace](docs/workspace-project-flow.md). OpenRouter gratuito es la
+primera excepción de proveedor solicitada antes de agentes; no habilita herramientas,
+Git ni modelos pagos. Ver [alcance verificable](docs/openrouter-chat.md).
 

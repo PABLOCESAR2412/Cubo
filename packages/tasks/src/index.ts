@@ -14,18 +14,47 @@ export class TaskEngine {
     private readonly store: TaskRepository,
     private readonly backend: ExecutionBackend,
   ) {}
+  async reconcileCancellation(executionId: string): Promise<boolean> {
+    const execution = await this.store.findExecution(executionId);
+    if (!execution?.cancellationRequested) return false;
+    if (!this.store.confirmCancellation) return false;
+    if (isTerminal(execution.status)) return true;
+    if (!execution.dispatchStarted && !execution.dispatched && !execution.backendRunId) {
+      await this.store.confirmCancellation?.(executionId);
+      return true;
+    }
+    try {
+      await this.backend.cancel(executionId);
+      const status = await this.backend.getStatus(executionId);
+      if (status === "CANCELLED" || status === "FAILED" || status === "SUCCEEDED") {
+        await this.store.confirmCancellation?.(executionId);
+        return true;
+      }
+    } catch {
+      /* A remote outage cannot be reported as confirmed cancellation. */
+    }
+    return false;
+  }
   async run(executionId: string, steps: DurableSteps): Promise<void> {
     try {
       const blocked = await steps.do("dispatch", async () => {
         const execution = await this.store.findExecution(executionId);
         if (!execution) throw new Error("Ejecución desconocida.");
         if (isTerminal(execution.status)) return true;
+        if (execution.cancellationRequested) return this.reconcileCancellation(executionId);
         if (this.store.reserveExecution && !(await this.store.reserveExecution(executionId))) {
           await this.store.deferExecution(executionId, "EXECUTION_SLOT_BUSY");
           return true;
         }
         try {
-          await this.backend.start({ executionId, taskId: execution.taskId });
+          if (this.store.beginDispatch && !(await this.store.beginDispatch(executionId)))
+            return this.reconcileCancellation(executionId);
+          const started = await this.backend.start({ executionId, taskId: execution.taskId });
+          if (started.status === "CANCELLED") {
+            if (execution.dispatchStarted) return this.reconcileCancellation(executionId);
+            await this.store.confirmCancellation?.(executionId);
+            return true;
+          }
         } catch (error) {
           if (!(error instanceof ExecutionBlockedError)) throw error;
           await this.store.deferExecution(executionId, error.reason);
@@ -40,6 +69,7 @@ export class TaskEngine {
           const execution = await this.store.findExecution(executionId);
           if (!execution) throw new Error("Ejecución desconocida.");
           if (isTerminal(execution.status)) return true;
+          if (execution.cancellationRequested) return this.reconcileCancellation(executionId);
           let remote: ExecutionStatus;
           try {
             remote = await this.backend.getStatus(executionId);

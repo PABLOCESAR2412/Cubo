@@ -74,11 +74,14 @@ export class GitHubActionsExecutionBackend implements ExecutionBackend {
     const existing = await this.loadExecution(input.executionId);
     if (!existing || existing.taskId !== input.taskId)
       throw new Error("La ejecución no está registrada.");
+    if (existing.cancellationRequested) return { ...existing, status: "CANCELLED" };
     if (existing.dispatched || existing.backendRunId) return existing;
     if (!this.config.zeroSpendVerified) throw new ExecutionBlockedError("COST_GUARD_NOT_VERIFIED");
     const repo = (await (await this.api("")).json()) as { private: boolean };
     if (typeof repo.private !== "boolean")
       throw new Error("No se pudo verificar el repositorio de ejecución.");
+    const latest = await this.loadExecution(input.executionId);
+    if (latest?.cancellationRequested) return { ...latest, status: "CANCELLED" };
     await this.api(`/actions/workflows/${encodeURIComponent(this.config.workflow)}/dispatches`, {
       method: "POST",
       body: JSON.stringify({ ref: this.config.ref, inputs: { execution_id: input.executionId } }),

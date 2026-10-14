@@ -7,6 +7,12 @@ GitHub. El detalle guarda instrucciones y memoria funcional manuales, conserva
 una versión del contexto y permite abrir chats propios. Cada conversación tiene
 un project_id inmutable o NULL para las conversaciones anteriores.
 
+La nueva UI muestra tarjetas con abrir, editar y renombrar. Instrucciones y memoria
+del repositorio se identifican automáticamente en el snapshot, separados de campos
+manuales adicionales. OpenRouter por proyecto está implementado localmente y espera
+clave para aceptación real; ver [workspace](workspace-project-flow.md) y
+[OpenRouter](openrouter-chat.md).
+
 La importación de lectura por tarea, archivos acotados y claves SSH cifradas están
 implementados; importación pública validada en cloud y aceptación privada pendiente
 de deploy key de lectura. Ver

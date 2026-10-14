@@ -10,6 +10,7 @@ import type {
 import {
   excludedRepositoryPath,
   looksLikeSecret,
+  repositoryContextRole,
   safeRepositoryPath,
 } from "../../shared/src/repository-safety.ts";
 
@@ -55,6 +56,7 @@ export async function importRepository(
   previous: RepositorySnapshot | null,
   privateKey: string | null,
   persist: (update: RepositoryImportUpdate) => Promise<void>,
+  options: { contextDocuments?: boolean } = {},
 ): Promise<void> {
   if (!/^https:\/\/github\.com\/[A-Za-z0-9][A-Za-z0-9-]*\/[A-Za-z0-9_.-]+$/.test(input.repository))
     throw new Error("Repositorio inválido.");
@@ -139,6 +141,11 @@ export async function importRepository(
         return [];
       return [{ path: match[3], sha: match[2] }];
     });
+    clean.sort(
+      (a, b) =>
+        Number(Boolean(repositoryContextRole(b.path))) -
+          Number(Boolean(repositoryContextRole(a.path))) || a.path.localeCompare(b.path),
+    );
     const inventory = clean.slice(0, 100).map((item) => item.path);
     update = { ...update, sequence: 2, fileCount: entries.length, inventory };
     if (!previous || previous.sequence < 2) await persist(update);
@@ -152,23 +159,24 @@ export async function importRepository(
       )
       .sort((a, b) => {
         const rank = (path: string) =>
-          /(?:^|\/)(?:README|AGENTS\.md|package\.json)/i.test(path) ? 0 : 1;
+          repositoryContextRole(path) ? 0 : /(?:^|\/)(?:README|package\.json)/i.test(path) ? 1 : 2;
         return rank(a.path) - rank(b.path) || a.path.localeCompare(b.path);
       });
     const files: RepositoryImportUpdate["files"] = [];
     for (const item of candidates) {
       if (files.length >= 12) break;
       const size = Number(await git("cat-file", "-s", item.sha));
-      if (!Number.isSafeInteger(size) || size > 4000) continue;
+      const contextFile =
+        options.contextDocuments !== false && Boolean(repositoryContextRole(item.path));
+      if (!Number.isSafeInteger(size) || size > (contextFile ? 64000 : 4000)) continue;
       const content = await git("cat-file", "blob", item.sha);
-      if (
-        content.includes("\0") ||
-        content.includes("\uFFFD") ||
-        content.length > 4000 ||
-        looksLikeSecret(content)
-      )
+      if (content.includes("\0") || content.includes("\uFFFD") || looksLikeSecret(content))
         continue;
-      files.push({ path: item.path, content });
+      files.push({
+        path: item.path,
+        content: content.slice(0, 4000),
+        ...(content.length > 4000 ? { truncated: true } : {}),
+      });
     }
     const summary = `Repositorio: ${input.repository}\nRevisión: ${revision}\nArchivos en Git: ${entries.length}. Inventario disponible: ${inventory.length}. Textos importados: ${files.length}.\nImportación acotada y de lectura; archivos excluidos o grandes no forman parte del contexto.`;
     update = { ...update, sequence: 3, files, summary };

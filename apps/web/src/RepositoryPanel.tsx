@@ -1,4 +1,5 @@
 import type { RepositoryKeyInfo, RepositorySnapshot, Task } from "@cubo/shared";
+import { repositoryContextRole } from "@cubo/shared/repository-safety";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SectionCard, StatusBadge } from "./ui";
 import { requestApi as api, labels } from "./workspace";
@@ -246,7 +247,8 @@ export function RepositoryPanel({
             <p className="hint">
               {snapshot.inventory.length} rutas disponibles de {snapshot.fileCount} entradas;{" "}
               {snapshot.files.length} textos guardados. Rutas sensibles, binarios, archivos grandes
-              y contenido detectado como secreto se excluyen.
+              y contenido detectado como secreto se excluyen. Los documentos de contexto pueden ser
+              extractos.
             </p>
             <div className="repository-explorer">
               <div className="repository-file-list">
@@ -271,6 +273,9 @@ export function RepositoryPanel({
                 {currentFile ? (
                   <>
                     <strong className="mono">{currentFile.path}</strong>
+                    {currentFile.truncated && (
+                      <p className="hint">Extracto: primeros 4000 caracteres.</p>
+                    )}
                     <pre>{currentFile.content}</pre>
                   </>
                 ) : (
@@ -285,6 +290,32 @@ export function RepositoryPanel({
           </p>
         )}
       </SectionCard>
+      {(["INSTRUCTIONS", "MEMORY"] as const).map((role) => {
+        const source = snapshot?.files.find((item) => repositoryContextRole(item.path) === role);
+        return (
+          <SectionCard
+            key={role}
+            title={
+              role === "INSTRUCTIONS" ? "Instrucciones del repositorio" : "Memoria del repositorio"
+            }
+          >
+            {source ? (
+              <>
+                <p className="hint mono">
+                  {source.path} · revisión {snapshot?.revision.slice(0, 12)}
+                  {source.truncated ? " · extracto" : ""}
+                </p>
+                <pre>{source.content}</pre>
+              </>
+            ) : (
+              <p className="hint">
+                {role === "INSTRUCTIONS" ? "AGENTS.md o CLAUDE.md" : "MEMORY.md"} no disponible en
+                esta importación. Se identifica automáticamente al importar el repositorio.
+              </p>
+            )}
+          </SectionCard>
+        );
+      })}
     </>
   );
 }

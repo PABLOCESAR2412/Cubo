@@ -154,7 +154,7 @@ export class D1RepositoryStore {
         .bind(update.sequence, status, result, now, task.id, id, task.version),
       this.db
         .prepare(
-          "INSERT INTO repository_snapshots(task_id,project_id,execution_id,sequence,snapshot,digest,created_at) SELECT ?,?,?,?,?,?,? FROM tasks WHERE id=? AND execution_id=? AND version=? ON CONFLICT(task_id) DO UPDATE SET execution_id=excluded.execution_id,sequence=excluded.sequence,snapshot=excluded.snapshot,digest=excluded.digest,created_at=excluded.created_at",
+          "INSERT INTO repository_snapshots(task_id,project_id,execution_id,sequence,snapshot,digest,created_at) SELECT ?,?,?,?,?,?,? FROM tasks WHERE id=? AND execution_id=? AND version=? AND progress=? AND status=? AND EXISTS(SELECT 1 FROM executions e WHERE e.id=tasks.execution_id AND e.cancellation_requested=0) ON CONFLICT(task_id) DO UPDATE SET execution_id=excluded.execution_id,sequence=excluded.sequence,snapshot=excluded.snapshot,digest=excluded.digest,created_at=excluded.created_at",
         )
         .bind(
           task.id,
@@ -167,6 +167,8 @@ export class D1RepositoryStore {
           task.id,
           id,
           task.version + 1,
+          update.sequence,
+          status,
         ),
       this.db
         .prepare(

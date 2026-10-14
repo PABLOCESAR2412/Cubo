@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ChatTurnState } from "./chat-turn";
 
 export interface Conversation {
   id: string;
@@ -13,7 +14,7 @@ export interface ChatMessage {
   id: string;
   conversationId: string;
   sequence: number;
-  role: "user";
+  role: "user" | "assistant";
   content: string;
   status: "STORED";
   createdAt: string;
@@ -21,7 +22,8 @@ export interface ChatMessage {
 export interface ConversationDetail {
   conversation: Conversation;
   messages: ChatMessage[];
-  inference: "unavailable";
+  inference: "unavailable" | "configured";
+  turns?: ChatTurnState[];
 }
 export const conversationInputSchema = z
   .object({ title: z.string().trim().min(1).max(120) })

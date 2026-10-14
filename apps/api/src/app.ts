@@ -1,7 +1,9 @@
-import { D1RepositoryStore, D1TaskStore, StoreError } from "@cubo/database";
+import { D1ChatExecutionStore, D1RepositoryStore, D1TaskStore, StoreError } from "@cubo/database";
 import {
+  chatTurnResultSchema,
   demoInputSchema,
   importUpdateSchema,
+  isChatTurnInput,
   isImportInput,
   runnerUpdateSchema,
 } from "@cubo/shared";
@@ -19,6 +21,8 @@ import {
 import { chatRoutes } from "./chat";
 import { containsSecret } from "./content-safety";
 import type { Env } from "./env.ts";
+import { createTaskEngine } from "./execution-engine";
+import { providerKey } from "./project-providers";
 import { projectRoutes } from "./projects";
 import { decryptProjectKey } from "./repository-keys";
 export async function dispatchOutbox(env: Env): Promise<void> {
@@ -42,7 +46,9 @@ export async function dispatchOutbox(env: Env): Promise<void> {
 const app = new Hono<{ Bindings: Env; Variables: { runnerId: string } }>();
 app.use("/api/*", async (c, next) =>
   bodyLimit({
-    maxSize: /^\/api\/executions\/[^/]+\/import-progress$/.test(c.req.path) ? 131072 : 8192,
+    maxSize: /^\/api\/executions\/[^/]+\/(?:import-progress|chat-result)$/.test(c.req.path)
+      ? 131072
+      : 8192,
     onError: (c) => c.json({ error: "Solicitud demasiado grande." }, 413),
   })(c, next),
 );
@@ -145,6 +151,12 @@ app.post("/api/tasks/:id/approve", async (c) => {
   await dispatchOutbox(c.env);
   return c.json({ task }, 202);
 });
+app.post("/api/tasks/:id/cancel", async (c) => {
+  const store = new D1TaskStore(c.env.DB),
+    task = await store.requestCancellation(c.req.param("id"));
+  await createTaskEngine(c.env, store).reconcileCancellation(task.executionId);
+  return c.json({ task: await store.findTask(task.id) }, 202);
+});
 app.post("/api/tasks/:id/retry-dispatch", async (c) => {
   if (c.env.GITHUB_ZERO_SPEND_VERIFIED !== "true")
     return c.json({ error: "COST_GUARD_NOT_VERIFIED" }, 409);
@@ -166,7 +178,10 @@ app.post("/api/executions/:id/claim", async (c) => {
   return c.json({ ok: true });
 });
 app.get("/api/executions/:id/context", async (c) =>
-  c.json(await new D1TaskStore(c.env.DB).context(c.req.param("id"), c.get("runnerId"))),
+  c.json({
+    ...(await new D1TaskStore(c.env.DB).context(c.req.param("id"), c.get("runnerId"))),
+    protocolVersion: 2,
+  }),
 );
 app.post("/api/executions/:id/progress", async (c) => {
   const body = runnerUpdateSchema.safeParse(await c.req.json());
@@ -178,6 +193,56 @@ app.get("/api/executions/:id/import-checkpoint", async (c) => {
   const context = await new D1TaskStore(c.env.DB).context(c.req.param("id"), c.get("runnerId"));
   if (!isImportInput(context.task.input)) return c.json({ error: "No es una importación." }, 400);
   return c.json({ snapshot: await new D1RepositoryStore(c.env.DB).snapshot(context.task.id) });
+});
+app.post("/api/executions/:id/chat-request", async (c) => {
+  const request = await new D1ChatExecutionStore(c.env.DB).acquire(
+    c.req.param("id"),
+    c.get("runnerId"),
+  );
+  return c.json({ ...request, apiKey: await providerKey(c.env, request.projectId, request.keyId) });
+});
+app.post("/api/executions/:id/chat-result", async (c) => {
+  const output = chatTurnResultSchema.safeParse(await c.req.json());
+  if (!output.success) throw new StoreError(400, "Respuesta de chat inválida.");
+  const { task } = await new D1TaskStore(c.env.DB).context(c.req.param("id"), c.get("runnerId"));
+  if (!isChatTurnInput(task.input)) throw new StoreError(400, "No es un turno de chat.");
+  if (task.status === "SUCCEEDED") {
+    await new D1ChatExecutionStore(c.env.DB).complete(
+      c.req.param("id"),
+      c.get("runnerId"),
+      output.data,
+    );
+    return c.json({ ok: true });
+  }
+  const key = await providerKey(c.env, task.input.projectId, task.input.keyId);
+  if (containsSecret(output.data.content, c.env) || output.data.content.includes(key))
+    throw new StoreError(400, "Respuesta bloqueada por contenido sensible.");
+  await new D1ChatExecutionStore(c.env.DB).complete(
+    c.req.param("id"),
+    c.get("runnerId"),
+    output.data,
+  );
+  return c.json({ ok: true });
+});
+app.post("/api/executions/:id/chat-error", async (c) => {
+  const input = z
+    .object({
+      reason: z.enum([
+        "PROVIDER_QUOTA_EXHAUSTED",
+        "PROVIDER_CREDENTIAL_REJECTED",
+        "FREE_MODEL_REQUIRED",
+        "UNEXPECTED_PROVIDER_COST",
+        "PROVIDER_REQUEST_FAILED",
+      ]),
+    })
+    .strict()
+    .safeParse(await c.req.json());
+  if (!input.success) throw new StoreError(400, "Error de proveedor inválido.");
+  const store = new D1TaskStore(c.env.DB),
+    context = await store.context(c.req.param("id"), c.get("runnerId"));
+  if (!isChatTurnInput(context.task.input)) throw new StoreError(400, "No es un turno de chat.");
+  await store.failExecution(c.req.param("id"), input.data.reason);
+  return c.json({ ok: true });
 });
 app.get("/api/executions/:id/repository-key", async (c) => {
   const context = await new D1TaskStore(c.env.DB).context(c.req.param("id"), c.get("runnerId"));

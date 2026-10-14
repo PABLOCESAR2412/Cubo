@@ -1,9 +1,8 @@
 import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
 import { D1TaskStore } from "@cubo/database";
-import { GitHubActionsExecutionBackend } from "@cubo/runner";
-import { TaskEngine } from "@cubo/tasks";
 import { app, dispatchOutbox } from "./app.ts";
 import type { Env } from "./env.ts";
+import { createTaskEngine } from "./execution-engine";
 export class TaskWorkflow extends WorkflowEntrypoint<Env, { executionId: string }> {
   async run(event: WorkflowEvent<{ executionId: string }>, step: WorkflowStep): Promise<void> {
     const store = new D1TaskStore(this.env.DB);
@@ -18,17 +17,7 @@ export class TaskWorkflow extends WorkflowEntrypoint<Env, { executionId: string 
       );
       return;
     }
-    const backend = new GitHubActionsExecutionBackend(
-      {
-        repository: this.env.GITHUB_REPOSITORY,
-        workflow: this.env.GITHUB_WORKFLOW,
-        ref: this.env.GITHUB_REF,
-        token: this.env.GITHUB_TOKEN ?? "",
-        zeroSpendVerified: this.env.GITHUB_ZERO_SPEND_VERIFIED === "true",
-      },
-      (id) => store.findExecution(id),
-    );
-    const engine = new TaskEngine(store, backend);
+    const engine = createTaskEngine(this.env, store);
     await engine.run(event.payload.executionId, {
       do: async (name, action) =>
         step.do(
@@ -50,6 +39,9 @@ export default {
     return env.ASSETS.fetch(request);
   },
   async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+    const store = new D1TaskStore(env.DB),
+      engine = createTaskEngine(env, store);
+    for (const id of await store.pendingCancellations()) await engine.reconcileCancellation(id);
     await dispatchOutbox(env);
     await new D1TaskStore(env.DB).cleanupLoginLimits();
   },

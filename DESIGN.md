@@ -195,15 +195,15 @@ La base de lectura y los campos usan 13px. Los contadores usan 26px, peso 500 y 
 
 ## Layout
 
-El workspace ocupa 100dvh. Una barra global de 42px abarca todo el ancho; debajo, la sidebar de 208px comparte fila con contenido flexible. Los módulos usan padding de 22px 28px 28px, sin ancho máximo. Recientes tiene desplazamiento interno y el pie cloud permanece al fondo de la sidebar con tamaño estable.
+El workspace ocupa 100dvh. Una barra global de 42px abarca todo el ancho; debajo, la sidebar de 208px comparte fila con contenido flexible. Los módulos usan padding de 22px 28px 28px, sin ancho máximo. Recientes tiene desplazamiento interno; Cerrar sesión permanece al fondo. El estado cloud se consulta desde Diagnóstico.
 
 Tareas muestra tres métricas en una fila y un registro de ancho completo. Ver proceso abre a petición un diálogo lateral derecho de hasta 480px bajo la barra global, sin reservar una columna mientras está cerrado. La cabecera del proceso permanece visible durante el desplazamiento.
 
 Hasta 767px desaparece la columna reservada a la sidebar. La barra conserva 42px, el módulo usa padding de 20px 14px 24px y las métricas y campos pasan a una columna. La búsqueda ocupa toda la fila. La navegación abre un diálogo lateral de 230px; proceso y configuración ocupan todo el ancho bajo la barra. Los diálogos nativos aíslan el foco, cierran con Escape y devuelven el foco al control de apertura. Nueva tarea se centra, mide hasta 620px o el viewport menos 24px y limita su altura al viewport menos 32px.
 
-Chat ocupa todo el panel principal, con cabecera de altura mínima de 54px, conversación desplazable y compositor inferior. Su contenedor flexible descuenta el espacio de los avisos globales para mantener el compositor dentro del viewport. Historial siempre abre un diálogo de hasta 440px, con margen mínimo de 12px; no crea otra columna permanente. Configuración añade una columna de 320px a petición, de 280px hasta 1199px. Mensajes y compositor se limitan a 920px y 940px respectivamente. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios. Los campos usan dos columnas y el resumen de proyecto cuatro, reducidas a una y dos en móvil.
+Chat ocupa todo el panel principal, con cabecera de altura mínima de 54px, conversación desplazable y compositor inferior. Su contenedor flexible descuenta el espacio de los avisos globales para mantener el compositor dentro del viewport. Los chats se abren desde proyectos o Recientes, sin Historial adicional. Configuración añade una columna de 320px a petición, de 280px hasta 1199px. Mensajes y compositor se limitan a 920px y 940px respectivamente. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios. Los campos usan dos columnas y el resumen de proyecto cuatro, reducidas a una y dos en móvil.
 
-**The Contexto estable Rule.** La navegación y la barra contextual mantienen su posición; cada módulo concentra filtros, datos y acciones en el contenido.
+**The Contexto estable Rule.** La navegación y la barra global mantienen su posición; cada módulo concentra filtros, datos y acciones en el contenido.
 
 ## Elevation & Depth
 
@@ -237,7 +237,15 @@ Los campos usan fondo carbón, borde neutral, texto claro y caret lima. Las etiq
 
 ### Navigation
 
-La sidebar reúne marca, Nueva tarea, cinco módulos, recientes y estado del sistema. Nueva tarea usa la acción principal de lima sólida a todo el ancho. Recientes se separa de los módulos mediante un divisor; los contadores tienen recinto compacto de borde neutral y fondo carbón. Cada enlace usa padding de 9px 10px y altura mínima de 35px. El módulo activo tiene fondo de aviso, texto claro e icono lima; `aria-current` identifica la página. Recientes recupera la selección de una tarea. En móvil un diálogo nativo sustituye al aside y limita el foco al menú abierto.
+La sidebar reúne marca, Nuevo proyecto, Tareas, Proyectos, Analíticas, Ajustes y Recientes. Nuevo proyecto usa lima sólida a todo el ancho y abre el formulario con foco en el nombre. Cubo y Proyectos vuelven al listado. Chat conserva su ruta y se abre desde proyecto o Recientes. Cada enlace usa padding de 9px 10px y altura mínima de 35px. El módulo activo tiene fondo de aviso, texto claro e icono lima; `aria-current` identifica la página.
+
+Recientes contiene solo títulos de chats y su selección, agrupados en Fijados, Hoy, Ayer, Últimos 7 días y Anteriores. Los grupos usan texto secundario de 11px y padding de 12px 9px 5px. No añade tareas, horas ni captions por chat. En móvil un diálogo nativo sustituye al aside y limita el foco al menú abierto.
+
+### Diagnóstico
+
+La barra global conserva menú móvil, controles PWA y Diagnóstico. Marca y módulo duplicados, hora e icono de Ajustes se retiraron de la barra. Diagnóstico abre un diálogo nativo centrado de hasta 520px o el ancho disponible menos 28px. Reutiliza superficie, borde y radio de diálogo; alinea etiquetas secundarias a la izquierda y valores a la derecha, separados por líneas y padding vertical de 10px. Cerrar y Escape permiten salir.
+
+El diálogo reúne sincronización API, última observación, disponibilidad de Cubo cloud, configuración de GitHub Actions, presupuesto de infraestructura USD 0 y bloqueo de gasto. Explica que acceso a Cubo no mide disponibilidad ni cuota de runners. Conserva etiquetas explícitas cuando faltan datos.
 
 ### Inspector y progreso
 
@@ -245,11 +253,13 @@ El inspector muestra estado, tarea, ejecutor, intento, progreso y resultado disp
 
 La barra nativa de progreso mide 4px. Lleva pista neutral y relleno lima, acompañada de información textual. El registro alinea tiempos con mensajes. Los identificadores y el checkpoint adicional usan un desplegable nativo. Los cambios de estado se anuncian en una región accesible y los errores usan `role="alert"`.
 
-### Historial y mensajes
+### Conversación y mensajes
 
-El historial usa botones compactos de borde neutral y radio de control, separados por 4px. La selección cambia el borde a lima; el título puede partir palabras largas y la fecha usa texto secundario. El listado siempre aparece en un diálogo a petición.
+La cabecera y el resumen identifican el proyecto de origen y el chat. Las conversaciones se abren desde proyectos o Recientes, sin ventana adicional Historial. Los mensajes distinguen Tú y Asistente según el rol persistido, con fecha, Guardado y Copiar. El usuario se alinea a la derecha y el asistente a la izquierda; ambos reutilizan burbuja de superficie, borde neutral, padding de 13px 16px, línea de lectura 1.65 y saltos de línea preservados. La lista tiene separación de 18px y ancho máximo de mensaje del 80%, ampliado al 94% en móvil.
 
-Los mensajes guardados se alinean a la derecha, con autor, fecha, estado textual Guardado, burbuja de superficie, saltos de línea preservados y acción Copiar. Las burbujas llevan borde neutral, padding de 13px 16px y línea de lectura 1.65. La lista tiene separación de 18px y ancho máximo de mensaje del 80%, ampliado al 94% en móvil. El compositor inferior reúne textarea transparente, adjuntos, configuración, selector de modelo/agente, guardado y esfuerzo en una superficie común. El esfuerzo forma un grupo delimitado con fondo carbón; sus opciones siguen deshabilitadas. La cabecera muestra el estado de modelo y la configuración abierta tiene estado activo visible. El resumen persistente de conversación precede a los mensajes con un divisor. Guardar persiste el mensaje; inferencia, herramientas y esfuerzo permanecen pendientes y deshabilitados. La configuración permite renombrar, fijar y eliminar conversaciones. La eliminación requiere confirmación nativa. Los avisos usan `role="status"`; los errores, `role="alert"`.
+El compositor inferior reúne textarea transparente, controles y selector de modelo obtenido de la API, con ancho máximo de 260px. El selector queda deshabilitado sin conexión de proveedor, durante una operación o con turno activo. Sin proveedor, Guardar persiste texto; con configuración válida, Enviar crea el turno. Proveedor pendiente y Sin herramientas expresan la capacidad real. Las opciones de esfuerzo permanecen deshabilitadas. Los estados incluyen cola, ejecución y cancelación pendiente de confirmar. La configuración conserva renombrar, fijar y eliminar con confirmación nativa. Los avisos usan `role="status"`; los errores, `role="alert"`.
+
+OpenRouter de texto gratuito está implementado localmente. El renderizado contempla mensajes de asistente y métricas persistidas; las capturas actuales muestran datos locales de validación sin respuestas simuladas de modelos. La aceptación de inferencia real depende de una clave configurada por el usuario desde la PWA.
 
 El menú de tres puntos de la cabecera concentra Renombrar chat, Fijar/Desfijar chat y Eliminar conversación. Renombrar abre la configuración existente. El control SVG mide 32px; el desplegable alineado a la derecha mide 196px, usa superficie plana, borde neutral y radio de 10px. Eliminar conserva color de fallo, separación superior y confirmación nativa. Escape cierra el menú y devuelve el foco al control; salir del menú también lo cierra. Sus acciones se deshabilitan mientras hay una operación en curso o falta una conversación seleccionada. Al enfocar el compositor, su borde se aclara a gris; el contorno lima de los campos conserva el foco visible.
 
@@ -265,11 +275,15 @@ Posponer retira el aviso y deja una acción secundaria compacta Actualizar en la
 
 ### Proyectos y contexto
 
-El listado reúne nombre y repositorio a la izquierda; contador de chats, fecha y Abrir proyecto a la derecha, con separación de 14px y texto secundario de 12px. En móvil la metadata ocupa una fila propia y permite salto de línea. Las URLs largas pueden partir palabras para conservar el ancho disponible. Nuevo proyecto abre un formulario dentro del módulo, con nombre y URL GitHub opcional; la importación se inicia desde el detalle del proyecto.
+Proyectos es el inicio y presenta una cuadrícula de tarjetas reales, con columnas automáticas de al menos 290px cuando caben y separación de 14px. Cada tarjeta usa superficie, borde neutral, radio de 10px y padding de 16px. Reúne nombre de 16px, repositorio, cantidad real de chats y acciones Abrir, Editar y Renombrar. El hover aclara el borde. Renombrar muestra campo y guardado dentro de la tarjeta; Editar abre el contexto del proyecto. En móvil las tarjetas ocupan el ancho disponible y sus acciones permiten salto de línea. Las URLs largas pueden partir palabras. Nuevo proyecto abre nombre y URL GitHub opcional; la importación se inicia desde el detalle.
 
-El detalle conserva el enlace Volver a Proyectos, título y Abrir chat, seguido de paneles para resumen, repositorio y conexión, contexto importado, archivos de solo lectura, instrucciones, memoria manual, chats y conexiones pendientes. Nombre, instrucciones y memoria usan campos existentes; Guardar contexto confirma la persistencia mediante un aviso textual. El resumen muestra repositorio, número de chats, Importación por revisión y versión del contexto. Los chats abren su conversación propia; el resumen del chat y su configuración identifican el proyecto. Las conversaciones anteriores sin proyecto siguen disponibles en su historial. Eliminar proyecto vacío exige confirmación nativa y queda deshabilitado cuando contiene chats; los rechazos del backend se muestran como error.
+El detalle conserva Volver a Proyectos, título y Abrir chat, seguido de paneles para resumen, repositorio y conexión, contexto importado, archivos de solo lectura, instrucciones, memoria manual, proveedor, chats y conexiones pendientes. Guardar contexto confirma persistencia mediante un aviso textual. El resumen muestra repositorio, número de chats, Importación por revisión y versión del contexto. Los chats abren su conversación propia; resumen y configuración identifican el proyecto. Recientes ofrece el índice persistido sin añadir otro historial en Chat. Eliminar proyecto vacío exige confirmación nativa y queda deshabilitado cuando contiene chats; los rechazos del backend se muestran como error.
 
-Skills, APIs/MCPs, variables/secretos y tareas mediante agentes se presentan como filas con etiqueta Integración pendiente, divisores y padding vertical de 9px. La memoria editable está disponible; el aprendizaje automático permanece pendiente. Los errores y confirmaciones reutilizan los avisos accesibles del sistema.
+Skills, MCPs, variables/secretos y tareas mediante agentes se presentan como filas con etiqueta Integración pendiente, divisores y padding vertical de 9px. La memoria editable está disponible; el aprendizaje automático permanece pendiente. Los errores y confirmaciones reutilizan los avisos accesibles del sistema.
+
+### Proveedor del proyecto
+
+OpenRouter reutiliza campos y acciones del sistema: clave en input de contraseña, conexión, selección de modelo gratuito y datos de uso disponibles. La clave se configura en la PWA. El catálogo público real fue observado con 15 modelos gratuitos; esa cantidad es una observación, no una constante de diseño. Los datos mantienen calidad exact, estimated, stale o unavailable. El detalle de uso usa columnas automáticas de al menos 200px cuando caben, con separación de 12px. La implementación es local; inferencia real pendiente de clave. Este proveedor de texto no habilita agentes ni herramientas.
 
 ### Repositorio y archivos importados
 
@@ -277,9 +291,9 @@ Repositorio y conexión reutiliza la cabecera de panel con Actualizar como acci�
 
 El acceso SSH muestra un aviso cuando falta configurar el cifrado. Generar clave del proyecto permanece deshabilitado hasta que esté disponible. Una clave creada usa un textarea de solo lectura, fingerprint monospace y Copiar clave pública; la guía ordenada usa texto secundario de 12px y línea 1.7, con enlace a deploy keys de GitHub. El panel explica que debe conservarse el acceso de lectura. La disponibilidad del cifrado y la clave se comunica mediante controles y avisos existentes; no cambia la paleta.
 
-Contexto importado muestra la revisión monospace y un resumen en bloque preformateado, separado de la memoria manual. Archivos · solo lectura distingue el inventario y los textos guardados. El explorador usa lista de 240px y visor flexible, separados por 14px; lista y texto limitan su altura a 360px y admiten desplazamiento. Las rutas usan controles de 12px, padding de 7px 9px y radio de 5px; selección y hover comparten fondo carbón y borde neutral. Una ruta sin texto guardado queda deshabilitada y lleva Solo ruta. Hasta 767px el explorador pasa a una columna, con lista de hasta 200px; texto y rutas parten palabras largas. La indicación Solo ruta de 10px se conserva como deuda de legibilidad, sin convertirla en tamaño normativo para nuevas superficies.
+Contexto importado muestra revisión monospace y resumen preformateado. Instrucciones del repositorio identifica AGENTS.md o CLAUDE.md de la raíz; Memoria del repositorio identifica MEMORY.md. Ambos muestran revisión y extracto cuando corresponde, o su ausencia explícita, separados de instrucciones y memoria manual adicionales. Archivos · solo lectura distingue inventario y textos guardados. El explorador usa lista de 240px y visor flexible, separados por 14px; lista y texto limitan su altura a 360px y admiten desplazamiento. Las rutas usan controles de 12px, padding de 7px 9px y radio de 5px; selección y hover comparten fondo carbón y borde neutral. Una ruta sin texto guardado queda deshabilitada y lleva Solo ruta. Hasta 767px el explorador pasa a una columna, con lista de hasta 200px; texto y rutas parten palabras largas. Solo ruta de 10px sigue siendo deuda de legibilidad, sin convertirse en tamaño normativo.
 
-Ver proceso abre el inspector existente en Tareas. El resultado muestra cantidad de textos y SHA; Checkpoint conserva etapa, revisión, digest y fecha en la misma superficie. El shell conserva Cubo y módulo en la barra; en móvil oculta el módulo y la hora de sincronización para mantener el menú, la marca y el estado accesibles. Las capturas de repositorio documentan el clone público local y el estado SSH sin cifrado de ese entorno; no constituyen aceptación cloud ni verificación de acceso privado.
+Ver proceso abre el inspector existente en Tareas. El resultado muestra cantidad de textos y SHA; Checkpoint conserva etapa, revisión, digest y fecha en la misma superficie. El shell concentra la marca en la sidebar y el estado técnico en Diagnóstico. Las capturas históricas de repositorio documentan el clone público local y el estado SSH sin cifrado de ese entorno; su aceptación cloud pública posterior se documenta aparte. El acceso privado sigue pendiente.
 
 ## Do's and Don'ts
 
@@ -293,7 +307,7 @@ Ver proceso abre el inspector existente en Tareas. El resultado muestra cantidad
 
 ### Don't:
 
-- **Don't** reservar una columna permanente al historial de chat o al proceso cerrado.
+- **Don't** añadir otro historial a Chat ni reservar una columna al proceso cerrado.
 - **Don't** presentar métricas inventadas ni capacidades pendientes como funciones activas.
 - **Don't** depender solo del color para comunicar un estado.
 - **Don't** convertir el detalle operativo en una superficie con sombras decorativas.

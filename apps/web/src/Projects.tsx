@@ -1,5 +1,6 @@
 import type { Conversation, StoredProject } from "@cubo/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ProjectProviderSettings } from "./ProjectProviderSettings";
 import { RepositoryPanel } from "./RepositoryPanel";
 import { EmptyState, PageHeader, ProjectRow, SectionCard, StatusBadge } from "./ui";
 import { requestApi as api, time } from "./workspace";
@@ -17,13 +18,24 @@ export function Projects() {
   const [selected, setSelected] = useState(() =>
     new URL(location.href).searchParams.get("project"),
   );
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(
+    () => new URL(location.href).searchParams.get("new") === "project",
+  );
+  const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null);
   const [name, setName] = useState("");
   const [repository, setRepository] = useState("");
   const [error, setError] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const key = useRef<string | null>(null);
+  const newProjectName = useRef<HTMLInputElement>(null),
+    renameName = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (creating) newProjectName.current?.focus();
+  }, [creating]);
+  useEffect(() => {
+    if (renaming?.id) renameName.current?.focus();
+  }, [renaming?.id]);
   const refreshGeneration = useRef(0);
   const refresh = useCallback(async () => {
     const generation = ++refreshGeneration.current;
@@ -38,7 +50,16 @@ export function Projects() {
       refreshGeneration.current++;
     };
   }, [refresh]);
-  function choose(id: string | null) {
+  useEffect(() => {
+    const index = () => {
+      setSelected(null);
+      setCreating(new URL(location.href).searchParams.get("new") === "project");
+      setError("");
+    };
+    window.addEventListener("cubo-projects-index", index);
+    return () => window.removeEventListener("cubo-projects-index", index);
+  }, []);
+  function choose(id: string | null, panel?: string) {
     setSelected(id);
     setCreating(false);
     setError("");
@@ -46,8 +67,33 @@ export function Projects() {
     if (id) url.searchParams.set("project", id);
     else url.searchParams.delete("project");
     url.searchParams.delete("chat");
+    url.searchParams.delete("new");
+    if (panel) url.searchParams.set("panel", panel);
+    else url.searchParams.delete("panel");
     history.replaceState(null, "", url);
     window.dispatchEvent(new Event("cubo-conversations-changed"));
+  }
+  async function rename(project: StoredProject) {
+    if (!renaming?.name.trim() || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api(`projects/${project.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          version: project.version,
+          name: renaming.name,
+          instructions: project.instructions,
+          memory: project.memory,
+        }),
+      });
+      setRenaming(null);
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo renombrar el proyecto.");
+    } finally {
+      setBusy(false);
+    }
   }
   async function create() {
     if (busy) return;
@@ -132,6 +178,7 @@ export function Projects() {
                   <label>
                     Nombre del proyecto
                     <input
+                      ref={newProjectName}
                       required
                       maxLength={120}
                       value={name}
@@ -176,10 +223,11 @@ export function Projects() {
               </form>
             </SectionCard>
           )}
-          <SectionCard
-            title="Tus proyectos"
-            actions={<StatusBadge>{loaded ? projects.length : "Cargando…"}</StatusBadge>}
-          >
+          <section className="project-index" aria-labelledby="project-index-title">
+            <div className="panel-heading">
+              <h2 id="project-index-title">Tus proyectos</h2>
+              <StatusBadge>{loaded ? projects.length : "Cargando…"}</StatusBadge>
+            </div>
             {!loaded ? (
               <p className="hint">Cargando proyectos…</p>
             ) : !projects.length ? (
@@ -188,37 +236,92 @@ export function Projects() {
                 description="Crea un proyecto para guardar su contexto y abrir sus propios chats."
               />
             ) : (
-              projects.map((p) => (
-                <ProjectRow key={p.id}>
-                  <div className="project-list-row">
-                    <div>
-                      <button
-                        className="task-title"
-                        type="button"
-                        disabled={busy}
-                        onClick={() => choose(p.id)}
-                      >
-                        {p.name}
-                      </button>
-                      <p className="hint">{p.repository ?? "Sin repositorio"}</p>
+              <div className="project-grid">
+                {projects.map((p) => (
+                  <article className="project-tile" key={p.id} aria-label={p.name}>
+                    <div className="project-list-row">
+                      <div>
+                        {renaming?.id === p.id ? (
+                          <form
+                            className="form-stack"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              void rename(p);
+                            }}
+                          >
+                            <label>
+                              Nombre del proyecto
+                              <input
+                                ref={renameName}
+                                required
+                                maxLength={120}
+                                value={renaming.name}
+                                disabled={busy}
+                                onChange={(e) => setRenaming({ id: p.id, name: e.target.value })}
+                              />
+                            </label>
+                            <div className="toolbar-actions">
+                              <button type="submit" className="secondary compact" disabled={busy}>
+                                Guardar nombre
+                              </button>
+                              <button
+                                type="button"
+                                className="secondary compact"
+                                onClick={() => setRenaming(null)}
+                                disabled={busy}
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <button
+                            className="task-title"
+                            type="button"
+                            disabled={busy}
+                            onClick={() => choose(p.id)}
+                          >
+                            {p.name}
+                          </button>
+                        )}
+                        <p className="hint">{p.repository ?? "Sin repositorio"}</p>
+                      </div>
+                      <div className="project-list-meta">
+                        <span>
+                          {p.chatCount} {p.chatCount === 1 ? "chat" : "chats"}
+                        </span>
+                        <button
+                          className="secondary compact"
+                          type="button"
+                          aria-label={`Renombrar ${p.name}`}
+                          disabled={busy}
+                          onClick={() => setRenaming({ id: p.id, name: p.name })}
+                        >
+                          Renombrar
+                        </button>
+                        <button
+                          className="secondary compact"
+                          type="button"
+                          disabled={busy}
+                          onClick={() => choose(p.id, "edit")}
+                        >
+                          Editar
+                        </button>
+                        <button
+                          className="secondary compact"
+                          type="button"
+                          disabled={busy}
+                          onClick={() => choose(p.id)}
+                        >
+                          Abrir proyecto
+                        </button>
+                      </div>
                     </div>
-                    <div className="project-list-meta">
-                      <span>{p.chatCount} chats</span>
-                      <time dateTime={p.updatedAt}>{time(p.updatedAt)}</time>
-                      <button
-                        className="secondary compact"
-                        type="button"
-                        disabled={busy}
-                        onClick={() => choose(p.id)}
-                      >
-                        Abrir proyecto
-                      </button>
-                    </div>
-                  </div>
-                </ProjectRow>
-              ))
+                  </article>
+                ))}
+              </div>
             )}
-          </SectionCard>
+          </section>
         </>
       )}
     </div>
@@ -233,6 +336,15 @@ function ProjectDetail({
   refresh: () => Promise<void>;
   back: () => void;
 }) {
+  useEffect(() => {
+    const panel = new URL(location.href).searchParams.get("panel");
+    if (panel === "provider" || panel === "edit")
+      document
+        .getElementById(
+          panel === "provider" ? "project-provider-settings" : "project-manual-context",
+        )
+        ?.scrollIntoView({ block: "start" });
+  }, []);
   const [name, setName] = useState(project.name);
   const [instructions, setInstructions] = useState(project.instructions);
   const [memory, setMemory] = useState(project.memory);
@@ -380,12 +492,13 @@ function ProjectDetail({
       </SectionCard>
       <RepositoryPanel projectId={project.id} repository={project.repository} />
       <form
+        id="project-manual-context"
         onSubmit={(e) => {
           e.preventDefault();
           void save();
         }}
       >
-        <SectionCard title="Instrucciones">
+        <SectionCard title="Instrucciones adicionales">
           <label>
             Nombre del proyecto
             <input
@@ -407,7 +520,7 @@ function ProjectDetail({
             />
           </label>
         </SectionCard>
-        <SectionCard title="Memoria">
+        <SectionCard title="Memoria adicional">
           <p className="hint">
             Memoria funcional editable de este proyecto. Independiente de MEMORY.md y del contexto
             importado.
@@ -464,6 +577,7 @@ function ProjectDetail({
           )}
         </div>
       </SectionCard>
+      <ProjectProviderSettings projectId={project.id} />
       <button
         className="secondary"
         type="button"

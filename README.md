@@ -8,8 +8,9 @@ runners Linux estándar. Containers y R2 no se utilizan.
 
 Implementados localmente: consola React/Vite/Tailwind, API Hono, contratos, persistencia,
 motor durable, GitHubActionsExecutionBackend, runner demostrativo, checkpoints,
-aprobación de continuación y control de cuota. Codex/OpenCode y proveedores reales
-siguen pendientes. La vertical cloud ya fue validada: runner GitHub real, navegador
+aprobación de continuación y control de cuota. Codex/OpenCode siguen pendientes.
+OpenRouter de texto gratuito está implementado localmente; aceptación real pendiente
+de clave del proyecto. La vertical base cloud ya fue validada: runner GitHub real, navegador
 cerrado, seis checkpoints en D1 y recuperación de resultado 91 en un navegador nuevo.
 
 Repositorio privado: https://github.com/PABLOCESAR2412/Cubo
@@ -19,7 +20,8 @@ Rediseño publicado: workspace oscuro con sidebar, Chat, Tareas, Proyectos, Anal
 y Ajustes. Tareas usa el backend existente; las integraciones futuras aparecen
 como pendientes. El rediseño está publicado en la URL activa de desarrollo.
 Chat tiene ahora una primera vertical de persistencia: conversaciones, mensajes,
-renombrado, fijado, eliminación y exportación. La inferencia sigue pendiente.
+renombrado, fijado, eliminación y exportación. La nueva inferencia de texto espera
+validación real; ver [OpenRouter durable](docs/openrouter-chat.md).
 Ver [alcance real de Chat](docs/chat.md) y su estado de publicación.
 Proyectos tiene creación/listado, instrucciones y memoria manual, y conversaciones
 propias persistentes. La importación GitHub de lectura, archivos acotados y claves
@@ -30,6 +32,10 @@ Herramientas y tareas mediante agentes siguen pendientes. Ver
 Ver [alcance y comprobación de la interfaz](docs/design-workspace.md).
 La corrección estructural directa contra las capturas está documentada en
 [comparación de interfaz con Telo](docs/telo-interface-comparison.md).
+
+La iteración local actual inicia en Proyectos, muestra tarjetas y Recientes solo de
+chats, y reúne información técnica en Diagnóstico. Conserva la paleta y permite
+identificar instrucciones/memoria del repositorio. Ver [flujo actual](docs/workspace-project-flow.md).
 
 ## Comandos
 

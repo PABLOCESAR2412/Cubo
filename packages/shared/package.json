@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./repository-safety": "./src/repository-safety.ts"
+    "./repository-safety": "./src/repository-safety.ts",
+    "./chat-turn-safety": "./src/chat-turn-safety.ts"
   },
   "dependencies": {
     "zod": "^4.0.0"

@@ -1,4 +1,9 @@
-import type { Conversation, ConversationDetail, StoredProject } from "@cubo/shared";
+import type {
+  Conversation,
+  ConversationDetail,
+  ProjectProviderStatus,
+  StoredProject,
+} from "@cubo/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
 import { ChatComposer } from "./ui";
@@ -13,7 +18,6 @@ function selectedChat() {
   return new URL(window.location.href).searchParams.get("chat") ?? "";
 }
 export function Chat() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selected, setSelected] = useState(selectedChat);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
   const [draft, setDraft] = useState("");
@@ -21,6 +25,42 @@ export function Chat() {
   const [config, setConfig] = useState(false);
   const projectId = new URL(window.location.href).searchParams.get("project");
   const [projectName, setProjectName] = useState("");
+  const [provider, setProvider] = useState<{
+    projectId: string;
+    status: ProjectProviderStatus;
+  } | null>(null);
+  const [model, setModel] = useState("");
+  useEffect(() => {
+    let disposed = false;
+    setProvider(null);
+    setModel("");
+    if (projectId)
+      void requestApi<ProjectProviderStatus>(`projects/${projectId}/providers/openrouter`)
+        .then((status) => {
+          if (!disposed) setProvider({ projectId, status });
+        })
+        .catch(() => {
+          if (!disposed) setProvider(null);
+        });
+    return () => {
+      disposed = true;
+    };
+  }, [projectId]);
+  const configured = provider?.projectId === projectId && provider.status.configured;
+  const models = provider?.projectId === projectId ? provider.status.models : [];
+  const ready = Boolean(
+    configured && !provider?.status.blockedReason && models.some((m) => m.id === model),
+  );
+  const turn = detail?.turns?.find((t) => t.status === "QUEUED" || t.status === "RUNNING");
+  const lastTurn = detail?.turns?.[0];
+  useEffect(() => {
+    if (!selected) {
+      setModel("");
+      return;
+    }
+    const previous = detail?.turns?.[0]?.model;
+    setModel(previous ?? models[0]?.id ?? "");
+  }, [selected, detail?.turns?.[0]?.model, models[0]?.id]);
   useEffect(() => {
     let disposed = false;
     setProjectName("");
@@ -58,8 +98,12 @@ export function Chat() {
   const active = useRef(selected);
   const locked = useRef(false);
   const createKey = useRef<string | null>(null);
-  const pendingMessage = useRef<{ id: string; chat: string; content: string } | null>(null);
-  const historyDialog = useRef<HTMLDialogElement>(null);
+  const pendingMessage = useRef<{
+    id: string;
+    chat: string;
+    content: string;
+    model?: string;
+  } | null>(null);
   const actionsMenu = useRef<HTMLDetailsElement>(null);
   const conversationPane = useRef<HTMLDivElement>(null);
   const lastMessage = detail?.messages.at(-1)?.id;
@@ -78,7 +122,6 @@ export function Chat() {
         ? await api<ConversationDetail>(`conversations/${id}`)
         : null;
     if (generation !== request.current || id !== active.current) return;
-    setConversations(list.conversations);
     setDetail(next);
     setSyncError("");
     if (id && !next) {
@@ -126,18 +169,6 @@ export function Chat() {
   useEffect(() => {
     setTitle(detail?.conversation.title ?? "");
   }, [detail?.conversation.title]);
-  function choose(id: string) {
-    if (active.current !== id) {
-      active.current = id;
-      setSelected(id);
-      setDetail(null);
-      setDraft("");
-      setError("");
-      setNotice("");
-    }
-    historyDialog.current?.close();
-    void refresh().catch(() => setSyncError("No se pudo cargar la conversación."));
-  }
   async function action(operation: () => Promise<void>) {
     if (locked.current) return;
     locked.current = true;
@@ -158,7 +189,6 @@ export function Chat() {
   }
   async function create() {
     if (!projectId) {
-      historyDialog.current?.close();
       window.location.hash = "/proyectos";
       return;
     }
@@ -174,32 +204,64 @@ export function Chat() {
       setSelected(result.conversation.id);
       setDetail(null);
       setDraft("");
-      historyDialog.current?.close();
     });
   }
   async function saveMessage() {
     const content = draft.trim(),
       id = active.current;
-    if (!content || !id) return;
+    if (!content || !id || turn) return;
+    if (configured && !ready) {
+      setError("No hay un modelo gratuito verificado disponible.");
+      return;
+    }
     await action(async () => {
       if (
         !pendingMessage.current ||
         pendingMessage.current.chat !== id ||
-        pendingMessage.current.content !== content
+        pendingMessage.current.content !== content ||
+        pendingMessage.current.model !== (configured ? model : undefined)
       ) {
-        pendingMessage.current = { id: crypto.randomUUID(), chat: id, content };
+        pendingMessage.current = {
+          id: crypto.randomUUID(),
+          chat: id,
+          content,
+          ...(configured ? { model } : {}),
+        };
       }
-      const saved = await api<ConversationDetail>(`conversations/${id}/messages`, {
-        method: "POST",
-        headers: { "Idempotency-Key": pendingMessage.current.id },
-        body: JSON.stringify({ content }),
-      });
+      const saved = await api<ConversationDetail>(
+        `conversations/${id}/${configured ? "turn" : "messages"}`,
+        {
+          method: "POST",
+          headers: { "Idempotency-Key": pendingMessage.current.id },
+          body: JSON.stringify({ content, ...(configured ? { model } : {}) }),
+        },
+      );
       pendingMessage.current = null;
       if (active.current === id) {
-        setDetail(saved);
+        if (!configured) setDetail(saved);
         setDraft("");
-        setNotice("Mensaje guardado en Cubo. No se ha ejecutado ningún agente.");
+        setNotice(
+          configured
+            ? "Turno guardado en Cubo. Puedes cerrar el cliente; la ejecución es remota."
+            : "Mensaje guardado. Configura OpenRouter en el proyecto para obtener respuestas.",
+        );
       }
+    });
+  }
+  async function stop() {
+    if (!turn) return;
+    await action(async () => {
+      const result = await requestApi<{ task: { status: string; error: string | null } }>(
+        `tasks/${turn.taskId}/cancel`,
+        { method: "POST", body: "{}" },
+      );
+      setNotice(
+        result.task.status === "CANCELLED"
+          ? "Cancelación confirmada."
+          : result.task.error === "CANCELLATION_REQUESTED"
+            ? "Cancelación solicitada. Esperando confirmación del runner."
+            : "El turno ya había terminado.",
+      );
     });
   }
   async function update(pinned: boolean, rename = false) {
@@ -246,7 +308,7 @@ export function Chat() {
   }
   function exportConversation() {
     if (!detail) return;
-    const text = `# ${detail.conversation.title}\n\n${detail.messages.map((m) => `## Usuario · ${m.createdAt}\n\n${m.content}`).join("\n\n")}`;
+    const text = `# ${detail.conversation.title}\n\n${detail.messages.map((m) => `## ${m.role === "assistant" ? "Asistente" : "Usuario"} · ${m.createdAt}\n\n${m.content}`).join("\n\n")}`;
     const url = URL.createObjectURL(new Blob([text], { type: "text/markdown;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
@@ -254,39 +316,6 @@ export function Chat() {
     link.click();
     URL.revokeObjectURL(url);
   }
-  const historyList = (
-    <>
-      <div className="panel-heading">
-        <strong>Conversaciones</strong>
-        <button
-          type="button"
-          className="secondary compact"
-          disabled={busy}
-          onClick={() => void create()}
-        >
-          {projectId ? "Nuevo chat" : "Abrir proyectos"}
-        </button>
-      </div>
-      <div className="chat-history-items">
-        {conversations.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            className={selected === c.id ? "active" : ""}
-            disabled={busy}
-            onClick={() => choose(c.id)}
-          >
-            <strong>
-              {c.pinned ? "Fijado · " : ""}
-              {c.title}
-            </strong>
-            <small>{time(c.updatedAt)}</small>
-          </button>
-        ))}
-        {!conversations.length && <p className="hint">Aún no hay conversaciones guardadas.</p>}
-      </div>
-    </>
-  );
   return (
     <div className="persistent-chat">
       <div className={`chat-layout ${config ? "with-config" : ""}`}>
@@ -295,7 +324,7 @@ export function Chat() {
             <div>
               <span className="tag model-status">
                 <Icon name="cube" size={13} />
-                Sin modelo conectado
+                {configured ? "OpenRouter · API de texto" : "Sin modelo conectado"}
               </span>
               <h1>{detail?.conversation.title ?? "Chat"}</h1>
             </div>
@@ -307,13 +336,6 @@ export function Chat() {
                 onClick={() => void create()}
               >
                 {projectId ? "Nuevo chat" : "Abrir proyectos"}
-              </button>
-              <button
-                className="secondary compact chat-history-toggle"
-                type="button"
-                onClick={() => historyDialog.current?.showModal()}
-              >
-                Historial
               </button>
               <button
                 className="secondary compact"
@@ -404,16 +426,21 @@ export function Chat() {
               {notice}
             </div>
           )}
+          {provider?.status.blockedReason && (
+            <p className="workspace-alert error" role="alert">
+              OpenRouter detenido para este proyecto por coste inesperado. Requiere revisión antes
+              de continuar.
+            </p>
+          )}
           <div ref={conversationPane} className="conversation persistent-messages">
             {!detail ? (
               <div className="conversation-empty">
                 <Icon name="chat" size={26} />
-                <h2>Conversaciones persistentes</h2>
+                <h2>{projectName || "Elige un proyecto"}</h2>
                 <p>
                   {projectId
-                    ? "Crea un chat para este proyecto o abre su historial."
-                    : "Abre un proyecto para crear un chat. Las conversaciones anteriores siguen disponibles en Historial."}{" "}
-                  Los mensajes confirmados se recuperan desde Cubo.
+                    ? "Abre una conversación de este proyecto desde la barra lateral."
+                    : "Los chats se abren desde cada proyecto o desde Recientes."}{" "}
                 </p>
                 <button
                   className="primary"
@@ -429,18 +456,27 @@ export function Chat() {
                 <div className="conversation-context">
                   <div>
                     <Icon name="chat" size={15} />
-                    <strong>Conversación persistente</strong>
+                    <strong>{projectName || "Chat"}</strong>
                     <span>
-                      {projectId ? projectName || "Cargando proyecto…" : "Sin proyecto"} ·{" "}
-                      {detail.messages.length} mensajes guardados
+                      {detail.messages.length}{" "}
+                      {detail.messages.length === 1 ? "mensaje" : "mensajes"}
                     </span>
                   </div>
-                  <span className="tag pending">Agentes pendientes</span>
+                  <span className="tag pending">
+                    {configured ? "Sin herramientas" : "Proveedor pendiente"}
+                  </span>
                 </div>
-                <p className="conversation-capability">
-                  Contexto guardado en Cubo. Respuestas y acciones de agentes todavía no
-                  disponibles.
-                </p>
+                {!configured && projectId && (
+                  <p className="conversation-capability">
+                    <a
+                      className="back-link"
+                      href={`?project=${projectId}&panel=provider#/proyectos`}
+                    >
+                      Conectar OpenRouter
+                    </a>{" "}
+                    para obtener respuestas remotas.
+                  </p>
+                )}
                 {!detail.messages.length && (
                   <p className="muted">
                     Aún no hay mensajes. Guarda el primero para conservar su contexto.
@@ -448,13 +484,33 @@ export function Chat() {
                 )}
                 <ol className="chat-message-list">
                   {detail.messages.map((m) => (
-                    <li key={m.id}>
+                    <li
+                      key={m.id}
+                      className={m.role === "assistant" ? "assistant-message" : undefined}
+                    >
                       <div>
-                        <strong>Tú</strong>
+                        <strong>{m.role === "assistant" ? "Asistente" : "Tú"}</strong>
                         <time dateTime={m.createdAt}>{time(m.createdAt)}</time>
                         <span className="tag">Guardado</span>
                       </div>
                       <p>{m.content}</p>
+                      {m.role === "assistant" &&
+                        detail.turns?.find((t) => t.result?.messageId === m.id)?.result &&
+                        (() => {
+                          const usage = detail.turns?.find(
+                            (t) => t.result?.messageId === m.id,
+                          )?.result;
+                          return (
+                            <p className="hint">
+                              {usage?.model} · entrada {usage?.inputTokens ?? "unavailable"} ·
+                              salida {usage?.outputTokens ?? "unavailable"} tokens · USD{" "}
+                              {usage?.costUsd} ({usage?.costQuality})
+                              {usage?.finishReason === "length"
+                                ? " · salida alcanzó el límite de tokens"
+                                : ""}
+                            </p>
+                          );
+                        })()}
                       <button
                         type="button"
                         className="secondary compact"
@@ -465,6 +521,42 @@ export function Chat() {
                     </li>
                   ))}
                 </ol>
+                {turn && (
+                  <div className="turn-state" role="status">
+                    <span>
+                      {turn.error === "CANCELLATION_REQUESTED"
+                        ? "Cancelación pendiente de confirmar"
+                        : turn.status === "QUEUED"
+                          ? "En cola"
+                          : "Solicitud al modelo en ejecución"}{" "}
+                      · {turn.model}
+                    </span>
+                    <button
+                      className="secondary compact"
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void stop()}
+                    >
+                      {turn.error === "CANCELLATION_REQUESTED"
+                        ? "Comprobar cancelación"
+                        : "Detener"}
+                    </button>
+                  </div>
+                )}
+                {lastTurn?.status === "FAILED" && (
+                  <p className="inline-notice error" role="alert">
+                    El último turno falló: {lastTurn.error ?? "Error de ejecución"}. No se usó un
+                    modelo de pago.
+                  </p>
+                )}
+                {lastTurn?.status === "CANCELLED" && (
+                  <p className="turn-state" role="status">
+                    Último turno cancelado.
+                    <a className="back-link" href={`#/tareas/${lastTurn.taskId}`}>
+                      Ver proceso
+                    </a>
+                  </p>
+                )}
               </>
             )}
           </div>
@@ -472,8 +564,32 @@ export function Chat() {
             value={draft}
             onChange={setDraft}
             onSave={() => void saveMessage()}
-            disabled={!detail}
+            disabled={!detail || Boolean(turn) || (Boolean(configured) && !ready)}
             busy={busy}
+            submitLabel={configured ? "Enviar" : "Guardar"}
+            controls={
+              projectId ? (
+                <label className="chat-model-picker">
+                  Modelo
+                  <select
+                    aria-label="Modelo de OpenRouter"
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                    disabled={!configured || busy || Boolean(turn)}
+                  >
+                    {!models.length && <option value="">Sin modelo conectado</option>}
+                    {model && !models.some((m) => m.id === model) && (
+                      <option value={model}>Modelo anterior no disponible</option>
+                    )}
+                    {models.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : undefined
+            }
           />
         </section>
         {config && (
@@ -530,7 +646,7 @@ export function Chat() {
               <button
                 className="secondary"
                 type="button"
-                disabled={!detail || busy}
+                disabled={!detail || busy || Boolean(turn)}
                 onClick={() => void remove()}
               >
                 Eliminar conversación
@@ -545,10 +661,27 @@ export function Chat() {
               </label>
               <label>
                 Proveedor / modelo
-                <select disabled>
-                  <option>Sin conexión</option>
+                <select
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  disabled={!configured || busy || Boolean(turn)}
+                >
+                  {!models.length && <option value="">Sin conexión</option>}
+                  {model && !models.some((m) => m.id === model) && (
+                    <option value={model}>Modelo anterior no disponible</option>
+                  )}
+                  {models.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      OpenRouter · {m.name}
+                    </option>
+                  ))}
                 </select>
               </label>
+              {projectId && (
+                <a className="back-link" href={`?project=${projectId}&panel=provider#/proyectos`}>
+                  Configurar OpenRouter en el proyecto
+                </a>
+              )}
               <label>
                 Nivel de esfuerzo
                 <select disabled>
@@ -567,28 +700,15 @@ export function Chat() {
                 />
               </label>
               <p className="hint">
-                Uso y coste: unavailable. Contexto persistido: solo mensajes del usuario; todavía no
-                hay sesión de agente.
+                {lastTurn?.result
+                  ? `Último turno: ${lastTurn.result.inputTokens ?? "unavailable"} tokens de entrada, ${lastTurn.result.outputTokens ?? "unavailable"} de salida; USD ${lastTurn.result.costUsd} (${lastTurn.result.costQuality}).`
+                  : "Uso y coste: unavailable hasta recibir una respuesta del proveedor."}{" "}
+                No hay sesión de agente ni herramientas habilitadas.
               </p>
             </div>
           </Configuration>
         )}
       </div>
-      <dialog
-        ref={historyDialog}
-        className="chat-history-dialog"
-        aria-label="Historial de conversaciones"
-      >
-        <button
-          className="icon-button"
-          type="button"
-          aria-label="Cerrar historial"
-          onClick={() => historyDialog.current?.close()}
-        >
-          <Icon name="close" />
-        </button>
-        {historyList}
-      </dialog>
     </div>
   );
 }

@@ -1857,6 +1857,124 @@ label,
   padding: 0 5px;
   font-size: 10px;
 }
+.diagnostics-values {
+  margin: 0 18px;
+}
+.diagnostics-dialog {
+  width: min(520px, calc(100% - 28px));
+}
+.diagnostics-dialog > .hint {
+  margin: 14px 18px 18px;
+}
+.diagnostics-values > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: 12px;
+}
+.diagnostics-values dt {
+  color: var(--color-muted);
+}
+.diagnostics-values dd {
+  margin: 0;
+  text-align: right;
+}
+.project-index {
+  margin-top: 20px;
+}
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.project-tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  padding: 16px;
+  min-width: 0;
+}
+.project-tile:hover {
+  border-color: #546069;
+}
+.project-tile .project-list-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+}
+.project-tile .project-list-meta {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+}
+.project-tile .project-list-meta > span {
+  width: 100%;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.project-tile .task-title {
+  font-size: 16px;
+}
+.project-tile .hint {
+  overflow-wrap: anywhere;
+}
+.recent-group {
+  display: block;
+  color: var(--color-muted);
+  font-size: 11px;
+  padding: 12px 9px 5px;
+}
+.brand {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+}
+.provider-usage {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.provider-usage dt {
+  font-size: 11px;
+  color: var(--color-muted);
+}
+.provider-usage dd {
+  margin: 4px 0 0;
+  font-size: 12px;
+}
+.chat-model-picker {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  min-width: 0;
+  flex: 1 1 180px;
+}
+.chat-model-picker select {
+  max-width: 260px;
+  width: 100%;
+  min-width: 0;
+}
+.chat-message-list li.assistant-message {
+  margin-right: auto;
+  margin-left: 0;
+  background: var(--color-surface);
+  border-color: var(--color-line);
+}
+.turn-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 12px;
+}
 @media (max-width: 767px) {
   .task-row-body {
     grid-template-columns: minmax(0, 1fr);

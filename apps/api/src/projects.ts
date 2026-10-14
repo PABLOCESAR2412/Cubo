@@ -6,6 +6,7 @@ import { dispatchOutbox } from "./app";
 import { ownerAuthorized } from "./auth";
 import { containsSecret } from "./content-safety";
 import type { Env } from "./env";
+import { registerProviderRoutes } from "./project-providers";
 import { generateProjectKey } from "./repository-keys";
 
 export const projectRoutes = new Hono<{ Bindings: Env; Variables: { runnerId: string } }>();
@@ -14,6 +15,7 @@ projectRoutes.use("*", async (c, next) => {
     return c.json({ error: "Inicia sesión para acceder a Cubo." }, 401);
   await next();
 });
+registerProviderRoutes(projectRoutes);
 projectRoutes.get("/", async (c) =>
   c.json({ projects: await new D1ProjectStore(c.env.DB).list() }),
 );

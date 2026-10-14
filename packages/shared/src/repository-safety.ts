@@ -1,4 +1,8 @@
 import type { RepositoryImportInput } from "./repository";
+export function repositoryContextRole(path: string): "INSTRUCTIONS" | "MEMORY" | null {
+  if (/^(?:AGENTS|CLAUDE)\.md$/i.test(path)) return "INSTRUCTIONS";
+  return /^MEMORY\.md$/i.test(path) ? "MEMORY" : null;
+}
 export function isImportInput(input: unknown): input is RepositoryImportInput {
   return (
     !!input && typeof input === "object" && "type" in input && input.type === "REPOSITORY_IMPORT"

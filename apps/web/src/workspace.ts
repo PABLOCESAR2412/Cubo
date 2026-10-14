@@ -190,6 +190,19 @@ export function useWorkspace() {
       setBusy(false);
     }
   }
+  async function cancel() {
+    if (!detail || detail.task.id !== selectedRef.current || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api(`tasks/${detail.task.id}/cancel`, {});
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo confirmar la cancelación.");
+    } finally {
+      setBusy(false);
+    }
+  }
   const task = detail?.task.id === selected ? detail.task : undefined;
   async function logout() {
     setError("");
@@ -228,6 +241,7 @@ export function useWorkspace() {
     create,
     continueTask,
     retry,
+    cancel,
   };
 }
 export type Workspace = ReturnType<typeof useWorkspace>;

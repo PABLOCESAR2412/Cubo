@@ -1,16 +1,16 @@
 import type { Conversation } from "@cubo/shared";
 import { useEffect, useRef, useState } from "react";
+import { Diagnostics } from "./Diagnostics";
 import { Icon, type IconName } from "./Icon";
 import { NewTask } from "./NewTask";
 import { Analytics, Chat, Projects, Settings } from "./PreparedViews";
 import { PwaControls } from "./PwaControls";
 import { Tasks } from "./Tasks";
 import { AppShell, Sidebar, TopBar } from "./ui";
-import { labels, requestApi, taskIdFromHash, time, useWorkspace } from "./workspace";
+import { requestApi, taskIdFromHash, useWorkspace } from "./workspace";
 
 type View = "chat" | "tareas" | "proyectos" | "analiticas" | "ajustes";
 const navigation: Array<{ id: View; label: string; icon: IconName }> = [
-  { id: "chat", label: "Chat", icon: "chat" },
   { id: "tareas", label: "Tareas", icon: "tasks" },
   { id: "proyectos", label: "Proyectos", icon: "folder" },
   { id: "analiticas", label: "Analíticas", icon: "chart" },
@@ -18,11 +18,21 @@ const navigation: Array<{ id: View; label: string; icon: IconName }> = [
 ];
 function currentView(): View {
   const key = window.location.hash.split("/")[1];
+  if (key === "chat") return "chat";
   return navigation.some((n) => n.id === key)
     ? (key as View)
     : taskIdFromHash()
       ? "tareas"
-      : "chat";
+      : "proyectos";
+}
+function chatGroup(chat: Conversation): string {
+  if (chat.pinned) return "Fijados";
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const date = new Date(chat.updatedAt);
+  date.setHours(0, 0, 0, 0);
+  const days = Math.round((today.getTime() - date.getTime()) / 86400000);
+  return days <= 0 ? "Hoy" : days === 1 ? "Ayer" : days < 7 ? "Últimos 7 días" : "Anteriores";
 }
 export default function App() {
   const w = useWorkspace();
@@ -41,13 +51,10 @@ export default function App() {
     if (!w.authenticated) return;
     let disposed = false;
     const refresh = () => {
-      const project = new URL(location.href).searchParams.get("project");
-      void requestApi<{ conversations: Conversation[] }>(
-        project ? `conversations?project=${encodeURIComponent(project)}` : "conversations",
-      )
+      void requestApi<{ conversations: Conversation[] }>("conversations/recent")
         .then((data) => {
           if (!disposed) {
-            setRecentChats(data.conversations.slice(0, 5));
+            setRecentChats(data.conversations);
             setActiveChat(new URL(window.location.href).searchParams.get("chat"));
           }
         })
@@ -115,7 +122,17 @@ export default function App() {
     navigate("chat");
     window.dispatchEvent(new Event("cubo-chat-selected"));
   }
-  const title = navigation.find((n) => n.id === view)?.label;
+  function openProjects(create = false) {
+    const url = new URL(location.href);
+    url.searchParams.delete("project");
+    url.searchParams.delete("chat");
+    url.searchParams.delete("panel");
+    if (create) url.searchParams.set("new", "project");
+    else url.searchParams.delete("new");
+    history.replaceState(null, "", url);
+    navigate("proyectos");
+    window.dispatchEvent(new Event("cubo-projects-index"));
+  }
   if (!w.authenticated)
     return (
       <div className="access-shell">
@@ -175,36 +192,23 @@ export default function App() {
           >
             <Icon name="menu" />
           </button>
-          <span className="breadcrumb">
-            <Icon name="cube" size={17} /> <strong>Cubo</strong>
-            <span className="shell-context">{title}</span>
-          </span>
         </div>
         <div className="systembar-status">
           <PwaControls />
-          <span
-            className={
-              w.online && w.lastSync && !w.pollError ? "system-dot" : "system-dot inactive"
-            }
-          />
-          <span>{w.lastSync && !w.pollError ? "API sincronizada" : "Sin sincronizar"}</span>
-          <span className="mono last-sync">{w.lastSync ? time(w.lastSync) : "—"}</span>
-          <button
-            type="button"
-            className="icon-button"
-            aria-label="Abrir ajustes"
-            onClick={() => navigate("ajustes")}
-          >
-            <Icon name="settings" />
-          </button>
+          <Diagnostics w={w} />
         </div>
       </TopBar>
       <Sidebar mobile={mobile} dialogRef={navigationDialog} close={() => setDrawer(false)}>
         <div className="brand-row">
-          <a className="brand" href="#/chat" aria-label="Cubo, chat">
+          <button
+            className="brand"
+            type="button"
+            aria-label="Cubo, proyectos"
+            onClick={() => openProjects()}
+          >
             <Icon name="cube" size={26} />
             <span>Cubo</span>
-          </a>
+          </button>
           <span className="personal-label">personal</span>
           <button
             type="button"
@@ -223,12 +227,12 @@ export default function App() {
               navigationDialog.current.close();
               toggle.current?.focus();
             }
-            setComposer(true);
+            openProjects(true);
             setDrawer(false);
           }}
         >
           <Icon name="plus" size={17} />
-          Nueva tarea
+          Nuevo proyecto
         </button>
         <nav className="main-nav" aria-label="Navegación principal">
           {navigation.map((item) => (
@@ -237,7 +241,7 @@ export default function App() {
               href={`#/${item.id}`}
               className={view === item.id ? "active" : ""}
               aria-current={view === item.id ? "page" : undefined}
-              onClick={() => navigate(item.id)}
+              onClick={() => (item.id === "proyectos" ? openProjects() : navigate(item.id))}
             >
               <Icon name={item.icon} />
               <span>{item.label}</span>
@@ -248,62 +252,28 @@ export default function App() {
           ))}
         </nav>
         <div className="recent-header">
-          Recientes<span>{recentChats.length + Math.min(3, w.tasks.length)}</span>
+          Recientes<span>{recentChats.length}</span>
         </div>
         <div className="recents">
-          {recentChats.map((chat) => (
-            <button
-              key={chat.id}
-              type="button"
-              className={view === "chat" && activeChat === chat.id ? "active" : ""}
-              onClick={() => openChat(chat)}
-            >
-              <Icon name="chat" size={14} />
-              <span>
-                {chat.title}
-                <small>Conversación · {time(chat.updatedAt)}</small>
-              </span>
-            </button>
+          {recentChats.map((chat, index) => (
+            <div key={chat.id}>
+              {(index === 0 ||
+                chatGroup(recentChats[index - 1] as Conversation) !== chatGroup(chat)) && (
+                <span className="recent-group">{chatGroup(chat)}</span>
+              )}
+              <button
+                type="button"
+                className={view === "chat" && activeChat === chat.id ? "active" : ""}
+                onClick={() => openChat(chat)}
+              >
+                <Icon name="chat" size={14} />
+                <span>{chat.title}</span>
+              </button>
+            </div>
           ))}
-          {w.tasks.slice(0, 3).map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={view === "tareas" && w.selected === t.id ? "active" : ""}
-              onClick={() => openTask(t.id)}
-            >
-              <span
-                className={`recent-dot ${t.status.toLowerCase()}`}
-                role="img"
-                aria-label={labels[t.status]}
-              />
-              <span>
-                {t.title}
-                <small>
-                  {t.id.slice(0, 8)} · {time(t.createdAt)}
-                </small>
-              </span>
-            </button>
-          ))}
-          {!w.tasks.length && !recentChats.length && <p className="hint">Sin actividad reciente</p>}
+          {!recentChats.length && <p className="hint">Sin chats todavía</p>}
         </div>
         <div className="sidebar-system">
-          <span className="cloud-label">Cubo cloud</span>
-          <div>
-            <span
-              className={
-                w.online && w.lastSync && !w.pollError ? "system-dot" : "system-dot inactive"
-              }
-            />
-            <strong>
-              {w.online && w.lastSync && !w.pollError ? "Disponible" : "Sin sincronizar"}
-            </strong>
-          </div>
-          <p>GitHub Actions · {w.configured ? "configurado" : "pendiente"}</p>
-          <div className="system-budget">
-            <span>Presupuesto</span>
-            <span>USD 0</span>
-          </div>
           <button type="button" className="sign-out" onClick={() => void w.logout()}>
             Cerrar sesión
           </button>

@@ -187,24 +187,28 @@ export function Tasks({
                     <span>
                       {task.error === "EXECUTION_QUOTA_EXHAUSTED"
                         ? "Cuota gratuita agotada. La tarea permanece pendiente."
-                        : task.error === "EXECUTION_SLOT_BUSY"
-                          ? "Esperando el turno de ejecución."
-                          : task.error === "EXECUTION_CONFIGURATION_REQUIRED"
-                            ? "Ejecución remota pendiente de configuración."
-                            : task.error === "COST_GUARD_NOT_VERIFIED"
-                              ? "Bloqueo de gasto pendiente de verificar."
-                              : task.error}
+                        : task.error === "CANCELLATION_REQUESTED"
+                          ? "Cancelación solicitada. Esperando confirmación remota."
+                          : task.error === "EXECUTION_SLOT_BUSY"
+                            ? "Esperando el turno de ejecución."
+                            : task.error === "EXECUTION_CONFIGURATION_REQUIRED"
+                              ? "Ejecución remota pendiente de configuración."
+                              : task.error === "COST_GUARD_NOT_VERIFIED"
+                                ? "Bloqueo de gasto pendiente de verificar."
+                                : task.error}
                     </span>
-                    {task.status === "QUEUED" && w.guard && (
-                      <button
-                        className="secondary compact"
-                        type="button"
-                        disabled={w.busy || !w.online}
-                        onClick={() => void w.retry()}
-                      >
-                        Comprobar capacidad
-                      </button>
-                    )}
+                    {task.status === "QUEUED" &&
+                      task.error !== "CANCELLATION_REQUESTED" &&
+                      w.guard && (
+                        <button
+                          className="secondary compact"
+                          type="button"
+                          disabled={w.busy || !w.online}
+                          onClick={() => void w.retry()}
+                        >
+                          Comprobar capacidad
+                        </button>
+                      )}
                   </div>
                 )}
                 {task.status === "WAITING_APPROVAL" && (
@@ -234,8 +238,14 @@ export function Tasks({
                       </>
                     ) : (
                       <>
-                        <strong>{task.result.sum}</strong>
-                        <small>Suma de cuadrados · {task.result.steps} pasos</small>
+                        <strong>
+                          {"model" in task.result ? "Respuesta guardada" : task.result.sum}
+                        </strong>
+                        <small>
+                          {"model" in task.result
+                            ? task.result.model
+                            : `Suma de cuadrados · ${task.result.steps} pasos`}
+                        </small>
                       </>
                     )}
                   </div>
@@ -343,8 +353,15 @@ export function Tasks({
                     )}
                   </pre>
                 </details>
-                <button type="button" className="secondary compact" disabled>
-                  Cancelar · integración pendiente
+                <button
+                  type="button"
+                  className="secondary compact"
+                  disabled={w.busy || !w.online || !["QUEUED", "RUNNING"].includes(task.status)}
+                  onClick={() => void w.cancel()}
+                >
+                  {task.error === "CANCELLATION_REQUESTED"
+                    ? "Comprobar cancelación"
+                    : "Cancelar ejecución"}
                 </button>
               </div>
             </>

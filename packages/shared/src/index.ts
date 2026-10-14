@@ -1,7 +1,10 @@
 import { z } from "zod";
+import type { ChatTurnInput, ChatTurnResult } from "./chat-turn";
 import type { RepositoryImportInput, RepositoryImportResult } from "./repository";
 
 export * from "./chat";
+export * from "./chat-turn";
+export * from "./chat-turn-safety";
 export * from "./project";
 export * from "./repository";
 export const taskStatuses = [
@@ -37,7 +40,7 @@ export interface Task {
   id: string;
   title: string;
   status: TaskStatus;
-  input: DemoInput | RepositoryImportInput;
+  input: DemoInput | RepositoryImportInput | ChatTurnInput;
   executionId: string;
   attempt: number;
   progress: number;
@@ -45,7 +48,7 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
   error: string | null;
-  result: DemoResult | RepositoryImportResult | null;
+  result: DemoResult | RepositoryImportResult | ChatTurnResult | null;
 }
 export interface DemoResult {
   sum: number;
@@ -61,6 +64,8 @@ export interface TaskEvent {
   createdAt: string;
 }
 export interface Execution {
+  dispatchStarted?: boolean;
+  cancellationRequested?: boolean;
   id: string;
   taskId: string;
   backend: string;
@@ -116,11 +121,14 @@ export const runnerUpdateSchema = z
   .strict();
 export type RunnerUpdate = z.infer<typeof runnerUpdateSchema>;
 export interface RunnerContext {
+  protocolVersion?: 2;
   task: Task;
   execution: Execution;
   checkpoint: Checkpoint | null;
 }
 export interface TaskRepository {
+  beginDispatch?(id: string): Promise<boolean>;
+  confirmCancellation?(id: string): Promise<void>;
   reserveExecution?(id: string): Promise<boolean>;
   findTask(id: string): Promise<Task | null>;
   findExecution(id: string): Promise<Execution | null>;

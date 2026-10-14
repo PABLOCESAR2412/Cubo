@@ -1,6 +1,11 @@
 # Chat persistente: primera vertical
 
-## Alcance real
+Actualización: integración de texto OpenRouter implementada localmente, pendiente
+de clave y aceptación real. Ver [turnos durables](openrouter-chat.md). La navegación
+se concentra en proyectos y Recientes; [flujo actual](workspace-project-flow.md).
+Las descripciones siguientes documentan la entrega inicial sin inferencia.
+
+## Entrega inicial de persistencia
 
 Conversaciones y mensajes viven en D1. La PWA permite crear, renombrar, fijar,
 desfijar, abrir y eliminar conversaciones con confirmación. Se puede guardar

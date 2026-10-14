@@ -1,10 +1,13 @@
 import {
   type Approval,
+  type ChatTurnContext,
+  type ChatTurnInput,
   type Checkpoint,
   type DemoInput,
   type Execution,
   type ExecutionBlockReason,
   expectedSum,
+  isChatTurnInput,
   isImportInput,
   type RepositoryImportInput,
   type RunnerContext,
@@ -18,6 +21,7 @@ import {
 type Row = Record<string, string | number | null>;
 
 export { D1ChatStore } from "./chat";
+export { D1ChatExecutionStore } from "./chat-execution";
 export { D1ProjectStore } from "./projects";
 export { D1RepositoryStore } from "./repository";
 export class StoreError extends Error {
@@ -46,6 +50,8 @@ function taskFrom(row: Row): Task {
 }
 function executionFrom(row: Row): Execution {
   return {
+    dispatchStarted: row.dispatch_started === 1,
+    cancellationRequested: row.cancellation_requested === 1,
     id: String(row.id),
     taskId: String(row.task_id),
     backend: String(row.backend),
@@ -77,14 +83,36 @@ export class D1TaskStore implements TaskRepository {
       ).all<Row>()
     ).results.map(taskFrom);
   }
-  async createTask(id: string, input: DemoInput | RepositoryImportInput): Promise<Task> {
+  async createTask(
+    id: string,
+    input: DemoInput | RepositoryImportInput | ChatTurnInput,
+    chatContext?: ChatTurnContext,
+  ): Promise<Task> {
     const existing = await this.findTask(id);
     if (existing) {
       if (JSON.stringify(existing.input) !== JSON.stringify(input))
         throw new StoreError(409, "La clave de creación ya corresponde a otros datos.");
+      if (isChatTurnInput(input)) {
+        const user = await this.db
+          .prepare(
+            "SELECT content FROM chat_messages WHERE id=? AND conversation_id=? AND role='user'",
+          )
+          .bind(input.userMessageId, input.conversationId)
+          .first<{ content: string }>();
+        if (!user || user.content !== chatContext?.messages.at(-1)?.content)
+          throw new StoreError(409, "La clave corresponde a otro mensaje o el chat fue eliminado.");
+      }
       return existing;
     }
     const now = new Date().toISOString();
+    if (
+      isChatTurnInput(input) &&
+      (chatContext?.messages.at(-1)?.role !== "user" ||
+        (chatContext.messages.at(-1)?.content.length ?? 0) > 2000 ||
+        !chatContext.messages.at(-1)?.content.trim() ||
+        input.userMessageId !== id)
+    )
+      throw new StoreError(400, "Conserva el contexto antes de lanzar el turno.");
     const executionId = `${id}-1`;
     await this.db.batch([
       this.db
@@ -93,7 +121,11 @@ export class D1TaskStore implements TaskRepository {
         )
         .bind(
           id,
-          isImportInput(input) ? "Importar repositorio" : "Prueba durable",
+          isChatTurnInput(input)
+            ? "Responder chat"
+            : isImportInput(input)
+              ? "Importar repositorio"
+              : "Prueba durable",
           JSON.stringify(input),
           executionId,
           now,
@@ -102,7 +134,7 @@ export class D1TaskStore implements TaskRepository {
         ),
       this.db
         .prepare(
-          "INSERT INTO executions(id,task_id,backend,status,created_at) SELECT ?,id,'github-actions','QUEUED',? FROM tasks WHERE id=? AND execution_id=? ON CONFLICT(id) DO NOTHING",
+          "INSERT INTO executions(id,task_id,backend,status,created_at,dispatch_started) SELECT ?,id,'github-actions','QUEUED',?,0 FROM tasks WHERE id=? AND execution_id=? ON CONFLICT(id) DO NOTHING",
         )
         .bind(executionId, now, id, executionId),
       this.db
@@ -110,6 +142,34 @@ export class D1TaskStore implements TaskRepository {
           "INSERT INTO task_events SELECT ?,id,?,0,'QUEUED','Tarea guardada y pendiente de ejecución.',? FROM tasks WHERE id=? ON CONFLICT(id) DO NOTHING",
         )
         .bind(`${executionId}:queued`, executionId, now, id),
+      ...(isChatTurnInput(input)
+        ? [
+            this.db
+              .prepare(
+                "INSERT INTO chat_messages(id,conversation_id,sequence,content,created_at,role) SELECT ?,?,COALESCE((SELECT MAX(sequence) FROM chat_messages WHERE conversation_id=?),0)+1,?,?,'user' FROM tasks WHERE id=? ON CONFLICT(id) DO NOTHING",
+              )
+              .bind(
+                input.userMessageId,
+                input.conversationId,
+                input.conversationId,
+                chatContext?.messages.at(-1)?.content,
+                now,
+                id,
+              ),
+            this.db
+              .prepare(
+                "INSERT INTO chat_turns(task_id,project_id,conversation_id,user_message_id,context) SELECT ?,?,?,?,? FROM tasks WHERE id=? ON CONFLICT(task_id) DO NOTHING",
+              )
+              .bind(
+                id,
+                input.projectId,
+                input.conversationId,
+                input.userMessageId,
+                JSON.stringify(chatContext),
+                id,
+              ),
+          ]
+        : []),
     ]);
     const task = await this.findTask(id);
     if (!task)
@@ -144,7 +204,7 @@ export class D1TaskStore implements TaskRepository {
     await this.db.batch([
       this.db
         .prepare(
-          "UPDATE executions SET backend_run_id=?,status='RUNNING' WHERE id=? AND status IN ('QUEUED','RUNNING') AND (backend_run_id IS NULL OR backend_run_id=?) AND EXISTS(SELECT 1 FROM tasks WHERE execution_id=? AND status IN ('QUEUED','RUNNING'))",
+          "UPDATE executions SET backend_run_id=?,status='RUNNING' WHERE id=? AND cancellation_requested=0 AND status IN ('QUEUED','RUNNING') AND (backend_run_id IS NULL OR backend_run_id=?) AND EXISTS(SELECT 1 FROM tasks WHERE execution_id=? AND status IN ('QUEUED','RUNNING'))",
         )
         .bind(runId, id, runId, id),
       this.db
@@ -159,7 +219,12 @@ export class D1TaskStore implements TaskRepository {
         .bind(`${id}:claimed`, now, id, runId),
     ]);
     const execution = await this.findExecution(id);
-    if (!execution || execution.backendRunId !== runId || execution.status !== "RUNNING")
+    if (
+      !execution ||
+      execution.cancellationRequested ||
+      execution.backendRunId !== runId ||
+      execution.status !== "RUNNING"
+    )
       throw new StoreError(409, "Otro runner reclamó la ejecución o ya terminó.");
   }
   async latestCheckpoint(taskId: string): Promise<Checkpoint | null> {
@@ -187,13 +252,15 @@ export class D1TaskStore implements TaskRepository {
     if (!execution || execution.backendRunId !== runId)
       throw new StoreError(403, "Runner no autorizado para esta ejecución.");
     const task = await this.findTask(execution.taskId);
+    if (execution.cancellationRequested)
+      throw new StoreError(409, "Cancelación solicitada; callbacks revocados.");
     if (!task || task.executionId !== id) throw new StoreError(409, "La ejecución fue sustituida.");
     return { task, execution, checkpoint: await this.latestCheckpoint(task.id) };
   }
   async saveProgress(id: string, runId: string, update: RunnerUpdate): Promise<void> {
     const { task, execution, checkpoint } = await this.context(id, runId);
-    if (isImportInput(task.input))
-      throw new StoreError(400, "Esta ejecución requiere progreso de importación.");
+    if ("type" in task.input)
+      throw new StoreError(400, "Esta ejecución no admite progreso de la demo.");
     if (
       update.cursor > task.input.steps ||
       update.sequence !== update.cursor ||
@@ -331,7 +398,7 @@ export class D1TaskStore implements TaskRepository {
         .bind(next, now, taskId, version, approvalId),
       this.db
         .prepare(
-          "INSERT INTO executions(id,task_id,backend,status,created_at) SELECT ?,id,'github-actions','QUEUED',? FROM tasks WHERE id=? AND execution_id=? ON CONFLICT(id) DO NOTHING",
+          "INSERT INTO executions(id,task_id,backend,status,created_at,dispatch_started) SELECT ?,id,'github-actions','QUEUED',?,0 FROM tasks WHERE id=? AND execution_id=? ON CONFLICT(id) DO NOTHING",
         )
         .bind(next, now, taskId, next),
       this.db
@@ -361,16 +428,17 @@ export class D1TaskStore implements TaskRepository {
     }));
   }
   async failExecution(id: string, message: string): Promise<void> {
+    if ((await this.findExecution(id))?.cancellationRequested) return;
     const now = new Date().toISOString();
     await this.db.batch([
       this.db
         .prepare(
-          "UPDATE tasks SET status='FAILED',error=?,updated_at=?,version=version+1 WHERE execution_id=? AND status IN ('QUEUED','RUNNING')",
+          "UPDATE tasks SET status='FAILED',error=?,updated_at=?,version=version+1 WHERE execution_id=? AND status IN ('QUEUED','RUNNING') AND EXISTS(SELECT 1 FROM executions e WHERE e.id=tasks.execution_id AND e.cancellation_requested=0)",
         )
         .bind(message, now, id),
       this.db
         .prepare(
-          "UPDATE executions SET status='FAILED' WHERE id=? AND status IN ('QUEUED','RUNNING')",
+          "UPDATE executions SET status='FAILED' WHERE id=? AND cancellation_requested=0 AND status IN ('QUEUED','RUNNING')",
         )
         .bind(id),
       this.db
@@ -379,6 +447,65 @@ export class D1TaskStore implements TaskRepository {
         )
         .bind(`${id}:failed`, message, now, id),
     ]);
+  }
+  async beginDispatch(id: string): Promise<boolean> {
+    const result = await this.db
+      .prepare(
+        "UPDATE executions SET dispatch_started=1 WHERE id=? AND cancellation_requested=0 AND status IN ('QUEUED','RUNNING')",
+      )
+      .bind(id)
+      .run();
+    return Boolean(result.meta.changes);
+  }
+  async requestCancellation(taskId: string): Promise<Task> {
+    const task = await this.findTask(taskId);
+    if (!task) throw new StoreError(404, "Tarea desconocida.");
+    if (task.status === "CANCELLED") return task;
+    if (!["QUEUED", "RUNNING"].includes(task.status))
+      throw new StoreError(409, "La tarea ya terminó.");
+    const now = new Date().toISOString();
+    await this.db.batch([
+      this.db
+        .prepare(
+          "UPDATE executions SET cancellation_requested=1,retry_after=NULL WHERE id=? AND status IN ('QUEUED','RUNNING')",
+        )
+        .bind(task.executionId),
+      this.db
+        .prepare(
+          "UPDATE tasks SET error='CANCELLATION_REQUESTED',version=version+1,updated_at=? WHERE id=? AND status IN ('QUEUED','RUNNING')",
+        )
+        .bind(now, taskId),
+    ]);
+    return (await this.findTask(taskId)) as Task;
+  }
+  async confirmCancellation(id: string): Promise<void> {
+    const now = new Date().toISOString();
+    await this.db.batch([
+      this.db
+        .prepare(
+          "UPDATE tasks SET status='CANCELLED',error=NULL,version=version+1,updated_at=? WHERE execution_id=? AND status IN ('QUEUED','RUNNING') AND EXISTS(SELECT 1 FROM executions WHERE id=? AND cancellation_requested=1)",
+        )
+        .bind(now, id, id),
+      this.db
+        .prepare(
+          "UPDATE executions SET status='CANCELLED' WHERE id=? AND cancellation_requested=1 AND EXISTS(SELECT 1 FROM tasks WHERE execution_id=? AND status='CANCELLED')",
+        )
+        .bind(id, id),
+      this.db
+        .prepare(
+          "INSERT INTO task_events SELECT ?,task_id,id,0,'CANCELLED','Cancelación confirmada.',? FROM executions WHERE id=? AND status='CANCELLED' ON CONFLICT(id) DO NOTHING",
+        )
+        .bind(`${id}:cancelled`, now, id),
+    ]);
+  }
+  async pendingCancellations(): Promise<string[]> {
+    return (
+      await this.db
+        .prepare(
+          "SELECT id FROM executions WHERE cancellation_requested=1 AND status IN ('QUEUED','RUNNING') LIMIT 3",
+        )
+        .all<{ id: string }>()
+    ).results.map((r) => r.id);
   }
   async allowLogin(ip: string): Promise<boolean> {
     const id = Array.from(
@@ -402,6 +529,7 @@ export class D1TaskStore implements TaskRepository {
       .run();
   }
   async deferExecution(id: string, reason: ExecutionBlockReason): Promise<void> {
+    if ((await this.findExecution(id))?.cancellationRequested) return;
     const now = new Date();
     const retry = new Date(
       now.getTime() + (reason === "EXECUTION_SLOT_BUSY" ? 60000 : 24 * 60 * 60 * 1000),
@@ -409,12 +537,12 @@ export class D1TaskStore implements TaskRepository {
     await this.db.batch([
       this.db
         .prepare(
-          "UPDATE tasks SET status='QUEUED',error=?,updated_at=?,version=version+1 WHERE execution_id=? AND status IN ('QUEUED','RUNNING')",
+          "UPDATE tasks SET status='QUEUED',error=?,updated_at=?,version=version+1 WHERE execution_id=? AND status IN ('QUEUED','RUNNING') AND EXISTS(SELECT 1 FROM executions e WHERE e.id=tasks.execution_id AND e.cancellation_requested=0)",
         )
         .bind(reason, now.toISOString(), id),
       this.db
         .prepare(
-          "UPDATE executions SET status='QUEUED',workflow_created=0,dispatched=0,backend_run_id=NULL,orchestration_attempt=orchestration_attempt+1,retry_after=? WHERE id=? AND status IN ('QUEUED','RUNNING')",
+          "UPDATE executions SET status='QUEUED',workflow_created=0,dispatched=0,backend_run_id=NULL,orchestration_attempt=orchestration_attempt+1,retry_after=? WHERE id=? AND cancellation_requested=0 AND status IN ('QUEUED','RUNNING')",
         )
         .bind(retry, id),
     ]);
@@ -422,6 +550,8 @@ export class D1TaskStore implements TaskRepository {
   async retryDispatch(taskId: string): Promise<Task> {
     const task = await this.findTask(taskId);
     if (!task) throw new StoreError(404, "Tarea desconocida.");
+    if ((await this.findExecution(task.executionId))?.cancellationRequested)
+      throw new StoreError(409, "Cancelación pendiente de confirmar.");
     if (task.status !== "QUEUED" || !task.error)
       throw new StoreError(409, "La tarea no está bloqueada por capacidad.");
     await this.db.batch([

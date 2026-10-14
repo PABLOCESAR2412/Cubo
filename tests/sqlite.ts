@@ -3,7 +3,12 @@ import { readFileSync } from "node:fs";
 export function database(path = ":memory:"): { sqlite: Database; db: D1Database } {
   const sqlite = new Database(path);
   sqlite.exec(readFileSync("packages/database/migrations/0001_tasks.sql", "utf8"));
-  for (const name of ["0002_chat.sql", "0003_projects.sql", "0004_repository_imports.sql"])
+  for (const name of [
+    "0002_chat.sql",
+    "0003_projects.sql",
+    "0004_repository_imports.sql",
+    "0005_chat_turns.sql",
+  ])
     sqlite.exec(readFileSync(`packages/database/migrations/${name}`, "utf8"));
   function prepare(sql: string, params: unknown[] = []) {
     return {
@@ -25,6 +30,11 @@ export function database(path = ":memory:"): { sqlite: Database; db: D1Database 
     batch: async (statements: Array<ReturnType<typeof prepare>>) =>
       sqlite.transaction(() =>
         statements.map((s) => {
+          if (/^\s*(SELECT|WITH|PRAGMA)\b/i.test(s.sql))
+            return {
+              success: true,
+              results: sqlite.query(s.sql).all(...(s.params as Array<string | number | null>)),
+            };
           const info = sqlite.query(s.sql).run(...(s.params as Array<string | number | null>));
           return { success: true, meta: { changes: info.changes } };
         }),

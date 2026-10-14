@@ -1,4 +1,4 @@
-import type { ChatMessage, Conversation, ConversationDetail } from "@cubo/shared";
+import type { ChatMessage, ChatTurnResult, Conversation, ConversationDetail } from "@cubo/shared";
 import { StoreError } from "./index";
 
 type Row = Record<string, string | number | null>;
@@ -19,7 +19,7 @@ function message(row: Row): ChatMessage {
     conversationId: String(row.conversation_id),
     sequence: Number(row.sequence),
     content: String(row.content),
-    role: "user",
+    role: row.role === "assistant" ? "assistant" : "user",
     status: "STORED",
     createdAt: String(row.created_at),
   };
@@ -44,6 +44,13 @@ export class D1ChatStore {
           "SELECT * FROM conversations WHERE project_id IS ? ORDER BY pinned DESC,updated_at DESC,id LIMIT 100",
         )
         .bind(this.projectId)
+        .all<Row>()
+    ).results.map(conversation);
+  }
+  async recent(): Promise<Conversation[]> {
+    return (
+      await this.db
+        .prepare("SELECT * FROM conversations ORDER BY pinned DESC,updated_at DESC,id LIMIT 100")
         .all<Row>()
     ).results.map(conversation);
   }
@@ -84,7 +91,26 @@ export class D1ChatStore {
     return {
       conversation: conversation(row),
       messages: (rows.results as Row[]).map(message),
-      inference: "unavailable",
+      inference: (await this.db
+        .prepare("SELECT 1 FROM project_provider_keys WHERE project_id=? AND provider='openrouter'")
+        .bind(this.projectId)
+        .first())
+        ? "configured"
+        : "unavailable",
+      turns: (
+        await this.db
+          .prepare(
+            "SELECT t.id,t.status,t.error,t.result,t.input FROM tasks t JOIN chat_turns r ON r.task_id=t.id WHERE r.conversation_id=? AND r.project_id IS ? ORDER BY t.created_at DESC LIMIT 50",
+          )
+          .bind(id, this.projectId)
+          .all<Row>()
+      ).results.map((row) => ({
+        taskId: String(row.id),
+        status: String(row.status),
+        error: row.error as string | null,
+        model: JSON.parse(String(row.input)).model as string,
+        result: row.result ? (JSON.parse(String(row.result)) as ChatTurnResult) : null,
+      })),
     };
   }
   async update(id: string, version: number, title: string, pinned: boolean): Promise<Conversation> {
@@ -101,9 +127,13 @@ export class D1ChatStore {
     return this.find(id);
   }
   async remove(id: string, version: number): Promise<void> {
+    if (await this.activeTurn(id))
+      throw new StoreError(409, "Detén la ejecución antes de eliminar el chat.");
     const result = await this.db
-      .prepare("DELETE FROM conversations WHERE id=? AND version=? AND project_id IS ?")
-      .bind(id, version, this.projectId)
+      .prepare(
+        "DELETE FROM conversations WHERE id=? AND version=? AND project_id IS ? AND NOT EXISTS(SELECT 1 FROM chat_turns r JOIN tasks t ON t.id=r.task_id WHERE r.conversation_id=? AND t.status IN ('QUEUED','RUNNING'))",
+      )
+      .bind(id, version, this.projectId, id)
       .run();
     if (!result.meta.changes) {
       await this.find(id);
@@ -112,13 +142,33 @@ export class D1ChatStore {
   }
   async append(conversationId: string, id: string, content: string): Promise<ConversationDetail> {
     await this.find(conversationId);
+    const previous = await this.db
+      .prepare("SELECT conversation_id,content FROM chat_messages WHERE id=?")
+      .bind(id)
+      .first<Row>();
+    if (previous) {
+      if (previous.conversation_id !== conversationId || previous.content !== content)
+        throw new StoreError(409, "La clave de mensaje corresponde a otros datos.");
+      return this.detail(conversationId);
+    }
+    if (await this.activeTurn(conversationId))
+      throw new StoreError(409, "Espera o detén el turno activo antes de añadir otro mensaje.");
     const now = new Date().toISOString();
     await this.db.batch([
       this.db
         .prepare(
-          "INSERT INTO chat_messages(id,conversation_id,sequence,content,created_at) SELECT ?,id,COALESCE((SELECT MAX(sequence) FROM chat_messages WHERE conversation_id=?),0)+1,?,? FROM conversations WHERE id=? AND project_id IS ? AND (SELECT COUNT(*) FROM chat_messages WHERE conversation_id=?)<200 ON CONFLICT(id) DO NOTHING",
+          "INSERT INTO chat_messages(id,conversation_id,sequence,content,created_at) SELECT ?,id,COALESCE((SELECT MAX(sequence) FROM chat_messages WHERE conversation_id=?),0)+1,?,? FROM conversations WHERE id=? AND project_id IS ? AND (SELECT COUNT(*) FROM chat_messages WHERE conversation_id=?)<200 AND NOT EXISTS(SELECT 1 FROM chat_turns r JOIN tasks t ON t.id=r.task_id WHERE r.conversation_id=? AND t.status IN ('QUEUED','RUNNING')) ON CONFLICT(id) DO NOTHING",
         )
-        .bind(id, conversationId, content, now, conversationId, this.projectId, conversationId),
+        .bind(
+          id,
+          conversationId,
+          content,
+          now,
+          conversationId,
+          this.projectId,
+          conversationId,
+          conversationId,
+        ),
     ]);
     const stored = await this.db
       .prepare("SELECT * FROM chat_messages WHERE id=?")
@@ -129,5 +179,15 @@ export class D1ChatStore {
     if (stored.conversation_id !== conversationId || stored.content !== content)
       throw new StoreError(409, "La clave de mensaje corresponde a otros datos.");
     return this.detail(conversationId);
+  }
+  async activeTurn(id: string): Promise<boolean> {
+    return Boolean(
+      await this.db
+        .prepare(
+          "SELECT 1 FROM chat_turns r JOIN tasks t ON t.id=r.task_id WHERE r.conversation_id=? AND r.project_id IS ? AND t.status IN ('QUEUED','RUNNING') LIMIT 1",
+        )
+        .bind(id, this.projectId)
+        .first(),
+    );
   }
 }

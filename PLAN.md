@@ -12,7 +12,22 @@ todavía no ejecuta agentes. Mantener infraestructura USD 0 y la paleta de Cubo.
 Diseño actual aprobado: refinarlo sin reemplazar shell, navegación ni identidad.
 ChatGPT y Claude son referencias de interacción del chat, no nuevas paletas.
 
-## Iteración actual: documentación y gestión visual del chat
+## Iteración actual: proyectos, diagnóstico y OpenRouter gratuito
+
+Solicitud posterior del usuario: inicio en Proyectos, tarjetas con acciones reales,
+Nuevo proyecto en sidebar, Recientes solo chats agrupados, sin pestaña general de
+Chat ni historial duplicado. Diagnóstico reúne estado técnico. Paleta preservada.
+Identificar instrucciones/memoria del repositorio sin sobrescribir campos adicionales.
+Ver [flujo del workspace](docs/workspace-project-flow.md).
+
+El usuario eligió OpenRouter para el primer chat real, solo modelos gratuitos.
+Implementados localmente adaptador, clave cifrada por proyecto, turno durable,
+respuesta/uso persistidos y cancelación con confirmación remota. Aceptación real
+pendiente de configurar la clave desde la PWA; no pedirla por chat. No son agentes
+Codex/OpenCode ni herramientas habilitadas. Ver [OpenRouter](docs/openrouter-chat.md).
+Esta prioridad autorizada adelanta la API de texto; no adelanta operaciones Git.
+
+## Iteración anterior: documentación y gestión visual del chat
 
 Implementada y validada localmente. Publicación registrada en MEMORY.md al cierre.
 

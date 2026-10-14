@@ -176,7 +176,13 @@ export function TaskRow({
           </button>
           <div className="task-row-meta" title="Proyecto y modelo aún no disponibles">
             <AgentBadge
-              name={"type" in task.input ? "Importador de repositorio" : "Runner de validación"}
+              name={
+                "type" in task.input
+                  ? task.input.type === "CHAT_TURN"
+                    ? "OpenRouter · API"
+                    : "Importador de repositorio"
+                  : "Runner de validación"
+              }
             />
             <span>{task.input.steps} pasos</span>
             {task.input.pauseAt && <span>Pausa con aprobación</span>}
@@ -306,12 +312,16 @@ export function ChatComposer({
   onSave,
   disabled,
   busy,
+  controls,
+  submitLabel = "Guardar",
 }: {
   value: string;
   onChange: (value: string) => void;
   onSave: () => void;
   disabled: boolean;
   busy: boolean;
+  controls?: ReactNode;
+  submitLabel?: string;
 }) {
   return (
     <form
@@ -350,22 +360,24 @@ export function ChatComposer({
           >
             <Icon name="settings" />
           </button>
-          <button className="secondary compact" type="button" disabled>
-            Modelo / agente pendiente
-          </button>
+          {controls ?? (
+            <button className="secondary compact" type="button" disabled>
+              Modelo / agente pendiente
+            </button>
+          )}
         </div>
         <button
           className="primary compact"
           type="submit"
           disabled={disabled || busy || !value.trim()}
-          aria-label="Guardar mensaje"
+          aria-label={`${submitLabel} mensaje`}
         >
           {busy ? (
             "Guardando…"
           ) : (
             <>
               <Icon name="arrow" size={16} />
-              <span>Guardar</span>
+              <span>{submitLabel}</span>
             </>
           )}
         </button>
@@ -381,7 +393,9 @@ export function ChatComposer({
         </button>
       </fieldset>
       <p className="hint">
-        Mensajes persistentes · inferencia, herramientas, comandos / y esfuerzo pendientes.
+        {submitLabel === "Enviar"
+          ? "Turno remoto durable · herramientas, adjuntos y esfuerzo pendientes."
+          : "Mensajes persistentes · proveedor pendiente de configurar."}
       </p>
     </form>
   );

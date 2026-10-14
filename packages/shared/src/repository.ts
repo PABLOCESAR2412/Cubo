@@ -16,7 +16,11 @@ export const importInputSchema = z
   .refine((value) => (value.access === "SSH" ? value.keyId !== null : value.keyId === null));
 export type RepositoryImportInput = z.infer<typeof importInputSchema>;
 const fileSchema = z
-  .object({ path: z.string().min(1).max(160), content: z.string().max(4000) })
+  .object({
+    path: z.string().min(1).max(160),
+    content: z.string().max(4000),
+    truncated: z.boolean().optional(),
+  })
   .strict();
 export const importUpdateSchema = z
   .object({
