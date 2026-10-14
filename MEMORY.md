@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-14, segunda pasada de refinamiento visual publicada y comprobada en cloud.
+Última actualización significativa: 2026-10-14, plan centrado en proyectos actualizado y acciones directas de Chat publicadas y comprobadas en cloud.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
@@ -182,7 +182,11 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - QA local: gestión desde menú, recuperación tras cerrar cliente, borrado del
   registro de prueba, menú y compositor dentro de 390px con aviso activo; escritorio
   1440px, cinco módulos y sin overflow. Reviewer ship, sin correcciones pendientes.
-  20 tests/85, lint, typecheck y build pasan. Publicación pendiente de cierre.
+  20 tests/85, lint, typecheck y build pasan. Commit 08b0581 en main;
+  Worker b94e3e55-2d74-4c4a-a859-bb4653c628ca, cubo-dev personal.
+  Bundle index-C1TF_vXu.js comprobado; PWA, móvil, cinco vistas y API privada pasan.
+  Menú y gestión de Chat probados en D1 cloud, cierre/reapertura y borrado del
+  registro propio; demo previa SUCCEEDED/91. Sin runners nuevos ni cambios de secretos.
 
 ## Mantenimiento
 

@@ -73,3 +73,10 @@ del registro propio. Revisión final: ship, sin defectos materiales pendientes.
 
 PLAN.md y functional-scope.md registran los nuevos requisitos funcionales y la
 siguiente vertical de proyectos; no los presentan como implementados.
+
+Publicación de estas acciones: commit 08b0581, Worker cubo-dev versión
+b94e3e55-2d74-4c4a-a859-bb4653c628ca, bundle index-C1TF_vXu.js.
+Comprobación posterior: menú de renombrado/fijado real sobre D1 cloud, gestión,
+exportación, recuperación después de cerrar cliente y borrado del registro propio.
+Cinco módulos, móvil, PWA y API privada correctos; resultado durable previo 91.
+No hay migraciones pendientes, secretos modificados ni nuevos runners.
