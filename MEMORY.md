@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-14, proyectos persistentes y chats asociados implementados y validados localmente.
+Última actualización significativa: 2026-10-14, proyectos persistentes y chats asociados publicados y comprobados en cloud.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
@@ -201,6 +201,12 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   Tests 20/86, lint, typecheck y build pasan; motor sin cambios, ningún runner nuevo.
 - Importación SSH/GitHub, secretos cifrados, herramientas y tareas por proyecto
   pendientes. docs/projects.md define compatibilidad y rollback sin borrar datos.
+- Commit 3db24b3 publicado; migración 0003 aplicada a cubo-dev-db personal.
+  Worker a21025b3-ca79-49ab-bb0f-23c2a1afb21f; bundle index-d1baOXPe.js comprobado.
+  Prueba D1 cloud confirma dos proyectos, contextos/chats aislados, ocho rechazos
+  de scope, cierre y recuperación. Registros propios borrados; anteriores intactos.
+  Chat anterior, cinco vistas, PWA, móvil y API privada (incluido projects 401) pasan.
+  Demo anterior SUCCEEDED/91 conservada; sin nuevos runners o secretos modificados.
 
 ## Mantenimiento
 

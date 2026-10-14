@@ -76,3 +76,18 @@ Siguiente ampliación: importar GitHub en una tarea durable, autenticar reposito
 privados con credenciales de lectura cifradas por proyecto y guardar revisión/
 inventario/conocimiento relevante. Antes de habilitarla, verificar acceso, permisos,
 cuota gratuita y guía SSH oficial. No publicar cambios Git mediante el agente.
+
+## Publicación verificada
+
+Commit 3db24b3 en main. Migración 0003 aplicada en cubo-dev-db de la cuenta personal;
+Worker cubo-dev versión a21025b3-ca79-49ab-bb0f-23c2a1afb21f.
+URL: https://cubo-dev.pctg.workers.dev. Bundle index-d1baOXPe.js comprobado.
+
+La aceptación se repitió sobre D1 cloud: crear dos proyectos, contextos distintos,
+chats asociados, cierre y recuperación móvil, rechazo de ocho lecturas/mutaciones
+con scope incorrecto y conservación de chats anteriores. Se eliminaron solamente
+los registros creados por esta prueba; la limpieza quedó verificada.
+La API projects devuelve 401 sin sesión. Cinco vistas, PWA, móvil y gestión de
+Chat anterior siguen pasando. Tarea durable previa SUCCEEDED/91 conservada.
+No se lanzaron runners nuevos ni se modificaron valores de secretos. La revisión
+visual final dio ship tras corregir documentación anterior del estado de Proyectos.
