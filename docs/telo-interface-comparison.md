@@ -61,3 +61,15 @@ verificados sobre D1. Motor durable, API y esquema no se modificaron en esta ite
 Puertas locales: 20 tests, 85 comprobaciones, lint, typecheck y build pasan.
 build es dry-run y no equivale a publicación. El estado de despliegue se registra
 en MEMORY.md después de completar la operación autorizada.
+
+## Publicación comprobada
+
+Commit fba6305 publicado en main y Worker versión
+31e51af7-74f0-42df-ada1-ea28b058c0dc en la cuenta personal cubo-dev.
+URL: https://cubo-dev.pctg.workers.dev. Bundle actual index-heFQ1N8d.js.
+No hubo migraciones pendientes, cambios de secretos, recursos pagos ni integración
+nueva de backend. La comprobación posterior confirma cinco vistas, móvil, manifest,
+API privada (401) y tarea previa SUCCEEDED/91. Chat cloud conserva persistencia y
+gestión tras cerrar el cliente, comprobadas con una conversación de prueba nueva
+eliminada después de verificar su recuperación. No se lanzaron runners nuevos.
+Captura del listado publicado: artifacts/deployed-workspace-tasks.png.

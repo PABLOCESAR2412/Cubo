@@ -67,3 +67,7 @@ su aceptación independiente en cloud-validation.md.
 La publicación de esta corrección usa la cuenta personal y cubo-dev, con la
 autorización existente para commit, push y deploy. Su versión y aceptación remota
 se registran al terminar en MEMORY.md.
+
+Corrección publicada: fba6305, Worker 31e51af7-74f0-42df-ada1-ea28b058c0dc.
+La aceptación remota conserva resultado 91 de la tarea previa y operaciones de
+Chat, con cinco módulos, móvil y PWA comprobados. Sin nuevas integraciones backend.

@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-13, shell rehecho siguiendo directamente Telo y comprobado localmente.
+Última actualización significativa: 2026-10-13, shell directo de Telo publicado y comprobado en cloud.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
@@ -66,7 +66,7 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - D1 cubo-dev-db creada y migrada local/remota:
   7b9b60fc-5255-42a3-835f-2ec0f05a393c.
 - Worker cubo-dev y Workflow cubo-dev-tasks desplegados con Static Assets y D1.
-  Versión vigente: db214341-8b7b-46ee-bdcd-77d94e597b59.
+  Versión vigente: 31e51af7-74f0-42df-ada1-ea28b058c0dc.
 - URL activa https://cubo-dev.pctg.workers.dev. Workers Free confirmado en dashboard
   personal: Gratuito, USD 0, Plan actual. Navegador personal conectado mediante perfil 2.
 - Usuario creó https://github.com/PABLOCESAR2412/Cubo.git privado.
@@ -119,7 +119,10 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   Legacy #task_id corregido tras fallo de recuperación; navegador local vuelve a pasar.
 - API, esquema y motor intactos. Chat persistente conserva operaciones reales.
   Validación local actual: 20 tests/85 comprobaciones, lint, tipos, build, móvil y offline.
-  Publicación de esta corrección pendiente de completar con la autorización existente.
+  Corrección publicada en fba6305 y cubo-dev, sin migraciones nuevas ni cambios de secretos.
+- Aceptación remota: bundle heFQ1N8d, cinco módulos, móvil, PWA y API privada 401.
+  Tarea previa SUCCEEDED/91 conservada. Chat cloud 066c1647 recuperado tras cierre
+  de cliente, gestión/exportación/eliminación probadas; no se lanzaron runners nuevos.
 
 - Chat persistente implementado: conversaciones/mensajes en D1, renombrar, fijar,
   eliminar con confirmación, copiar y exportar. Inferencia unavailable; no lanza agentes.
@@ -145,7 +148,7 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   Analíticas solo utiliza historial real de tareas; no inventa métricas de modelos.
 - Navegación y detalle móviles usan dialog nativo: foco aislado, Escape, retorno
   visible y apertura desde Recientes. QA visual con API cloud en modo solo lectura.
-- Validación actual: 20 tests/83 comprobaciones, lint, typecheck y build pasan.
+- Validación actual: 20 tests/85 comprobaciones, lint, typecheck y build pasan.
   Creación local, cierre/reapertura, móvil y shell offline pasan en D1 aislada;
   la D1 local anterior respondió 429 por tareas pendientes y no se borró.
 - Rediseño publicado en GitHub main y Cloudflare personal cubo-dev. Se conservan
