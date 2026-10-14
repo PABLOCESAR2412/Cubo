@@ -8,7 +8,8 @@ una versión del contexto y permite abrir chats propios. Cada conversación tien
 un project_id inmutable o NULL para las conversaciones anteriores.
 
 La importación de lectura por tarea, archivos acotados y claves SSH cifradas están
-implementados localmente; aceptación cloud en curso. Ver
+implementados; importación pública validada en cloud y aceptación privada pendiente
+de deploy key de lectura. Ver
 [importación GitHub](repository-import.md). Skills, APIs/MCPs, variables de agentes
 y tareas con inferencia continúan pendientes. Memoria manual no significa
 aprendizaje automático. Inferencia y agentes reales siguen pendientes.

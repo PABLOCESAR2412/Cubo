@@ -66,7 +66,7 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - D1 cubo-dev-db creada y migrada local/remota:
   7b9b60fc-5255-42a3-835f-2ec0f05a393c.
 - Worker cubo-dev y Workflow cubo-dev-tasks desplegados con Static Assets y D1.
-  Versión vigente: 31e51af7-74f0-42df-ada1-ea28b058c0dc.
+  Versión vigente: 715b6ee7-a14d-4e4e-aaa6-e4cc1f0672b0.
 - URL activa https://cubo-dev.pctg.workers.dev. Workers Free confirmado en dashboard
   personal: Gratuito, USD 0, Plan actual. Navegador personal conectado mediante perfil 2.
 - Usuario creó https://github.com/PABLOCESAR2412/Cubo.git privado.
@@ -252,7 +252,10 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   accede al endpoint privado del runner. Proyecto SSH 4e7f8f3e-dff2-4d84-9275-7d7e547459d7
   espera que usuario añada deploy key de lectura. No lanzar importación privada
   antes de confirmar; ver docs/repository-import.md. Agentes continúan pendientes.
-- QA detectó HTML sin CSP: corrección mediante Static Assets _headers en curso.
+- QA detectó HTML sin CSP: corregido y publicado en b821214; Worker actual
+  715b6ee7-a14d-4e4e-aaa6-e4cc1f0672b0. CSP real, PWA/SW, shell offline,
+  recuperación de importación y aislamiento de snapshots pasan sin nuevos runners.
+  Cuatro secretos conservados; D1 confirma privada cifrada, sin devolver su valor.
   Política solo permite scripts del origen; estilos inline necesarios para barras.
 - Publicar workflow/runner antes de Worker; no hacer rollback a código que ignore
   importaciones o aislamiento. Rotación de claves y archivado aún no implementados.

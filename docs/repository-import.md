@@ -101,3 +101,10 @@ de cabeceras detectó ausencia real de CSP y motivó `_headers` para Static Asse
 conforme a la [documentación oficial de Cloudflare](https://developers.cloudflare.com/workers/static-assets/headers/).
 Se restringen scripts, conexiones, fuentes y workers al origen; estilos inline
 siguen permitidos para las barras de las analíticas existentes.
+
+Corrección publicada en commit `b821214`, Worker
+`715b6ee7-a14d-4e4e-aaa6-e4cc1f0672b0`: CSP presente, carga y recuperación
+del repositorio, service worker listo y shell offline comprobados sin violaciones
+CSP ni runners adicionales. Cuatro secretos conservados. SQL remoto confirma
+existencia de ciphertext sin marcador de privada, sin consultar su contenido.
+Snapshots público/privado separados y generación idempotente comprobados en cloud.
