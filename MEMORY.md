@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-14, segunda pasada de refinamiento visual validada localmente.
+Última actualización significativa: 2026-10-14, segunda pasada de refinamiento visual publicada y comprobada en cloud.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
@@ -176,7 +176,13 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - 25 capturas en 1440×900 y 390×844, sin overflow horizontal. Chat D1 local
   recuperado tras cerrar cliente; tareas cloud consultadas sin nuevos runners.
   Reviewer final: ship, sin correcciones materiales. Paleta: seis tokens intactos.
-- Tests 20/85, lint, typecheck y build pasan. Publicación pendiente de cierre.
+- Tests 20/85, lint, typecheck y build pasan. Commit 489f660 en main;
+  Worker cubo-dev versión b68049fd-b364-49bf-a78a-cfb7beaf2504, cuenta personal.
+  Bundle index-CrMG5Lq1.js comprobado, cinco módulos, móvil, PWA y API privada 401.
+  Tarea anterior SUCCEEDED/91 conservada; Chat D1 cloud recuperado tras cerrar
+  cliente y registro de prueba eliminado. Sin nuevos runners, migraciones o secretos.
+  Primer intento de deploy falló por ConnectionRefused en GitHub antes de mutar
+  Cloudflare; segundo intento completo correcto, sin cambiar código ni credenciales.
 
 ## Límites y funcionalidades pendientes
 

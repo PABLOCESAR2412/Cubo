@@ -37,3 +37,21 @@ No se modifican API, esquema D1, Task Engine ni ExecutionBackend. No se lanzan
 nuevas tareas remotas para probar estilos. El resultado durable previo sigue
 siendo la evidencia de ejecución independiente del cliente. Agentes, modelos,
 proyectos y otras integraciones futuras conservan sus estados pendientes.
+
+## Publicación y comprobación cloud
+
+Commit `489f660`, publicado en main. Worker `cubo-dev`, versión
+`b68049fd-b364-49bf-a78a-cfb7beaf2504`, cuenta personal acordada.
+URL: https://cubo-dev.pctg.workers.dev. Bundle comprobado: `index-CrMG5Lq1.js`.
+Sin migraciones pendientes ni modificación de valores de secretos.
+
+La comprobación remota confirma cinco módulos, móvil, manifest PWA y API privada
+(401 sin sesión). La tarea `6c644134-73f6-4648-b25d-77b381f9ea9a` conserva
+`SUCCEEDED` y `{sum: 91, steps: 6}`. La prueba de Chat sobre D1 cloud crea un
+registro propio, comprueba gestión y recuperación después de cerrar el cliente
+y lo elimina al terminar. No se lanzan nuevas ejecuciones de GitHub Actions.
+
+El primer intento de despliegue terminó con `ConnectionRefused` al consultar
+GitHub `/user`, antes de realizar operaciones remotas en Cloudflare. El segundo
+intento completó identidad, validación, comprobación de secretos, migraciones y
+publicación sin cambiar credenciales ni código para sortear la comprobación.
