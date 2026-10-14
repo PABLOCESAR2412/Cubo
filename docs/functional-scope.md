@@ -219,7 +219,8 @@ exige el adaptador de agente/proveedor correspondiente y no se simula como termi
   y proveedores siguen pendientes. Analíticas usa solo el historial disponible de tareas.
 - Aprobación de continuación probada localmente; aprobación Git no implementada.
 - No considerar implementados por este documento el scheduler, cancelación completa,
-  exclusión global, memoria por proyecto ni telemetría de modelos.
+  exclusión global, aprendizaje/importación automáticos de memoria ni telemetría de modelos.
+  Memoria manual por proyecto ya disponible.
 - Primera vertical de Chat publicada y comprobada en cloud; consultar
   docs/chat.md para aceptación y publicación. La conversación del 2026-10-14 fija
   como siguiente ampliación proyectos reales y chats asociados, antes de conectar

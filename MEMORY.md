@@ -148,7 +148,8 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - Primera demo calcula sumas de cuadrados; Codex/OpenCode todavía no ejecutan tareas.
 - Router general de agentes/proveedores/skills/proyectos/permisos sigue design-only.
 - Pendientes: integración de proyectos GitHub, planner, agentes, diff, permisos de
-  commit/push/PR, notificaciones y memoria por proyecto.
+  commit/push/PR, notificaciones y aprendizaje/importación automáticos de memoria.
+  La memoria manual por proyecto ya está implementada.
 - Checkpoints/resultados pequeños viven en D1; no hay almacenamiento de artefactos grandes.
 - El motor limita sondeo de cada ejecución a unos 15 minutos; la demo usa jobs de 10 minutos.
 - Cuota agotada reintenta tras 24 horas o acción del propietario; no conoce fecha exacta de renovación.
