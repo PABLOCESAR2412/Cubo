@@ -9,11 +9,14 @@ try {
   let page = await context.newPage();
   await page.goto(base);
   await page.getByRole("button", { name: "Nueva tarea", exact: true }).first().click();
-  await expect(page.getByRole("button", { name: "Crear tarea", exact: true })).toBeVisible();
+  await page.getByText("Validar el motor durable existente", { exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Ejecutar validación durable", exact: true }),
+  ).toBeVisible();
   const created = page.waitForResponse(
     (response) => response.url().endsWith("/api/tasks") && response.request().method() === "POST",
   );
-  await page.getByRole("button", { name: "Crear tarea", exact: true }).click();
+  await page.getByRole("button", { name: "Ejecutar validación durable", exact: true }).click();
   const response = await created;
   if (response.status() !== 202) throw new Error("No se creó la tarea local.");
   const { task } = (await response.json()) as { task: { id: string } };
@@ -31,7 +34,7 @@ try {
   await page.goto(`${base}/#${task.id}`);
   await page
     .locator(".task-item.selected")
-    .getByRole("button", { name: "Ver logs", exact: true })
+    .getByRole("button", { name: "Ver proceso", exact: true })
     .click();
   await expect(page.getByRole("heading", { name: "Prueba durable", exact: true })).toBeVisible();
   const restored = await context.request.get(`${base}/api/tasks/${task.id}`);

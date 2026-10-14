@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-13, primera vertical de Chat publicada y comprobada en cloud.
+Última actualización significativa: 2026-10-13, shell rehecho siguiendo directamente Telo y comprobado localmente.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
@@ -106,6 +106,20 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   No se alteraron hashes de confianza; cierre automático final depende del host.
 
 ## Próximos pasos
+
+- El usuario rechazó la interpretación visual anterior: Telo es referencia directa
+  de distribución, densidad, jerarquía y comportamiento. Paleta aprobada intacta.
+- Nuevo shell: topbar global 42px, sidebar 208px, pane completo, Chat con scroll propio
+  y compositor inferior. Tareas con listado completo y proceso abierto a petición.
+  Proyectos listado/detalle, Analíticas y seis tabs de Ajustes preparados sin backend falso.
+- Componentes compartidos centralizados en ui.tsx. Nueva tarea contempla campos de
+  agente/proyecto/modelo/esfuerzo/instrucción; validación durable secundaria y explícita.
+- Comparación de siete referencias/25 capturas a 1440 y 390 documentada en
+  docs/telo-interface-comparison.md. Reviewer resolvió centrado de Nueva tarea.
+  Legacy #task_id corregido tras fallo de recuperación; navegador local vuelve a pasar.
+- API, esquema y motor intactos. Chat persistente conserva operaciones reales.
+  Validación local actual: 20 tests/85 comprobaciones, lint, tipos, build, móvil y offline.
+  Publicación de esta corrección pendiente de completar con la autorización existente.
 
 - Chat persistente implementado: conversaciones/mensajes en D1, renombrar, fijar,
   eliminar con confirmación, copiar y exportar. Inferencia unavailable; no lanza agentes.

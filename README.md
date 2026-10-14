@@ -22,6 +22,8 @@ Chat tiene ahora una primera vertical de persistencia: conversaciones, mensajes,
 renombrado, fijado, eliminación y exportación. La inferencia sigue pendiente.
 Ver [alcance real de Chat](docs/chat.md) y su estado de publicación.
 Ver [alcance y comprobación de la interfaz](docs/design-workspace.md).
+La corrección estructural directa contra las capturas está documentada en
+[comparación de interfaz con Telo](docs/telo-interface-comparison.md).
 
 ## Comandos
 

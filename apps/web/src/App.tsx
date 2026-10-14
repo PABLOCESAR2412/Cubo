@@ -1,8 +1,11 @@
+import type { Conversation } from "@cubo/shared";
 import { useEffect, useRef, useState } from "react";
 import { Icon, type IconName } from "./Icon";
+import { NewTask } from "./NewTask";
 import { Analytics, Chat, Projects, Settings } from "./PreparedViews";
 import { Tasks } from "./Tasks";
-import { labels, taskIdFromHash, time, useWorkspace, type Workspace } from "./workspace";
+import { AppShell, Sidebar, TopBar } from "./ui";
+import { labels, requestApi, taskIdFromHash, time, useWorkspace } from "./workspace";
 
 type View = "chat" | "tareas" | "proyectos" | "analiticas" | "ajustes";
 const navigation: Array<{ id: View; label: string; icon: IconName }> = [
@@ -14,88 +17,11 @@ const navigation: Array<{ id: View; label: string; icon: IconName }> = [
 ];
 function currentView(): View {
   const key = window.location.hash.split("/")[1];
-  return navigation.some((n) => n.id === key) ? (key as View) : "tareas";
-}
-function NewTask({ w, close, created }: { w: Workspace; close: () => void; created: () => void }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    dialog.current?.showModal();
-  }, []);
-  return (
-    <dialog ref={dialog} className="new-task-dialog" onCancel={close} onClose={close}>
-      <form
-        onSubmit={async (event) => {
-          event.preventDefault();
-          if (await w.create()) created();
-        }}
-      >
-        <div className="panel-heading">
-          <h2>Nueva tarea</h2>
-          <button
-            className="icon-button"
-            type="button"
-            aria-label="Cerrar nueva tarea"
-            onClick={close}
-          >
-            <Icon name="close" />
-          </button>
-        </div>
-        <div className="form-stack">
-          <label>
-            Ejecutor
-            <select disabled defaultValue="runner">
-              <option value="runner">Runner de validación</option>
-            </select>
-          </label>
-          <p className="hint">
-            Codex y OpenCode se conectarán posteriormente. Esta ejecución utiliza el backend durable
-            real.
-          </p>
-          <div className="config-summary">
-            <span>
-              Pasos<strong>6</strong>
-            </span>
-            <span>
-              Intervalo<strong>10 segundos</strong>
-            </span>
-            <span>
-              Resultado<strong>Suma de cuadrados</strong>
-            </span>
-          </div>
-          <label className="check-row">
-            <input
-              type="checkbox"
-              checked={w.pause}
-              disabled={w.busy}
-              onChange={(e) => w.updatePause(e.target.checked)}
-            />
-            <span>Pausar a mitad y pedir aprobación para continuar en otro runner.</span>
-          </label>
-          <p className="hint">
-            Logs, checkpoints y resultado permanecen en Cubo aunque cierres este dispositivo.
-          </p>
-          {(!w.configured || !w.guard) && (
-            <div className="inline-notice">
-              La ejecución remota requiere configuración. La tarea se guardará en cola.
-            </div>
-          )}
-          {w.error && (
-            <div className="inline-notice error" role="alert">
-              {w.error}
-            </div>
-          )}
-        </div>
-        <div className="dialog-actions">
-          <button type="button" className="secondary" onClick={close} disabled={w.busy}>
-            Cancelar
-          </button>
-          <button className="primary" type="submit" disabled={w.busy || !w.online}>
-            {w.busy ? "Guardando…" : "Crear tarea"}
-          </button>
-        </div>
-      </form>
-    </dialog>
-  );
+  return navigation.some((n) => n.id === key)
+    ? (key as View)
+    : taskIdFromHash()
+      ? "tareas"
+      : "chat";
 }
 export default function App() {
   const w = useWorkspace();
@@ -104,9 +30,32 @@ export default function App() {
   const [composer, setComposer] = useState(false);
   const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);
   const [inspecting, setInspecting] = useState(false);
+  const [recentChats, setRecentChats] = useState<Conversation[]>([]);
+  const [activeChat, setActiveChat] = useState(() =>
+    new URL(window.location.href).searchParams.get("chat"),
+  );
   const navigationDialog = useRef<HTMLDialogElement>(null);
-  const Navigation = mobile ? "dialog" : "aside";
   const toggle = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!w.authenticated) return;
+    let disposed = false;
+    const refresh = () => {
+      void requestApi<{ conversations: Conversation[] }>("conversations")
+        .then((data) => {
+          if (!disposed) {
+            setRecentChats(data.conversations.slice(0, 5));
+            setActiveChat(new URL(window.location.href).searchParams.get("chat"));
+          }
+        })
+        .catch(() => {});
+    };
+    refresh();
+    window.addEventListener("cubo-conversations-changed", refresh);
+    return () => {
+      disposed = true;
+      window.removeEventListener("cubo-conversations-changed", refresh);
+    };
+  }, [w.authenticated]);
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
     const change = () => {
@@ -137,6 +86,7 @@ export default function App() {
     if (!drawer && dialog.open) dialog.close();
   }, [mobile, drawer, w.authenticated]);
   function navigate(next: View) {
+    if (next !== view) document.getElementById("workspace-content")?.scrollTo({ top: 0 });
     // Close navigation before opening another modal so native focus restoration completes first.
     if (mobile && navigationDialog.current?.open) navigationDialog.current.close();
     setView(next);
@@ -148,6 +98,14 @@ export default function App() {
     w.chooseTask(id);
     navigate("tareas");
     setInspecting(true);
+  }
+  function openChat(id: string) {
+    setActiveChat(id);
+    const url = new URL(window.location.href);
+    url.searchParams.set("chat", id);
+    history.replaceState(null, "", url);
+    navigate("chat");
+    window.dispatchEvent(new Event("cubo-chat-selected"));
   }
   const title = navigation.find((n) => n.id === view)?.label;
   if (!w.authenticated)
@@ -195,17 +153,46 @@ export default function App() {
       </div>
     );
   return (
-    <div className="workspace-shell">
-      <Navigation
-        ref={navigationDialog}
-        id="workspace-navigation"
-        aria-label="Navegación del workspace"
-        className="sidebar"
-        onCancel={() => setDrawer(false)}
-        onClose={() => setDrawer(false)}
-      >
+    <AppShell>
+      <TopBar>
+        <div>
+          <button
+            ref={toggle}
+            type="button"
+            className="icon-button mobile-only"
+            aria-label="Abrir navegación"
+            aria-expanded={drawer}
+            aria-controls="workspace-navigation"
+            onClick={() => setDrawer(!drawer)}
+          >
+            <Icon name="menu" />
+          </button>
+          <span className="breadcrumb">
+            <Icon name="cube" size={17} /> <strong>Cubo</strong>
+            <span className="shell-context">{title}</span>
+          </span>
+        </div>
+        <div className="systembar-status">
+          <span
+            className={
+              w.online && w.lastSync && !w.pollError ? "system-dot" : "system-dot inactive"
+            }
+          />
+          <span>{w.lastSync && !w.pollError ? "API sincronizada" : "Sin sincronizar"}</span>
+          <span className="mono last-sync">{w.lastSync ? time(w.lastSync) : "—"}</span>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Abrir ajustes"
+            onClick={() => navigate("ajustes")}
+          >
+            <Icon name="settings" />
+          </button>
+        </div>
+      </TopBar>
+      <Sidebar mobile={mobile} dialogRef={navigationDialog} close={() => setDrawer(false)}>
         <div className="brand-row">
-          <a className="brand" href="#/tareas" aria-label="Cubo, tareas">
+          <a className="brand" href="#/chat" aria-label="Cubo, chat">
             <Icon name="cube" size={26} />
             <span>Cubo</span>
           </a>
@@ -252,10 +239,24 @@ export default function App() {
           ))}
         </nav>
         <div className="recent-header">
-          Recientes<span>{Math.min(5, w.tasks.length)}</span>
+          Recientes<span>{recentChats.length + Math.min(3, w.tasks.length)}</span>
         </div>
         <div className="recents">
-          {w.tasks.slice(0, 5).map((t) => (
+          {recentChats.map((chat) => (
+            <button
+              key={chat.id}
+              type="button"
+              className={view === "chat" && activeChat === chat.id ? "active" : ""}
+              onClick={() => openChat(chat.id)}
+            >
+              <Icon name="chat" size={14} />
+              <span>
+                {chat.title}
+                <small>Conversación · {time(chat.updatedAt)}</small>
+              </span>
+            </button>
+          ))}
+          {w.tasks.slice(0, 3).map((t) => (
             <button
               key={t.id}
               type="button"
@@ -275,12 +276,19 @@ export default function App() {
               </span>
             </button>
           ))}
-          {!w.tasks.length && <p className="hint">Sin ejecuciones recientes</p>}
+          {!w.tasks.length && !recentChats.length && <p className="hint">Sin actividad reciente</p>}
         </div>
         <div className="sidebar-system">
+          <span className="cloud-label">Cubo cloud</span>
           <div>
-            <span className={w.online && !w.pollError ? "system-dot" : "system-dot inactive"} />
-            <strong>{w.online ? "Cliente conectado" : "Sin conexión"}</strong>
+            <span
+              className={
+                w.online && w.lastSync && !w.pollError ? "system-dot" : "system-dot inactive"
+              }
+            />
+            <strong>
+              {w.online && w.lastSync && !w.pollError ? "Disponible" : "Sin sincronizar"}
+            </strong>
           </div>
           <p>GitHub Actions · {w.configured ? "configurado" : "pendiente"}</p>
           <div className="system-budget">
@@ -291,39 +299,8 @@ export default function App() {
             Cerrar sesión
           </button>
         </div>
-      </Navigation>
+      </Sidebar>
       <div className="workspace-main">
-        <header className="systembar">
-          <div>
-            <button
-              ref={toggle}
-              type="button"
-              className="icon-button mobile-only"
-              aria-label="Abrir navegación"
-              aria-expanded={drawer}
-              aria-controls="workspace-navigation"
-              onClick={() => setDrawer(!drawer)}
-            >
-              <Icon name="menu" />
-            </button>
-            <span className="breadcrumb">
-              Workspace <span>/</span> <strong>{title}</strong>
-            </span>
-          </div>
-          <div className="systembar-status">
-            <span className={w.online && !w.pollError ? "system-dot" : "system-dot inactive"} />
-            <span>{w.lastSync && !w.pollError ? "API sincronizada" : "Sin sincronizar"}</span>
-            <span className="mono last-sync">{w.lastSync ? time(w.lastSync) : "—"}</span>
-            <button
-              type="button"
-              className="icon-button"
-              aria-label="Abrir ajustes"
-              onClick={() => navigate("ajustes")}
-            >
-              <Icon name="settings" />
-            </button>
-          </div>
-        </header>
         <main id="workspace-content">
           {(w.error || w.pollError) && (
             <div className="workspace-alert error" role="alert">
@@ -346,7 +323,6 @@ export default function App() {
               w={w}
               openTask={openTask}
               newTask={() => setComposer(true)}
-              mobile={mobile}
               inspectorOpen={inspecting}
               closeInspector={() => setInspecting(false)}
             />
@@ -368,9 +344,10 @@ export default function App() {
           created={() => {
             setComposer(false);
             navigate("tareas");
+            setInspecting(true);
           }}
         />
       )}
-    </div>
+    </AppShell>
   );
 }

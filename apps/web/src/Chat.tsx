@@ -1,6 +1,7 @@
 import type { Conversation, ConversationDetail } from "@cubo/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
+import { ChatComposer } from "./ui";
 import { requestApi as api, time } from "./workspace";
 
 function selectedChat() {
@@ -57,6 +58,21 @@ export function Chat() {
     }
   }, []);
   useEffect(() => {
+    const select = () => {
+      const id = selectedChat();
+      if (id !== active.current) {
+        active.current = id;
+        setSelected(id);
+        setDetail(null);
+        setDraft("");
+        setError("");
+      }
+      void refresh().catch(() => setSyncError("No se pudo cargar la conversación."));
+    };
+    window.addEventListener("cubo-chat-selected", select);
+    return () => window.removeEventListener("cubo-chat-selected", select);
+  }, [refresh]);
+  useEffect(() => {
     void refresh().catch(() =>
       setSyncError("No se pudo sincronizar Chat. Actualiza o vuelve a iniciar sesión."),
     );
@@ -76,6 +92,7 @@ export function Chat() {
     if (selected) url.searchParams.set("chat", selected);
     else url.searchParams.delete("chat");
     history.replaceState(null, "", url);
+    window.dispatchEvent(new Event("cubo-conversations-changed"));
   }, [selected]);
   useEffect(() => {
     setTitle(detail?.conversation.title ?? "");
@@ -102,6 +119,7 @@ export function Chat() {
     try {
       await operation();
       await refresh();
+      window.dispatchEvent(new Event("cubo-conversations-changed"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "No fue posible guardar el cambio.");
     } finally {
@@ -237,9 +255,6 @@ export function Chat() {
   );
   return (
     <div className="persistent-chat">
-      <aside className="chat-history" aria-label="Historial de conversaciones">
-        {historyList}
-      </aside>
       <div className={`chat-layout ${config ? "with-config" : ""}`}>
         <section className="chat-main">
           <div className="chat-toolbar">
@@ -248,6 +263,14 @@ export function Chat() {
               <h1>{detail?.conversation.title ?? "Chat"}</h1>
             </div>
             <div className="toolbar-actions">
+              <button
+                className="secondary compact"
+                type="button"
+                disabled={busy}
+                onClick={() => void create()}
+              >
+                Nuevo chat
+              </button>
               <button
                 className="secondary compact chat-history-toggle"
                 type="button"
@@ -344,48 +367,13 @@ export function Chat() {
               </>
             )}
           </div>
-          <form
-            className="chat-composer"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void saveMessage();
-            }}
-          >
-            <label htmlFor="chat-message">Mensaje · máximo 2000 caracteres</label>
-            <textarea
-              id="chat-message"
-              maxLength={2000}
-              value={draft}
-              disabled={!detail || busy}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="Guarda contexto para esta conversación. No incluyas secretos."
-            />
-            <div className="composer-controls">
-              <div>
-                <button
-                  className="icon-button"
-                  type="button"
-                  disabled
-                  aria-label="Adjuntos pendientes"
-                >
-                  <Icon name="plus" />
-                </button>
-                <select disabled aria-label="Modelo del chat">
-                  <option>Modelo sin configurar</option>
-                </select>
-              </div>
-              <button
-                className="primary compact"
-                type="submit"
-                disabled={!detail || busy || !draft.trim()}
-              >
-                {busy ? "Guardando…" : "Guardar mensaje"}
-              </button>
-            </div>
-            <p className="hint">
-              Persistencia real en Cubo. Inferencia, adjuntos, tokens y costes no disponibles.
-            </p>
-          </form>
+          <ChatComposer
+            value={draft}
+            onChange={setDraft}
+            onSave={() => void saveMessage()}
+            disabled={!detail}
+            busy={busy}
+          />
         </section>
         {config && (
           <Configuration

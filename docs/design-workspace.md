@@ -8,67 +8,62 @@ Referencias: las siete capturas de Telo en capturas referencia/.
 THESIS: Cubo es un lugar de trabajo persistente. La navegación y el estado operativo sustituyen a la pantalla centrada en una demo.
 OWN-WORLD: Conservar íntegramente carbón #101416, superficie #171d20, lima #d9ed91, texto y bordes de Cubo. Geist local, controles compactos, superficies planas, iconos geométricos y separadores finos.
 STORY: Entrar al workspace, filtrar ejecuciones reales, inspeccionar progreso y logs, revisar resultados y aprobar una continuación. Las integraciones futuras son visibles sin aparentar actividad inexistente.
-FIRST VIEWPORT: Sidebar fija de 232px con marca, nueva tarea, cinco módulos, recientes y sistema. Barra contextual de 56px. Tareas muestra resumen compacto, filtros, listado y un inspector de ejecución a la derecha.
-FORM: Workspace dirigido por las capturas y el esquema explícitos del usuario; excepción de seed por estructura ya fijada. Referencias de composición, no comps que deban copiarse píxel a píxel. Construcción mediante código.
+FIRST VIEWPORT: Barra global de 42px a todo el ancho. Sidebar de 208px debajo, cinco módulos, recientes y estado cloud. Chat ocupa todo el pane con cabecera de 48px, conversación desplazable y compositor inferior; el historial no crea otra columna permanente. Tareas tiene tres métricas y listado de ancho completo; el proceso se abre a petición.
+FORM: Las siete capturas de Telo son referencia directa de arquitectura, densidad, jerarquía y comportamiento, junto con el esquema obligatorio del usuario. Construcción mediante código, sin comp inventada. Preservar la paleta de Cubo y adaptar únicamente las verdades del backend cloud; no reinterpretar libremente la distribución.
 QUALITY BAR: Paleta intacta, selección y acciones corresponden al mismo task_id, todos los módulos navegan, pendientes claros, métricas derivadas solo de tareas reales, sidebar accesible en móvil y controles sin desbordamientos.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
 
 ## Alcance confirmado
 
-Solo UI, sin backends nuevos ni cambios al motor durable. Chat y Proyectos tienen
-estructura preparada y acciones no disponibles deshabilitadas. Analíticas puede
-agrupar las tareas disponibles, pero no inventa tokens, costes, latencias de servidor
-ni distribución de modelos. Ajustes muestra estado/configuración observable; agentes
-y proveedores pendientes permanecen separados. Mantener autenticación, callbacks,
-idempotencia, checkpoints y aprobación del backend existente.
+Solo UI: conservar motor durable, API, esquema y Chat persistente existentes.
+Telo es referencia directa, no inspiración libre. La paleta de Cubo no cambia.
+Conexiones sin backend permanecen explícitamente pendientes/deshabilitadas.
 
-Las etiquetas técnicas de consola fueron solicitadas por el usuario. Son nombres
-de campos, navegación o metadatos; no introducir kickers decorativos sobre encabezados.
+Chat conserva crear, abrir, renombrar, fijar, eliminar, guardar mensajes, copiar y
+exportar. No hay respuestas de IA, modelos conectados ni acciones de agentes
+simuladas. Tareas usa estados, eventos, checkpoints, aprobaciones y resultado reales.
+La validación durable sigue disponible dentro de Nueva tarea como operación
+secundaria; ejecutar instrucciones de agentes todavía está deshabilitado.
 
-## Implementación y comprobación
+## Arquitectura visual actual
 
-El rediseño está implementado localmente. Tareas conserva creación, consulta,
-polling, filtros, logs, checkpoints, resultado y aprobación de continuación del
-backend existente. La extracción de su lógica a workspace.ts no cambia el motor.
-Chat, Proyectos y proveedores muestran integraciones pendientes y controles
-deshabilitados. Analíticas deriva conteos y actividad del historial disponible;
-no presenta consumo de modelos ni costes inventados.
+- TopBar global a todo el ancho; Sidebar estrecha debajo y workspace restante.
+- Chat con cabecera, mensajes propios a la derecha, conversación desplazable,
+  compositor inferior y configuración a la derecha. Historial mediante acción y
+  recientes, sin tercera columna permanente. Capacidades futuras preparadas.
+- Tareas: tres métricas, filtros, listado completo y proceso abierto a petición.
+- Proyectos: listado vacío real y vista de configuración/detalle preparada con
+  resumen, instrucciones, memoria propia, skills, secretos y actividad.
+- Analíticas: filtros, tres métricas, actividad real de tareas y distribución
+  por modelo vacía. Gasto y tokens unavailable, sin números inventados.
+- Ajustes: seis tabs; agentes y proveedores separados, con estado pendiente real.
+- En móvil: drawer nativo, paneles de ancho completo, métricas en una columna y
+  compositor usable. El footer cloud permanece visible; recientes desplaza su área.
 
-En escritorio, sidebar persistente y listado con inspector; en móvil, navegación
-y detalle utilizan dialog nativo con aislamiento de foco, Escape y retorno al
-control visible. Recientes abre el detalle de la tarea seleccionada.
+AppShell, Sidebar, TopBar, PageHeader, StatusBadge, MetricCard, SectionCard, Tabs,
+EmptyState, TaskRow, ProjectRow, AgentBadge, ProviderCard, ChatComposer, ProcessEvent
+y RightPanel comparten implementación y estilos en ui.tsx y style.css.
 
-La revisión visual usa el frontend local con consultas autenticadas de solo
-lectura a la API cloud. Capturas en .impeccable/review/ (ignoradas por Git): los
-cinco módulos, nueva tarea y vistas móviles. No se crean tareas cloud en esta
-revisión. El driver espera el detalle antes de capturar el inspector.
+## Comparación y validación
 
-La comprobación del build en navegador usa una D1 local aislada en
-artifacts/workspace-local-state, después de encontrar 429 por tareas activas de
-pruebas anteriores. No se borraron registros ni se modificaron límites. Creación,
-cierre del cliente, recuperación móvil y shell PWA offline pasan en esa instancia.
+La revisión comparó las siete referencias con 25 capturas en 1440×900 y 390×844,
+incluidos paneles y zonas inferiores. Ver
+[comparación vista por vista](telo-interface-comparison.md).
+Los mensajes de Chat están guardados en D1 local; las tareas se consultaron en
+cloud por GET autenticado. No se lanzaron ejecuciones remotas para esta revisión.
 
-Tests: 20 pasan, 82 comprobaciones. Lint, typecheck y build pasan; build incluye
-solo dry-run de Wrangler. La prueba durable cloud anterior permanece documentada
-en cloud-validation.md; esta iteración no repite ejecuciones remotas ni despliega
-la UI. El rediseño queda disponible para revisión antes de publicar.
+El reviewer confirmó la composición general y pidió centrar Nueva tarea. Tras
+margin:auto y recaptura, dio ship a la corrección. DESIGN.md y su sidecar describen
+el sistema final. La procedencia de los dos iconos PNG existentes está completa;
+no se añadieron imágenes de referencia como assets del producto.
 
-La revisión final confirmó cuatro correcciones resueltas: navegación móvil fuera
-del foco al cerrarse, apertura desde Recientes, foco/Escape/retorno del inspector
-y actualización de DESIGN.md con su sidecar. Dictamen ship para esas correcciones;
-no equivale a autorización de despliegue. Los metadatos de 9–10px existentes se
-registran como deuda de legibilidad, sin convertirlos en norma para nuevas vistas.
+Paleta comprobada contra Git: seis tokens idénticos. Lint, typecheck, build y 20
+tests/85 comprobaciones pasan. D1/browser confirma persistencia de Chat y recuperación
+de tareas después de cerrar el cliente. Una regresión de enlaces antiguos #task_id
+se detectó y corrigió; sigue abriendo Tareas aunque el inicio general sea Chat.
+Móvil sin overflow y shell PWA offline comprobados. El motor cloud previo conserva
+su aceptación independiente en cloud-validation.md.
 
-## Publicación autorizada
-
-Después de la revisión, el usuario ordenó commit, push y deploy. El 2026-10-13
-se publicó el commit a5c21ae en main de PABLOCESAR2412/Cubo y se desplegó cubo-dev
-en la cuenta personal, versión 43e95747-8588-423d-a37d-3ab6f579cf40.
-No se reenviaron ni modificaron secretos, ni se crearon recursos nuevos.
-
-La comprobación sobre https://cubo-dev.pctg.workers.dev confirmó el bundle
-index-CZe-IC6e.js, navegación de los cinco módulos, diálogos móviles sin overflow,
-manifest PWA y respuesta 401 de la API sin sesión. Con sesión se recuperó la tarea
-6c644134-73f6-4648-b25d-77b381f9ea9a con SUCCEEDED y resultado {sum:91,steps:6}.
-No se lanzó otra ejecución cloud. Capturas locales en
-artifacts/deployed-workspace-desktop.png y deployed-workspace-mobile.png.
+La publicación de esta corrección usa la cuenta personal y cubo-dev, con la
+autorización existente para commit, push y deploy. Su versión y aceptación remota
+se registran al terminar en MEMORY.md.

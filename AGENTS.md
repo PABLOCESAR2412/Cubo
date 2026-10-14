@@ -160,6 +160,10 @@ instrucción explícita del usuario para el entorno de destino.
 
 ## Forma de trabajo y divulgación progresiva
 
+La UI debe seguir directamente las capturas de Telo en arquitectura, proporciones,
+densidad y comportamiento, conservando la paleta aprobada de Cubo. No reinterpretar
+libremente ni añadir datos simulados. Ver [docs/telo-interface-comparison.md](docs/telo-interface-comparison.md).
+
 - Al comenzar una sesión, Codex y OpenCode deben leer este archivo y después
   [MEMORY.md](MEMORY.md), la memoria compartida del desarrollo de Cubo.
 - Actualizar MEMORY.md al cerrar avances significativos: decisiones, fases,

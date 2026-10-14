@@ -51,11 +51,14 @@ async function main() {
     let page = await context.newPage();
     await page.goto(base);
     await page.getByRole("button", { name: "Nueva tarea", exact: true }).first().click();
-    await expect(page.getByRole("button", { name: "Crear tarea", exact: true })).toBeVisible();
+    await page.getByText("Validar el motor durable existente", { exact: true }).click();
+    await expect(
+      page.getByRole("button", { name: "Ejecutar validación durable", exact: true }),
+    ).toBeVisible();
     const created = page.waitForResponse(
       (r) => r.url().endsWith("/api/tasks") && r.request().method() === "POST",
     );
-    await page.getByRole("button", { name: "Crear tarea", exact: true }).click();
+    await page.getByRole("button", { name: "Ejecutar validación durable", exact: true }).click();
     const response = await created;
     if (response.status() !== 202) throw new Error(`Crear tarea HTTP ${response.status()}`);
     const { task } = (await response.json()) as { task: Task };
@@ -102,7 +105,7 @@ async function main() {
       await page.goto(`${base}/#${task.id}`);
       await page
         .locator(".task-item.selected")
-        .getByRole("button", { name: "Ver logs", exact: true })
+        .getByRole("button", { name: "Ver proceso", exact: true })
         .click();
       await expect(
         page.getByRole("heading", { name: "Prueba durable", exact: true }),

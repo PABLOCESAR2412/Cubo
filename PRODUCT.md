@@ -18,6 +18,9 @@ Infraestructura del MVP USD 0. Cuenta Cloudflare personal y repositorio privado 
 Chat dispone de persistencia y gestión de conversaciones/mensajes, sin inferencia.
 Ver [docs/chat.md](docs/chat.md) para el estado de aceptación y publicación.
 Consola oscura, compacta y responsive. Sin datos ficticios presentados como ejecuciones reales.
+Telo es referencia directa de arquitectura de interfaz, distribución, densidad,
+jerarquía y comportamiento. Conservar paleta Cubo. Shell global, sidebar estrecha,
+workspace completo y Chat con compositor inferior; no reinterpretar como dashboard.
 
 ## Prioridad funcional
 

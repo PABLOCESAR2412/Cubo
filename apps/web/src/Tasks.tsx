@@ -1,95 +1,77 @@
 import type { TaskStatus } from "@cubo/shared";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Icon } from "./Icon";
-import { labels, time, type Workspace } from "./workspace";
+import { MetricCard, PageHeader, ProcessEvent, RightPanel, StatusBadge, TaskRow } from "./ui";
+import { labels, type Workspace } from "./workspace";
 
 export function Status({ status }: { status: TaskStatus }) {
-  return (
-    <span className={`status ${status.toLowerCase()}`}>
-      <i />
-      {labels[status]}
-    </span>
-  );
+  return <StatusBadge status={status.toLowerCase()}>{labels[status]}</StatusBadge>;
 }
 export function Tasks({
   w,
   openTask,
   newTask,
-  mobile,
   inspectorOpen,
   closeInspector,
 }: {
   w: Workspace;
   openTask: (id: string) => void;
   newTask: () => void;
-  mobile: boolean;
   inspectorOpen: boolean;
   closeInspector: () => void;
 }) {
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("Actividad");
-  const dialog = useRef<HTMLDialogElement>(null);
-  const opener = useRef<HTMLElement | null>(null);
-  const Inspector = mobile ? "dialog" : "aside";
-  useEffect(() => {
-    if (!mobile || !dialog.current) return;
-    if (inspectorOpen && !dialog.current.open) {
-      opener.current = document.activeElement as HTMLElement;
-      dialog.current.showModal();
-    }
-    if (!inspectorOpen && dialog.current.open) dialog.current.close();
-  }, [mobile, inspectorOpen]);
-  function closed() {
-    closeInspector();
-    const target = opener.current;
-    if (
-      target?.isConnected &&
-      target.getClientRects().length &&
-      !target.closest("dialog:not([open])")
-    ) {
-      target.focus();
-    } else {
-      document.querySelector<HTMLButtonElement>('[aria-controls="workspace-navigation"]')?.focus();
-    }
-  }
   const matching = w.tasks.filter(
     (t) =>
       (filter === "all" || t.status === filter) &&
       `${t.title} ${t.id}`.toLowerCase().includes(query.toLowerCase()),
   );
-  const counts = ["RUNNING", "QUEUED", "WAITING_APPROVAL", "SUCCEEDED"] as const;
+  const counts = ["RUNNING", "QUEUED", "SUCCEEDED"] as const;
   const task = w.task;
   return (
     <div className="module tasks-module">
-      <div className="page-heading">
-        <div>
-          <h1>Tareas</h1>
-          <p>Ejecuciones persistentes. El trabajo continúa al cerrar Cubo.</p>
-        </div>
-        <button className="primary" type="button" onClick={newTask}>
-          <Icon name="plus" />
-          Nueva tarea
-        </button>
-      </div>
-      <div className="metrics-strip">
+      <PageHeader
+        title="Tareas"
+        description="Tareas que continúan ejecutándose aunque cierres Cubo."
+        actions={
+          <button className="primary" type="button" onClick={newTask}>
+            <Icon name="plus" />
+            Nueva tarea
+          </button>
+        }
+      />
+      <div className="metric-grid">
         {counts.map((s) => (
-          <div key={s}>
-            <span>{labels[s]}</span>
-            <strong>{w.tasks.filter((t) => t.status === s).length}</strong>
-            <small>
-              {s === "SUCCEEDED"
-                ? "en el historial disponible"
-                : s === "WAITING_APPROVAL"
-                  ? "requieren tu decisión"
-                  : "en este workspace"}
-            </small>
-          </div>
+          <MetricCard
+            key={s}
+            label={s === "RUNNING" ? "En ejecución" : s === "QUEUED" ? "En cola" : "Completas"}
+            value={w.tasks.filter((t) => t.status === s).length}
+            detail="historial de tareas disponible"
+            icon={s === "RUNNING" ? "refresh" : s === "QUEUED" ? "clock" : "check"}
+          />
         ))}
       </div>
+      {w.tasks.some((t) => t.status === "WAITING_APPROVAL") && (
+        <p className="pending-decisions">
+          <StatusBadge>
+            {w.tasks.filter((t) => t.status === "WAITING_APPROVAL").length} decisión pendiente
+          </StatusBadge>
+        </p>
+      )}
       <div className="tasks-workspace">
         <section className="task-register" aria-label="Lista de tareas">
           <div className="filterbar">
+            <fieldset className="agent-tabs" aria-label="Agentes de tareas">
+              <span className="tag">Todas · {w.tasks.length}</span>
+              <button type="button" disabled>
+                OpenCode · pendiente
+              </button>
+              <button type="button" disabled>
+                Codex · pendiente
+              </button>
+            </fieldset>
             <label className="search-field">
               <Icon name="search" />
               <input
@@ -110,14 +92,6 @@ export function Tasks({
                 </option>
               ))}
             </select>
-            <label className="sr-only" htmlFor="agent-filter">
-              Filtrar agente
-            </label>
-            <select id="agent-filter" aria-label="Filtrar agente" defaultValue="runner">
-              <option value="runner">Runner de validación</option>
-              <option disabled>Codex · pendiente</option>
-              <option disabled>OpenCode · pendiente</option>
-            </select>
             <button
               type="button"
               className="icon-button"
@@ -134,58 +108,15 @@ export function Tasks({
           </div>
           <div className="task-rows">
             {matching.map((t) => (
-              <article
+              <TaskRow
                 key={t.id}
-                className={w.selected === t.id ? "task-item selected" : "task-item"}
-              >
-                <div className="task-item-top">
-                  <span className="tag">Runner</span>
-                  <Status status={t.status} />
-                  <time dateTime={t.createdAt}>{time(t.createdAt)}</time>
-                </div>
-                <div className="task-item-main">
-                  <div>
-                    <button
-                      type="button"
-                      className="task-title"
-                      onClick={() => {
-                        openTask(t.id);
-                      }}
-                    >
-                      {t.title}
-                    </button>
-                    <p>
-                      {t.input.steps} pasos · checkpoints persistidos
-                      {t.input.pauseAt ? " · pausa con aprobación" : ""}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className="secondary compact"
-                    onClick={() => {
-                      openTask(t.id);
-                      setTab("Actividad");
-                    }}
-                  >
-                    <Icon name="logs" size={15} />
-                    Ver logs
-                  </button>
-                </div>
-                <div className="task-item-bottom">
-                  <span className="mono" title={t.id}>
-                    ID {t.id.slice(0, 8)}
-                  </span>
-                  <span>
-                    {t.progress}/{t.input.steps} pasos
-                  </span>
-                  <progress
-                    value={t.progress}
-                    max={t.input.steps}
-                    aria-label={`Progreso de ${t.id.slice(0, 8)}`}
-                  />
-                  <span>Actualizada {time(t.updatedAt)}</span>
-                </div>
-              </article>
+                task={t}
+                selected={w.selected === t.id}
+                open={() => {
+                  openTask(t.id);
+                  setTab("Actividad");
+                }}
+              />
             ))}
           </div>
           {!matching.length && (
@@ -212,27 +143,7 @@ export function Tasks({
             </div>
           )}
         </section>
-        <Inspector
-          ref={dialog}
-          className="execution-inspector"
-          aria-label="Detalle de tarea"
-          onCancel={closeInspector}
-          onClose={closed}
-        >
-          <div className="panel-heading">
-            <span>
-              <Icon name="logs" size={16} />
-              Inspección de ejecución
-            </span>
-            <button
-              type="button"
-              className="icon-button mobile-only"
-              aria-label="Cerrar detalle"
-              onClick={() => dialog.current?.close()}
-            >
-              <Icon name="close" />
-            </button>
-          </div>
+        <RightPanel open={inspectorOpen} close={closeInspector} title="Proceso de tarea">
           <p className="sr-only" aria-live="polite" aria-atomic="true">
             {task
               ? `${labels[task.status]}. ${task.progress} de ${task.input.steps} pasos guardados.`
@@ -335,13 +246,7 @@ export function Tasks({
                 {tab === "Actividad" && (
                   <ol className="event-log">
                     {w.detail?.events.map((event) => (
-                      <li key={event.id}>
-                        <time dateTime={event.createdAt}>{time(event.createdAt)}</time>
-                        <div>
-                          <span className={`event-dot ${event.type.toLowerCase()}`} />
-                          <p>{event.message}</p>
-                        </div>
-                      </li>
+                      <ProcessEvent key={event.id} event={event} />
                     ))}
                   </ol>
                 )}
@@ -405,10 +310,13 @@ export function Tasks({
                     )}
                   </pre>
                 </details>
+                <button type="button" className="secondary compact" disabled>
+                  Cancelar · integración pendiente
+                </button>
               </div>
             </>
           )}
-        </Inspector>
+        </RightPanel>
       </div>
     </div>
   );

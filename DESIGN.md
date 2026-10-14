@@ -21,24 +21,24 @@ colors:
 typography:
   headline:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "24px"
+    fontSize: "23px"
     fontWeight: 600
     lineHeight: 1.3
     letterSpacing: "-0.025em"
   inspector-title:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "16px"
+    fontSize: "17px"
     fontWeight: 600
     lineHeight: 1.5
   body:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "14px"
+    fontSize: "13px"
     fontWeight: 400
     lineHeight: 1.5
   title:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
     fontSize: "14px"
-    fontWeight: 500
+    fontWeight: 600
     lineHeight: 1.5
   label:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
@@ -52,16 +52,15 @@ typography:
     lineHeight: 1.5
   brand:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "23px"
+    fontSize: "19px"
     fontWeight: 600
     lineHeight: 1.5
-    letterSpacing: "-0.03em"
 rounded:
-  badge: "4px"
+  badge: "5px"
   icon: "5px"
   control: "6px"
-  task: "7px"
-  panel: "8px"
+  task: "8px"
+  panel: "9px"
   dialog: "10px"
 spacing:
   xs: "8px"
@@ -76,25 +75,25 @@ components:
     backgroundColor: "{colors.accent}"
     textColor: "{colors.accent-ink}"
     rounded: "{rounded.control}"
-    padding: "9px 13px"
+    padding: "7px 11px"
   button-primary-hover:
     backgroundColor: "{colors.accent-hover}"
   button-secondary:
     backgroundColor: "transparent"
     textColor: "{colors.ink}"
     rounded: "{rounded.control}"
-    padding: "9px 13px"
+    padding: "7px 11px"
   button-secondary-hover:
     backgroundColor: "{colors.notice}"
   input:
     backgroundColor: "{colors.base}"
     textColor: "{colors.ink}"
     rounded: "{rounded.control}"
-    padding: "9px 11px"
+    padding: "8px 10px"
   nav-item:
     textColor: "{colors.muted}"
     rounded: "{rounded.control}"
-    padding: "9px 11px"
+    padding: "9px 10px"
   nav-item-active:
     backgroundColor: "{colors.notice}"
     textColor: "{colors.ink}"
@@ -110,19 +109,18 @@ components:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.dialog}"
-    width: "min(480px, calc(100vw - 32px))"
+    width: "min(620px, calc(100vw - 24px))"
   notice:
     backgroundColor: "{colors.notice}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.control}"
-    padding: "11px 12px"
+    padding: "10px 16px"
   notice-error:
     backgroundColor: "{colors.error-bg}"
     textColor: "{colors.error-ink}"
   approval:
     backgroundColor: "{colors.approval-bg}"
-    rounded: "{rounded.control}"
-    padding: "11px 12px"
+    rounded: "7px"
+    padding: "12px"
 ---
 
 # Design System: Cubo
@@ -131,17 +129,17 @@ components:
 
 **Creative North Star: "Consola de trabajo persistido"**
 
-Cubo usa carbón, gris frío y lima suave para una consola operativa. La densidad compacta permite leer tareas, progreso y acciones sin perder la jerarquía. La navegación estable permite cambiar entre módulos y volver a las ejecuciones recientes. El inspector amplía la tarea seleccionada.
+Cubo usa carbón, gris frío y lima suave para una consola operativa. La densidad compacta permite leer tareas, progreso y acciones sin perder la jerarquía. Una barra global y la navegación lateral mantienen el contexto de trabajo; el contenido ocupa el espacio restante.
 
-Las superficies son planas, delimitadas por líneas y cambios de tono. La tipografía local y las esquinas discretas mantienen una lectura sobria. La estructura inspirada en Telo conserva la paleta de Cubo. Los módulos preparados distinguen funciones pendientes de los datos disponibles. Las capturas documentan la UI local.
+Las superficies son planas, delimitadas por líneas y cambios de tono. La tipografía local y las esquinas discretas mantienen una lectura sobria. La arquitectura, distribución y densidad siguen directamente las siete referencias de Telo, conservando íntegramente la paleta de Cubo. Los módulos preparados distinguen funciones pendientes de los datos disponibles. Las capturas documentan la UI local.
 
 **Key Characteristics:**
 
 - Fondo carbón y superficies de gris frío.
 - Lima suave para acciones, selección y progreso.
 - Filas compactas y detalle legible.
-- Navegación lateral y barra contextual estables.
-- Diálogos nativos para navegación e inspector en móvil.
+- Barra global y navegación lateral estables.
+- Chat con compositor inferior y detalles abiertos a petición.
 - Estados explícitos con texto y foco visible.
 
 ## Colors
@@ -158,7 +156,7 @@ La paleta combina neutrales oscuros con un acento luminoso y colores semánticos
 
 - **Ámbar de espera**, token `waiting`: aprobación y funciones pendientes.
 - **Rosa de fallo**, token `failed`: estado fallido o cancelado.
-- **Aviso de error**, tokens `error-bg`, `error-ink` y `error-line`: mensaje de error visible con fondo, texto y borde específicos.
+- **Aviso de error**, tokens `error-bg` y `error-ink`: fondo y texto del error visible. `error-line` conserva el valor semántico existente, sin uso en los avisos actuales.
 - **Superficie de aprobación**, tokens `approval-bg` y `approval-line`: recinto de revisión y continuación; el borde también distingue la tarea seleccionada.
 
 ### Neutral
@@ -181,7 +179,7 @@ La jerarquía distingue títulos por tamaño y peso sin recurrir a mayúsculas o
 
 ### Hierarchy
 
-- **Headline:** título de módulo; en móvil se reduce a 22px.
+- **Headline:** título de módulo; en móvil se reduce a 21px.
 - **Inspector-title:** nombre de la tarea dentro del inspector.
 - **Title:** nombre de tarea y títulos compactos.
 - **Body:** base de lectura y controles que heredan la raíz.
@@ -189,37 +187,37 @@ La jerarquía distingue títulos por tamaño y peso sin recurrir a mayúsculas o
 - **Mono:** tiempos e identificadores técnicos.
 - **Brand:** nombre Cubo junto al cubo lineal SVG.
 
-Los contadores usan 26px, peso 500 y línea 1.3; en móvil usan 24px. Las acciones comunes usan 13px y peso 500. Los tags y estados usan 11px. Los metadatos de 9–10px presentes son deuda de legibilidad y no forman una escala normativa para nuevas superficies.
+La base de lectura y los campos usan 13px. Los contadores usan 28px, peso 500 y línea 1.35; en móvil usan 25px. Las acciones comunes usan 12px y peso 500. Los tags usan 11px y los estados 12px. La cabecera del chat usa 14px, reducidos a 13px en móvil. Los metadatos de 10px presentes son deuda de legibilidad y no forman una escala normativa para nuevas superficies.
 
 **The Lectura numérica Rule.** Los contadores de progreso y resultados usan cifras tabulares; los tiempos e identificadores técnicos usan monospace.
 
 ## Layout
 
-El workspace ocupa el viewport. La sidebar fija de escritorio mide 232px y el contenido usa una columna flexible con `minmax(0, 1fr)`. La barra contextual permanece arriba, mide 56px y lleva 28px de padding horizontal. El módulo tiene ancho máximo de 1680px y padding de 28px 28px 32px.
+El workspace ocupa 100dvh. Una barra global de 42px abarca todo el ancho; debajo, la sidebar de 208px comparte fila con contenido flexible. Los módulos usan padding de 26px 32px 32px, sin ancho máximo. Recientes tiene desplazamiento interno y el pie cloud permanece al fondo de la sidebar con tamaño estable.
 
-Tareas separa registro e inspector mediante 22px. El inspector mide 330px, permanece a 78px del borde superior y limita su altura al viewport menos 100px. Desde 1600px mide 370px, la separación pasa a 26px y el módulo usa padding de 32px 36px. Hasta 1199px el inspector vuelve al flujo y Proyectos pasa a una columna.
+Tareas muestra tres métricas en una fila y un registro de ancho completo. Ver proceso abre a petición un diálogo lateral derecho de hasta 480px bajo la barra global, sin reservar una columna mientras está cerrado. La cabecera del proceso permanece visible durante el desplazamiento.
 
-Hasta 767px desaparece la columna reservada a la sidebar. La barra mide 52px, el módulo usa padding de 20px 14px 28px y las métricas pasan de cuatro a dos columnas. La búsqueda ocupa toda la fila y los filtros se ajustan al ancho disponible. La navegación abre un diálogo lateral de 248px; el inspector abre un diálogo a 10px de los bordes laterales y 62px del superior. Ambos usan aislamiento de foco y cierre con Escape mediante `dialog` nativo.
+Hasta 767px desaparece la columna reservada a la sidebar. La barra conserva 42px, el módulo usa padding de 20px 14px 24px y las métricas y campos pasan a una columna. La búsqueda ocupa toda la fila. La navegación abre un diálogo lateral de 230px; proceso y configuración ocupan todo el ancho bajo la barra. Los diálogos nativos aíslan el foco, cierran con Escape y devuelven el foco al control de apertura. Nueva tarea se centra, mide hasta 620px o el viewport menos 24px y limita su altura al viewport menos 32px.
 
-Chat separa historial, conversación y compositor. El historial ocupa 220px en escritorio; hasta 1199px lo sustituye un diálogo nativo de ancho máximo 420px, con 12px de margen mínimo al viewport. Su configuración ocupa 320px en escritorio y 280px hasta 1199px; hasta 767px abre un diálogo nativo que ocupa el contenido bajo la barra de 52px. Mensajes y compositor se limitan a 920px. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios del workspace.
+Chat ocupa todo el panel principal, con cabecera de altura mínima de 48px, conversación desplazable y compositor inferior. Historial siempre abre un diálogo de hasta 440px, con margen mínimo de 12px; no crea otra columna permanente. Configuración añade una columna de 320px a petición, de 280px hasta 1199px. Mensajes y compositor se limitan a 920px y 940px respectivamente. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios. Los campos usan dos columnas y el resumen de proyecto cuatro, reducidas a una y dos en móvil.
 
 **The Contexto estable Rule.** La navegación y la barra contextual mantienen su posición; cada módulo concentra filtros, datos y acciones en el contenido.
 
 ## Elevation & Depth
 
-La profundidad operativa se obtiene mediante tono y bordes de 1px. Las tareas seleccionadas cambian su borde al color de aprobación; las pestañas y navegación activa cambian la superficie. Los paneles y controles no usan sombras decorativas. Los diálogos de navegación e inspector oscurecen el fondo con negro al 55%; Nueva tarea usa 65%.
+La profundidad operativa se obtiene mediante tono y bordes de 1px. Las tareas seleccionadas cambian su borde al color de aprobación; las pestañas y navegación activa cambian la superficie. Los paneles y controles no usan sombras decorativas. Los diálogos oscurecen el fondo con negro al 55%.
 
 **The Superficie plana Rule.** Las superficies operativas se separan por líneas y tono. Los fondos modales marcan el contexto temporal de interacción.
 
 ## Shapes
 
-Los controles y avisos tienen esquinas discretas; los badges son más ajustados y los diálogos más amplios. Los radios del frontmatter describen las familias presentes. Las tareas tienen un radio propio y los paneles comparten el siguiente paso. Los indicadores de estado son círculos pequeños. Marca e iconos usan SVG lineal.
+Los controles usan radio de 6px, iconos y tags 5px, tareas 8px, paneles y métricas 9px, diálogos centrados y compositor 10px. Las pestañas tienen recinto de 7px y botones internos de 5px. El proceso lateral ocupa el área de contenido hasta sus bordes. Los indicadores de estado son círculos pequeños. Marca e iconos usan SVG lineal.
 
 ## Components
 
 ### Buttons
 
-La acción principal usa lima sólida y tinta oscura; la secundaria usa borde neutral y fondo transparente. Ambas tienen altura mínima de 36px. La variante compacta usa altura mínima de 30px y padding de 5px 9px. Los botones de icono miden 32px por lado y tienen nombre accesible.
+La acción principal usa lima sólida y tinta oscura; la secundaria usa borde neutral y fondo transparente. Ambas usan padding de 7px 11px y altura mínima de 32px. La variante compacta usa altura mínima de 28px y padding de 4px 8px. Los botones de icono miden 30px por lado y tienen nombre accesible.
 
 El hover principal aclara el fondo; el secundario añade tono de aviso. Las transiciones de fondo y borde duran 150ms con `ease`. El foco visible usa contorno lima de 2px y separación de 3px. Los controles deshabilitados usan opacidad 0.5 y cursor de bloqueo. Movimiento reducido elimina las transiciones.
 
@@ -229,33 +227,37 @@ Los tags informativos usan borde neutral, radio de badge y texto compacto. Los e
 
 ### Cards / Containers
 
-Los paneles comparten superficie, borde y radio de panel. Sus cabeceras separan título y acciones mediante un divisor. Resumen y contenido del inspector usan padding de 16px. Las tareas llevan padding de 14px 15px y separación de 10px; la selección cambia el borde. En móvil el padding de tareas pasa a 12px. Los avisos usan menor radio. La aprobación conserva su acción dentro de la tarea seleccionada.
+Los paneles comparten superficie, borde y radio de panel. Sus cabeceras reúnen título y acciones con padding de 13px 16px. Resumen y contenido del inspector usan padding de 16px. Las tareas llevan padding de 14px 16px y separación de 10px; la selección cambia el borde. En móvil el padding de tareas pasa a 12px. Los avisos usan menor radio. La aprobación conserva su acción dentro de la tarea seleccionada.
 
 ### Inputs / Fields
 
-Los campos usan fondo carbón, borde neutral, texto claro y caret lima. Las etiquetas visibles preceden a campos y selectores. El foco comparte el contorno de botones. Los checkboxes nativos usan acento lima y miden 16px. La búsqueda integra SVG y campo en un recinto de 33px de altura. Los filtros permiten salto de línea.
+Los campos usan fondo carbón, borde neutral, texto claro y caret lima. Las etiquetas visibles preceden a campos y selectores. El foco comparte el contorno de botones. Los checkboxes nativos usan acento lima y miden 16px. Los campos usan padding de 8px 10px. La búsqueda integra SVG y campo en un recinto común. Los filtros permiten salto de línea.
 
 ### Navigation
 
-La sidebar reúne marca, Nueva tarea, cinco módulos, recientes y estado del sistema. Cada enlace usa padding de 9px 11px y altura mínima de 38px. El módulo activo tiene fondo de aviso, texto claro e icono lima; `aria-current` identifica la página. Recientes recupera la selección de una tarea. En móvil un diálogo nativo sustituye al aside y limita el foco al menú abierto.
+La sidebar reúne marca, Nueva tarea, cinco módulos, recientes y estado del sistema. Cada enlace usa padding de 9px 10px y altura mínima de 35px. El módulo activo tiene fondo de aviso, texto claro e icono lima; `aria-current` identifica la página. Recientes recupera la selección de una tarea. En móvil un diálogo nativo sustituye al aside y limita el foco al menú abierto.
 
 ### Inspector y progreso
 
-El inspector muestra estado, tarea, ejecutor, intento, progreso y resultado disponible. Actividad, Checkpoint y Datos cambian el contenido dentro del mismo panel. El detalle usa un aside en escritorio y un diálogo modal en móvil. Nueva tarea también usa un diálogo nativo y conserva el formulario separado del registro.
+El inspector muestra estado, tarea, ejecutor, intento, progreso y resultado disponible. Actividad, Checkpoint y Datos cambian el contenido dentro del mismo panel. El detalle usa un diálogo lateral a petición, con cabecera fija durante el desplazamiento. Nueva tarea también usa un diálogo nativo y conserva el formulario separado del registro.
 
-La barra nativa de progreso mide 4px; dentro de una tarea mide 3px. Lleva pista neutral y relleno lima, acompañada de información textual. El registro alinea tiempos con mensajes. Los identificadores y el checkpoint adicional usan un desplegable nativo. Los cambios de estado se anuncian en una región accesible y los errores usan `role="alert"`.
+La barra nativa de progreso mide 4px. Lleva pista neutral y relleno lima, acompañada de información textual. El registro alinea tiempos con mensajes. Los identificadores y el checkpoint adicional usan un desplegable nativo. Los cambios de estado se anuncian en una región accesible y los errores usan `role="alert"`.
 
 ### Historial y mensajes
 
-Las conversaciones del historial son botones de fondo carbón, borde neutral y radio de control, separados por 8px. La selección cambia el borde a lima; el título puede partir palabras largas y la fecha usa texto secundario. El mismo listado aparece en el diálogo de historial cuando desaparece la columna lateral.
+El historial usa botones compactos de borde neutral y radio de control, separados por 4px. La selección cambia el borde a lima; el título puede partir palabras largas y la fecha usa texto secundario. El listado siempre aparece en un diálogo a petición.
 
-Los mensajes forman una lista con separadores de 1px y separación de 18px. Cada mensaje reúne autor, fecha y estado textual Guardado, conserva los saltos de línea y permite copiar el contenido. El compositor tiene etiqueta visible y una acción Guardar mensaje; los controles de integraciones pendientes permanecen deshabilitados y su estado se explica con texto. La configuración usa campos existentes para nombre y acciones de conversación. La eliminación requiere confirmación nativa del navegador. Los avisos de guardado se anuncian con `role="status"`; los errores mantienen `role="alert"`.
+Los mensajes guardados se alinean a la derecha, con autor, fecha, estado textual Guardado, burbuja de superficie, saltos de línea preservados y acción Copiar. La lista tiene separación de 26px y ancho máximo de mensaje del 85%, ampliado al 94% en móvil. El compositor inferior reúne textarea, adjuntos, configuración, selector de modelo/agente, guardado y esfuerzo. Guardar persiste el mensaje; inferencia, herramientas y esfuerzo permanecen pendientes y deshabilitados. La configuración permite renombrar, fijar y eliminar conversaciones. La eliminación requiere confirmación nativa. Los avisos usan `role="status"`; los errores, `role="alert"`.
+
+### Métricas y funciones pendientes
+
+Las métricas de tareas y actividad se derivan del historial disponible y explican su alcance. Costes, tokens, modelos y cuotas sin integración muestran indisponibilidad, nunca cifras inventadas. Proyectos, agentes y proveedores reutilizan campos y estados del sistema, con acciones pendientes deshabilitadas. Nueva tarea separa el formulario futuro de IA de la validación durable existente mediante un desplegable.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** usar el acento para acciones y señales de estado.
+- **Do** conservar íntegramente la paleta de Cubo y la arquitectura compacta acordada con Telo.
 - **Do** mantener texto explícito junto a cada estado y contador de progreso.
 - **Do** conservar el foco visible y las etiquetas accesibles de los controles.
 - **Do** mantener navegación e inspector accesibles mediante diálogos en móvil.
@@ -263,7 +265,8 @@ Los mensajes forman una lista con separadores de 1px y separación de 18px. Cada
 
 ### Don't:
 
-- **Don't** presentar una demo local como prueba de continuidad cloud.
+- **Don't** reservar una columna permanente al historial de chat o al proceso cerrado.
+- **Don't** presentar métricas inventadas ni capacidades pendientes como funciones activas.
 - **Don't** depender solo del color para comunicar un estado.
 - **Don't** convertir el detalle operativo en una superficie con sombras decorativas.
 - **Don't** ocultar errores de acciones mientras se actualiza el progreso.
