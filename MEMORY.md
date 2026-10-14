@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-14, importación GitHub implementada localmente; aceptación cloud en curso.
+Última actualización significativa: 2026-10-14, importación pública GitHub validada en cloud; acceso privado pendiente de deploy key.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
@@ -242,8 +242,18 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - Usuario configuró PROJECT_ENCRYPTION_KEY como Secret en cubo-dev; Wrangler
   confirmó su nombre. No se leyó el valor ni se modificaron secretos automáticamente.
 - 24 tests/114 comprobaciones, tipos y build pasan. UI 1440/390 sin overflow;
-  Ver proceso desde proyecto abre el inspector. Aceptación cloud pública/privada
-  pendiente, antes de avanzar a agentes. Ver docs/repository-import.md.
+  Ver proceso desde proyecto abre el inspector. Importación pública cloud pasa:
+  tarea 690e3d24-be08-42f3-afc9-b1d4737d3a9a, run 38594588505, SUCCEEDED 4/4.
+  Cliente cerrado 16:02:05.525 UTC; runner conectado 16:02:22.773 UTC y resultado
+  persistido 16:02:28.341 UTC. D1 confirma run, proyecto y resultado; reapertura
+  escritorio/móvil recupera README. Demo anterior SUCCEEDED/91 preservada.
+- Commit 7989798 publicado y Worker fce538cf-68d7-49a0-bb7d-21a230bcf47e.
+  Cifrado real en cloud y clave pública idempotente comprobados; propietario no
+  accede al endpoint privado del runner. Proyecto SSH 4e7f8f3e-dff2-4d84-9275-7d7e547459d7
+  espera que usuario añada deploy key de lectura. No lanzar importación privada
+  antes de confirmar; ver docs/repository-import.md. Agentes continúan pendientes.
+- QA detectó HTML sin CSP: corrección mediante Static Assets _headers en curso.
+  Política solo permite scripts del origen; estilos inline necesarios para barras.
 - Publicar workflow/runner antes de Worker; no hacer rollback a código que ignore
   importaciones o aislamiento. Rotación de claves y archivado aún no implementados.
 

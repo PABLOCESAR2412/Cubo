@@ -73,5 +73,31 @@ Clave OpenSSH comprobada con `ssh-keygen -y`, cifrado y AAD entre proyectos prob
 Clone público real de octocat/Hello-World: revisión
 `7fd1a60b01f91b314f59955a4e4d4e80d8edf11d`, README recuperado y cuatro etapas
 persistidas en D1 compatible local. Esto no demuestra todavía ejecución cloud de
-esta nueva importación. La demo durable cloud previa permanece como evidencia del
-motor; la aceptación cloud de importación pública/privada debe registrarse aparte.
+esta nueva importación. La aceptación cloud se registra a continuación.
+
+## Aceptación cloud pública: 2026-10-14
+
+- Commit de implementación: `7989798`; Worker personal cubo-dev versión
+  `fce538cf-68d7-49a0-bb7d-21a230bcf47e`. Migración 0004 aplicada.
+- Proyecto de validación `22a6bcfa-14b7-4679-a114-bb0dcd867a2f`.
+- Tarea `690e3d24-be08-42f3-afc9-b1d4737d3a9a`; ejecución con sufijo `-1`.
+- GitHub run `38594588505`: runner ubuntu-latest, conclusión success.
+- Navegador cerrado 16:02:05.525 UTC; runner conectado 16:02:22.773 UTC.
+- Cuatro checkpoints posteriores al cierre; SUCCEEDED a las 16:02:28.341 UTC.
+- Reapertura posterior en 1440/390 px recuperó SHA, README y estado sin overflow.
+  SQL remoto confirma backend_run_id, proyecto, secuencia 4 y resultado.
+- Demo anterior SUCCEEDED/91 conservada. Un solo runner nuevo para esta prueba.
+  No se probó apagado físico del dispositivo ni agotamiento real de cuota.
+
+El Secret remoto funciona: generación/cifrado de clave de proyecto completados;
+API devuelve solo pública y fingerprint. Sesión del propietario no autoriza el
+endpoint de credenciales del runner; sin sesión el contexto devuelve 401.
+Importación privada aún pendiente de que el usuario añada la deploy key de lectura.
+El proyecto de validación permanece como historial real, sin borrar datos existentes.
+
+La prueba inicial de login QA omitió Origin en una solicitud y recibió rechazo;
+se corrigió el script de prueba, sin cambiar autenticación del producto. La prueba
+de cabeceras detectó ausencia real de CSP y motivó `_headers` para Static Assets,
+conforme a la [documentación oficial de Cloudflare](https://developers.cloudflare.com/workers/static-assets/headers/).
+Se restringen scripts, conexiones, fuentes y workers al origen; estilos inline
+siguen permitidos para las barras de las analíticas existentes.

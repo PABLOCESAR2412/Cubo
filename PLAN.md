@@ -31,8 +31,9 @@ funcional activo de Proyectos.
 Implementada localmente: importador remoto de lectura, cuatro checkpoints, archivos
 acotados por proyecto y claves SSH generadas por Cubo, privadas cifradas en D1.
 Una ejecución global se reserva en el backend; las demás quedan en cola.
-Ver [docs/repository-import.md](docs/repository-import.md). Falta aceptación cloud
-de esta vertical. El usuario confirmó crear PROJECT_ENCRYPTION_KEY como Secret;
+Ver [docs/repository-import.md](docs/repository-import.md). Importación pública
+validada en cloud con cliente cerrado y recuperación; aceptación privada pendiente
+de deploy key de lectura. El usuario confirmó crear PROJECT_ENCRYPTION_KEY como Secret;
 su presencia en cubo-dev fue verificada por nombre, sin leer su valor.
 Para acceso privado deberá añadir la pública del proyecto como deploy key de lectura.
 No avanzar a agentes antes de cerrar esta aceptación.
@@ -41,8 +42,9 @@ No avanzar a agentes antes de cerrar esta aceptación.
 
 Base implementada: creación/listado D1, detalle, instrucciones y memoria manual,
 chats asociados e historial anterior conservado. Aceptación en docs/projects.md.
-Importación de repositorios, herramientas/secretos y tareas asociadas continúan
-pendientes; el hito completo de integración GitHub no se declara terminado.
+Importación pública por tarea ya validada; privada espera deploy key de lectura.
+Herramientas, variables de agentes y tareas con inferencia continúan pendientes;
+el hito completo de integración GitHub no se declara terminado.
 
 1. Listar y crear proyectos persistentes: nombre y repositorio GitHub opcional.
 2. Asociar conversaciones y tareas a un proyecto; conservar y migrar de forma

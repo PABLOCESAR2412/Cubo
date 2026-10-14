@@ -23,7 +23,8 @@ renombrado, fijado, eliminación y exportación. La inferencia sigue pendiente.
 Ver [alcance real de Chat](docs/chat.md) y su estado de publicación.
 Proyectos tiene creación/listado, instrucciones y memoria manual, y conversaciones
 propias persistentes. La importación GitHub de lectura, archivos acotados y claves
-SSH cifradas están implementados localmente; su aceptación cloud está en curso.
+SSH cifradas están implementados. Importación pública validada en cloud con cliente
+cerrado; acceso privado pendiente de añadir deploy key de lectura.
 Herramientas y tareas mediante agentes siguen pendientes. Ver
 [alcance de Proyectos](docs/projects.md) e [importación GitHub](docs/repository-import.md).
 Ver [alcance y comprobación de la interfaz](docs/design-workspace.md).

@@ -38,7 +38,8 @@ inventario, textos acotados y contexto persistido separado de la memoria manual.
 Un clone público real y las cuatro etapas se comprobaron localmente. Generación
 Ed25519, formato OpenSSH, cifrado y aislamiento entre proyectos también se
 comprobaron localmente; la clave maestra está configurada como Secret remoto.
-La aceptación cloud de esta importación pública/privada sigue pendiente. Añadir
+La importación pública se comprobó en cloud con el navegador cerrado antes de
+arrancar el runner y recuperación en escritorio/móvil. La privada sigue pendiente. Añadir
 una deploy key pública en GitHub no demuestra acceso privado: lo confirma una
 importación completada. Inferencia y acciones de escritura Git siguen pendientes.
 Ver [docs/projects.md](docs/projects.md) y
