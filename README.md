@@ -9,7 +9,7 @@ runners Linux estándar. Containers y R2 no se utilizan.
 Implementados localmente: consola React/Vite/Tailwind, API Hono, contratos, persistencia,
 motor durable, GitHubActionsExecutionBackend, runner demostrativo, checkpoints,
 aprobación de continuación y control de cuota. Codex/OpenCode siguen pendientes.
-OpenRouter de texto gratuito está implementado localmente; aceptación real pendiente
+OpenRouter de texto gratuito está publicado en desarrollo; aceptación real pendiente
 de clave del proyecto. La vertical base cloud ya fue validada: runner GitHub real, navegador
 cerrado, seis checkpoints en D1 y recuperación de resultado 91 en un navegador nuevo.
 
@@ -33,7 +33,7 @@ Ver [alcance y comprobación de la interfaz](docs/design-workspace.md).
 La corrección estructural directa contra las capturas está documentada en
 [comparación de interfaz con Telo](docs/telo-interface-comparison.md).
 
-La iteración local actual inicia en Proyectos, muestra tarjetas y Recientes solo de
+La iteración publicada actual inicia en Proyectos, muestra tarjetas y Recientes solo de
 chats, y reúne información técnica en Diagnóstico. Conserva la paleta y permite
 identificar instrucciones/memoria del repositorio. Ver [flujo actual](docs/workspace-project-flow.md).
 

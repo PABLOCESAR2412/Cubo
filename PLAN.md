@@ -21,7 +21,7 @@ Identificar instrucciones/memoria del repositorio sin sobrescribir campos adicio
 Ver [flujo del workspace](docs/workspace-project-flow.md).
 
 El usuario eligió OpenRouter para el primer chat real, solo modelos gratuitos.
-Implementados localmente adaptador, clave cifrada por proyecto, turno durable,
+Publicados en cubo-dev adaptador, clave cifrada por proyecto, turno durable,
 respuesta/uso persistidos y cancelación con confirmación remota. Aceptación real
 pendiente de configurar la clave desde la PWA; no pedirla por chat. No son agentes
 Codex/OpenCode ni herramientas habilitadas. Ver [OpenRouter](docs/openrouter-chat.md).

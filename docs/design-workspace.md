@@ -91,8 +91,8 @@ La revisión local cubrió tarjetas, renombrado y edición persistentes, chat gu
 y fijado, cierre y recuperación, retorno al listado, diagnóstico y proveedor. El
 registro de QA informa ausencia de overflow y errores JavaScript. La validación
 de implementación de esta iteración informa lint, typecheck, build y 29 tests con
-166 assertions. El bundle revisado es `index-jb7_0pFr.js`, con CSS `index-DwGuiYYU.css`.
-Este pase documental no volvió a ejecutar pruebas ni publicó recursos.
+168 assertions. Capturas de composición: `index-jb7_0pFr.js`; Diagnóstico se corrigió
+y recapturó con `index-Dwu3aXS9.js`, CSS `index-DwGuiYYU.css`. Finish reviewer: ship.
 
 DESIGN.md y `.impeccable/design.json` describen la composición implementada y
 conservan los tokens aprobados. Los metadatos heredados de 10px, incluido Solo ruta,
@@ -102,8 +102,10 @@ no nuevos tokens de aplicación.
 
 ## Límites de aceptación
 
-Esta iteración está implementada y revisada localmente. Publicación y aceptación
-real del turno OpenRouter con cierre/reapertura siguen pendientes. Las pruebas de
+Esta iteración está publicada en cubo-dev con código b5f1250, Worker
+e979833a-e768-4491-9f7e-5ce992155a1b. UI cloud 1440/390, PWA y cancelación real
+comprobadas; ver [aceptación cloud](openrouter-cloud-validation.md). La aceptación
+real del turno OpenRouter con cierre/reapertura sigue pendiente. Las pruebas de
 proveedor usan fixtures identificadas y no prueban inferencia real. El renderizado
 de mensajes de asistente y métricas refleja soporte del código, no una ejecución
 real completada durante esta revisión.

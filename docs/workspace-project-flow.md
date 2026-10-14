@@ -2,7 +2,7 @@
 
 Solicitud del usuario: refinamiento sobre el diseño aprobado, conservando paleta.
 La barra superior elimina marca/breadcrumb duplicados, hora y acceso a Ajustes.
-Diagnóstico reúne sincronización, última observación, estado cloud, configuración
+Diagnóstico reúne sincronización, última observación, disponibilidad de API, configuración
 de Actions y política de presupuesto. El botón de actualización/instalación PWA sigue
 disponible. El diagnóstico distingue configuración de disponibilidad de runners.
 

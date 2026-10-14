@@ -1,7 +1,7 @@
 # Memoria del desarrollo de Cubo
 
 Actualizado: 2026-10-14. Nueva UI centrada en proyectos y OpenRouter de texto
-implementados localmente; publicación y aceptación real de inferencia pendientes.
+publicados en desarrollo; aceptación real de inferencia pendiente de guardar la clave.
 
 ## Autoridad
 
@@ -77,13 +77,14 @@ el control plane. Esa integración Git de escritura sigue pendiente.
   real v1/v2 probado en loopback; instalación física aún no validada.
 - CSP/headers publicados, SW y shell offline comprobados, API privada 401 y
   recuperación de importación sin violaciones CSP. Estilos inline permitidos para barras.
-- Último código publicado antes de esta iteración: b821214, documentación a5a6009.
-  Worker vigente antes del siguiente deploy: 715b6ee7-a14d-4e4e-aaa6-e4cc1f0672b0.
+- Código actual publicado: b5f1250. Worker e979833a-e768-4491-9f7e-5ce992155a1b.
+  Migración 0005 aplicada en D1 personal sin borrar resultados anteriores.
 
-## Iteración actual, todavía local
+## Iteración actual publicada, inferencia por aceptar
 
 - Por petición posterior: Diagnóstico sustituye breadcrumb, hora y ajustes del topbar;
-  reúne API/cloud/Actions/presupuesto. Sidebar Nuevo proyecto, Recientes solo chats
+  reúne sincronización/disponibilidad de API, Actions y presupuesto. No confunde
+  sincronización local con cloud. Sidebar Nuevo proyecto, Recientes solo chats
   agrupados, sin horas. Chat no figura en navegación; abre desde proyecto o recientes.
 - Proyectos inicia en listado de tarjetas con abrir/editar/renombrar reales.
   Fuente de instrucciones/memoria desde AGENTS.md/CLAUDE.md y MEMORY.md de la raíz;
@@ -102,16 +103,25 @@ el control plane. Esa integración Git de escritura sigue pendiente.
 - Cancelación añade ledger de intención y solicitud durable. Revoca callbacks;
   confirma CANCELLED solo sin despacho posible o tras estado remoto terminal.
   Workflow/cron reconcilian; un fallo remoto conserva cancelación sin confirmar.
-- Migración 0005 aditiva aún sin aplicar en cloud. Conserva mensajes viejos como
+- Migración 0005 aditiva aplicada en cloud. Conserva mensajes viejos como
   user. Legacy writers inicializan intención conservadora; nuevos writers la ponen 0.
   Runner compatible detecta protocolo 2; publicar runner primero y Worker después.
   No hacer rollback a lectores que confundan roles o ignoren project_id.
 - 29 tests/168 comprobaciones, lint/typecheck/build pasan. QA local 1440/390:
   tarjetas, edición, chat real guardado/fijado, cierre y recuperación, diagnóstico,
   metadata real del catálogo; sin overflow ni errores JS. Inferencia aún no probada.
-- Ver docs/workspace-project-flow.md y docs/openrouter-chat.md. Falta finish reviewer,
-  documenter, commit/push/deploy, prueba cloud de cancelación y clave manual para
-  aceptar un turno real OpenRouter con cliente cerrado. No pedir claves por chat.
+- Finish reviewer: ship tras corregir etiqueta de disponibilidad; documenter completado.
+  Publicación cloud pasó PWA/CSP/SW/offline, UI 1440/390 y recuperación del resultado 91.
+- Cancelación real: tarea 6c2e8129-1482-4d6a-80f2-7da1699109ba, run 38612464241.
+  Solicitada 18:07:40.057 UTC, mantuvo RUNNING/CANCELLATION_REQUESTED; confirmada
+  18:08:27.852 UTC con run completed/cancelled. Sin resultado ni callbacks tardíos.
+- El usuario informó clave guardada, pero D1 y API aún no encuentran conexión.
+  Proyecto de su navegador: 077e6b47-e19b-4ff5-afda-77c3f366f9d7. API 200,
+  cifrado disponible, catálogo real 15 modelos, configured=false. Chrome aislado
+  sin errores; globals-front.js/content.js no son assets de Cubo. Falta mensaje
+  concreto al guardar, sin compartir la clave. No se lanzó inferencia real.
+- Ver docs/workspace-project-flow.md y docs/openrouter-chat.md. Próxima aceptación:
+  clave manual desde PWA y turno OpenRouter real con cliente cerrado.
 
 ## Límites y próximos hitos
 
@@ -135,4 +145,3 @@ el control plane. Esa integración Git de escritura sigue pendiente.
 
 Actualizar esta instantánea al cerrar hitos; conservar decisiones y bloqueos,
 no acumular un log de comandos ni memorias divergentes por agente.
-

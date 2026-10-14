@@ -2,7 +2,7 @@
 
 ## Alcance de esta vertical
 
-Implementación local con pruebas: proveedor de texto OpenRouter, modelos gratuitos,
+Implementación publicada en cubo-dev con pruebas: proveedor de texto OpenRouter, modelos gratuitos,
 turnos remotos, mensajes de asistente y uso persistidos. La aceptación con una clave
 real está pendiente. No es ejecución de Codex/OpenCode: no hay herramientas, edición
 de archivos ni operaciones Git disponibles para el modelo.
@@ -95,6 +95,9 @@ lectores que etiqueten respuestas como mensajes del usuario ni ignoren project_i
 La migración no borra resultados, chats o checkpoints anteriores.
 
 ## Aceptación pendiente
+
+Publicación, cancelación real y límites de la prueba están registrados en
+[validación cloud](openrouter-cloud-validation.md).
 
 Pruebas unitarias usan respuestas identificadas como fixtures; no son prueba de
 inferencia real. Catálogo público real comprobado desde Node 24: 15 modelos gratuitos
