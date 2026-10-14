@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-13, shell directo de Telo publicado y comprobado en cloud.
+Última actualización significativa: 2026-10-14, segunda pasada de refinamiento visual validada localmente.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
@@ -164,6 +164,19 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - Pausa/aprobación/nuevo runner está probada localmente, pendiente de prueba cloud específica.
 - Apagar físicamente PC/teléfono no se probó; el cierre completo del navegador sí.
 - Continuar los hitos de proyectos GitHub y agentes únicamente por nueva instrucción.
+
+## Refinamiento visual del 2026-10-14
+
+- Segunda pasada sobre el shell aprobado, sin cambiar paleta ni backend.
+  Sidebar con acción primaria sólida, recientes y contadores más claros;
+  Chat con cabecera, burbujas y compositor refinados; Tareas con filas compactas
+  y bloque derecho alineado de ID, actualización, progreso y acción.
+- Chat desplaza los mensajes nuevos al final. Esfuerzo/modelos/agentes continúan
+  pendientes; no se simulan respuestas. Ver docs/ui-refinement.md.
+- 25 capturas en 1440×900 y 390×844, sin overflow horizontal. Chat D1 local
+  recuperado tras cerrar cliente; tareas cloud consultadas sin nuevos runners.
+  Reviewer final: ship, sin correcciones materiales. Paleta: seis tokens intactos.
+- Tests 20/85, lint, typecheck y build pasan. Publicación pendiente de cierre.
 
 ## Límites y funcionalidades pendientes
 

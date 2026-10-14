@@ -167,37 +167,45 @@ export function TaskRow({
   return (
     <article className={`task-item ${selected ? "selected" : ""}`}>
       <div className="task-item-top">
-        <AgentBadge name="Runner de validación" />
         <StatusBadge status={task.status.toLowerCase()}>{labels[task.status]}</StatusBadge>
-        <time dateTime={task.createdAt}>{time(task.createdAt)}</time>
       </div>
-      <div className="task-item-main">
-        <div>
+      <div className="task-row-body">
+        <div className="task-row-content">
           <button className="task-title" type="button" onClick={open}>
             {task.title}
           </button>
-          <p>
-            {task.input.steps} pasos ·{" "}
-            {task.input.pauseAt ? "pausa con aprobación" : "ejecución durable"}
-          </p>
+          <div className="task-row-meta" title="Proyecto y modelo aún no disponibles">
+            <AgentBadge name="Runner de validación" />
+            <span>{task.input.steps} pasos</span>
+            {task.input.pauseAt && <span>Pausa con aprobación</span>}
+          </div>
         </div>
-        <button className="secondary compact" type="button" onClick={open}>
-          <Icon name="logs" size={15} />
-          Ver proceso
-        </button>
-      </div>
-      <div className="task-item-bottom">
-        <span>Proyecto y modelo · integración pendiente</span>
-        <span className="mono">ID {task.id.slice(0, 8)}</span>
-        <span>
-          {task.progress}/{task.input.steps}
-        </span>
-        <progress
-          max={task.input.steps}
-          value={task.progress}
-          aria-label={`Progreso de ${task.id.slice(0, 8)}`}
-        />
-        <span>Actualizada {time(task.updatedAt)}</span>
+        <div className="task-row-side">
+          <div className="task-row-identity">
+            <span className="mono" title={task.id}>
+              ID {task.id.slice(0, 8)}
+            </span>
+            <time dateTime={task.updatedAt} title="Última actualización">
+              {time(task.updatedAt)}
+            </time>
+          </div>
+          <div className="task-row-controls">
+            <div className="task-row-progress">
+              <span>
+                {task.progress}/{task.input.steps}
+              </span>
+              <progress
+                max={task.input.steps}
+                value={task.progress}
+                aria-label={`Progreso de ${task.id.slice(0, 8)}`}
+              />
+            </div>
+            <button className="secondary compact" type="button" onClick={open}>
+              <Icon name="logs" size={15} />
+              Ver proceso
+            </button>
+          </div>
+        </div>
       </div>
     </article>
   );

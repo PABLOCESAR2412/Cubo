@@ -67,7 +67,7 @@ p {
 }
 h1 {
   font-size: 23px;
-  font-weight: 600;
+  font-weight: 650;
   line-height: 1.3;
   letter-spacing: -0.025em;
 }
@@ -136,8 +136,8 @@ time {
   border-radius: 6px;
   padding: 7px 11px;
   font-size: 12px;
-  font-weight: 500;
-  min-height: 32px;
+  font-weight: 600;
+  min-height: 36px;
   white-space: nowrap;
 }
 .primary {
@@ -191,8 +191,12 @@ time {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-muted);
+  padding: 2px 7px;
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
+  font-weight: 500;
 }
 .status-badge :where(i) {
   width: 6px;
@@ -210,6 +214,8 @@ time {
 }
 .status-badge.failed {
   color: #ffb3b7;
+  background: #321f23;
+  border-color: #734247;
 }
 .workspace-shell {
   height: 100dvh;
@@ -284,21 +290,22 @@ time {
   align-items: center;
   gap: 8px;
   color: var(--color-accent);
-  font-size: 19px;
-  font-weight: 600;
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
 }
 .brand svg {
-  width: 22px;
-  height: 22px;
+  width: 25px;
+  height: 25px;
 }
 .personal-label {
   font-size: 10px;
   color: var(--color-muted);
 }
 .sidebar-create {
-  border: 1px solid var(--color-line);
-  background: #20292b;
-  color: var(--color-ink);
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent);
+  color: #182010;
   justify-content: flex-start;
   width: 100%;
   margin-bottom: 14px;
@@ -330,17 +337,26 @@ time {
   margin-left: auto;
   color: var(--color-muted);
   font-size: 11px;
+  background: var(--color-base);
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
+  padding: 1px 6px;
+  min-width: 23px;
+  text-align: center;
 }
 .recent-header {
   display: flex;
   justify-content: space-between;
-  margin: 22px 8px 8px;
+  margin: 20px 0 10px;
   color: var(--color-muted);
   font-size: 11px;
+  padding: 15px 8px 0;
+  border-top: 1px solid var(--color-line);
+  font-weight: 500;
 }
 .recents {
   display: grid;
-  gap: 3px;
+  gap: 5px;
   min-height: 0;
   overflow-y: auto;
   align-content: start;
@@ -348,28 +364,29 @@ time {
 }
 .recents :where(button) {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: flex-start;
   text-align: left;
-  border: 0;
-  border-radius: 5px;
-  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 10px 9px;
   background: transparent;
   min-width: 0;
 }
 .recents :where(button.active) {
   background: #20292b;
+  border: 1px solid var(--color-line);
 }
 .recents :where(button > span:last-child) {
   min-width: 0;
   overflow-wrap: anywhere;
-  font-size: 11px;
+  font-size: 12px;
 }
 .recents :where(small) {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--color-muted);
-  margin-top: 2px;
+  margin-top: 4px;
 }
 .recent-dot {
   width: 5px;
@@ -434,7 +451,7 @@ time {
   min-width: 0;
 }
 .module {
-  padding: 26px 32px 32px;
+  padding: 22px 28px 28px;
   max-width: none;
   min-width: 0;
 }
@@ -443,7 +460,7 @@ time {
   justify-content: space-between;
   align-items: center;
   gap: 18px;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 .page-heading :where(p) {
   margin-top: 7px;
@@ -476,7 +493,7 @@ time {
 .metric-card {
   border: 1px solid var(--color-line);
   border-radius: 9px;
-  padding: 16px 18px;
+  padding: 12px 16px;
   background: var(--color-surface);
   min-width: 0;
 }
@@ -489,10 +506,10 @@ time {
 }
 .metric-card > strong {
   display: block;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 500;
   line-height: 1.35;
-  margin: 10px 0 4px;
+  margin: 7px 0 3px;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
@@ -625,12 +642,12 @@ time {
 }
 .task-rows {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 .task-item {
   border: 1px solid var(--color-line);
   border-radius: 8px;
-  padding: 14px 16px;
+  padding: 11px 14px;
   background: var(--color-surface);
   min-width: 0;
 }
@@ -647,13 +664,6 @@ time {
   margin-left: auto;
   color: var(--color-muted);
 }
-.task-item-main {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin: 12px 0;
-}
 .task-title {
   background: none;
   border: 0;
@@ -662,27 +672,6 @@ time {
   font-size: 14px;
   font-weight: 600;
   overflow-wrap: anywhere;
-}
-.task-item-main :where(p) {
-  margin-top: 4px;
-  color: var(--color-muted);
-  font-size: 12px;
-}
-.task-item-bottom {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  border-top: 1px solid var(--color-line);
-  padding-top: 11px;
-  color: var(--color-muted);
-  font-size: 11px;
-}
-.task-item-bottom > .mono {
-  margin-left: auto;
-}
-.task-item-bottom :where(progress) {
-  width: 86px;
 }
 .pending-decisions {
   margin-bottom: 12px;
@@ -969,11 +958,12 @@ label,
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 9px 16px;
-  min-height: 48px;
+  padding: 11px 18px;
+  min-height: 54px;
   border-bottom: 1px solid var(--color-line);
   flex-shrink: 0;
   min-width: 0;
+  background: var(--color-surface);
 }
 .chat-toolbar > div:first-child {
   display: flex;
@@ -982,12 +972,13 @@ label,
   min-width: 0;
 }
 .chat-toolbar :where(h1) {
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: normal;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 300px;
+  font-weight: 600;
 }
 .toolbar-actions {
   display: flex;
@@ -998,7 +989,9 @@ label,
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 22px 28px;
+  padding: 18px 24px;
+  display: flex;
+  flex-direction: column;
 }
 .conversation-empty {
   display: grid;
@@ -1027,14 +1020,17 @@ label,
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 26px;
+  gap: 18px;
   padding: 0;
-  margin: 20px auto;
+  margin: auto auto 8px;
   max-width: 920px;
+  width: 100%;
+  flex-shrink: 0;
+  padding-top: 20px;
 }
 .chat-message-list :where(li) {
   align-self: flex-end;
-  max-width: 85%;
+  max-width: 80%;
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -1048,22 +1044,28 @@ label,
 }
 .chat-message-list :where(p) {
   white-space: pre-wrap;
-  border-radius: 10px;
+  border-radius: 12px 12px 4px 12px;
   background: var(--color-surface);
-  padding: 12px 14px;
+  padding: 13px 16px;
   margin: 7px 0;
+  border: 1px solid var(--color-line);
+  line-height: 1.65;
 }
 .chat-message-list :where(li > .secondary) {
   display: flex;
   margin-left: auto;
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-muted);
+  font-size: 11px;
 }
 .chat-composer {
   flex-shrink: 0;
   border: 1px solid var(--color-line);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--color-surface);
-  padding: 10px 12px;
-  margin: 0 auto 12px;
+  padding: 12px 14px;
+  margin: 0 auto 14px;
   width: calc(100% - 40px);
   max-width: 940px;
 }
@@ -1096,15 +1098,18 @@ label,
 .effort-controls {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr)) auto;
-  gap: 3px;
+  gap: 2px;
   border-top: 1px solid var(--color-line);
-  padding-top: 6px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  padding: 3px;
+  background: var(--color-base);
 }
 .effort-controls :where(button) {
   font-size: 11px;
-  border: 1px solid var(--color-line);
+  border: 0;
   background: transparent;
-  padding: 5px 3px;
+  padding: 5px 4px;
   border-radius: 4px;
 }
 .chat-composer .hint {
@@ -1452,18 +1457,8 @@ label,
     flex-wrap: wrap;
     gap: 7px;
   }
-  .task-item-main {
-    align-items: flex-start;
-    gap: 8px;
-  }
   .task-title {
     font-size: 13px;
-  }
-  .task-item-bottom {
-    gap: 8px;
-  }
-  .task-item-bottom > .mono {
-    margin-left: 0;
   }
   .task-item-top time {
     font-size: 10px;
@@ -1564,5 +1559,127 @@ label,
   select,
   textarea {
     transition: none;
+  }
+}
+
+/* Refinement of existing workspace components. */
+.task-row-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  align-items: center;
+  gap: 20px;
+  margin-top: 8px;
+}
+.task-row-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 7px;
+  font-size: 11px;
+  color: var(--color-muted);
+}
+.task-row-meta .agent-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+}
+.task-row-side {
+  display: grid;
+  gap: 8px;
+}
+.task-row-identity {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--color-muted);
+  font-size: 11px;
+}
+.task-row-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.task-row-progress {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  min-width: 0;
+}
+.task-row-progress progress {
+  width: 96px;
+}
+.task-item:hover {
+  border-color: #546069;
+}
+.task-item.selected:hover {
+  border-color: var(--color-accent);
+}
+.secondary.active {
+  background: #20292b;
+  border-color: #546069;
+}
+.model-status {
+  gap: 6px;
+  border-radius: 6px;
+  background: var(--color-base);
+}
+.conversation-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-line);
+  flex-shrink: 0;
+}
+.conversation-context > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.conversation-context :where(span:not(.tag)) {
+  color: var(--color-muted);
+  font-size: 11px;
+}
+.conversation-capability {
+  color: var(--color-muted);
+  font-size: 11px;
+  margin-top: 9px;
+  flex-shrink: 0;
+}
+.recent-header > span {
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
+  padding: 0 5px;
+  font-size: 10px;
+}
+@media (max-width: 767px) {
+  .task-row-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .task-row-side {
+    border-top: 1px solid var(--color-line);
+    padding-top: 9px;
+  }
+  .task-row-progress progress {
+    width: 100px;
+  }
+  .conversation-context {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .chat-message-list li {
+    max-width: 94%;
+  }
+  .chat-composer {
+    margin-bottom: 10px;
+  }
+  .conversation {
+    padding: 14px 12px;
   }
 }

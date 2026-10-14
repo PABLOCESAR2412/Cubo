@@ -38,6 +38,12 @@ export function Chat() {
   const createKey = useRef<string | null>(null);
   const pendingMessage = useRef<{ id: string; chat: string; content: string } | null>(null);
   const historyDialog = useRef<HTMLDialogElement>(null);
+  const conversationPane = useRef<HTMLDivElement>(null);
+  const lastMessage = detail?.messages.at(-1)?.id;
+  useEffect(() => {
+    if (lastMessage)
+      conversationPane.current?.scrollTo({ top: conversationPane.current.scrollHeight });
+  }, [lastMessage]);
   const detailRef = useRef(detail);
   detailRef.current = detail;
   const refresh = useCallback(async () => {
@@ -259,7 +265,10 @@ export function Chat() {
         <section className="chat-main">
           <div className="chat-toolbar">
             <div>
-              <span className="tag">Sin modelo conectado</span>
+              <span className="tag model-status">
+                <Icon name="cube" size={13} />
+                Sin modelo conectado
+              </span>
               <h1>{detail?.conversation.title ?? "Chat"}</h1>
             </div>
             <div className="toolbar-actions">
@@ -287,9 +296,9 @@ export function Chat() {
                 Exportar
               </button>
               <button
-                className="secondary compact"
                 type="button"
                 aria-expanded={config}
+                className={config ? "secondary compact active" : "secondary compact"}
                 onClick={() => setConfig(!config)}
               >
                 Configuración
@@ -316,7 +325,7 @@ export function Chat() {
               {notice}
             </div>
           )}
-          <div className="conversation persistent-messages">
+          <div ref={conversationPane} className="conversation persistent-messages">
             {!detail ? (
               <div className="conversation-empty">
                 <Icon name="chat" size={26} />
@@ -336,10 +345,18 @@ export function Chat() {
               </div>
             ) : (
               <>
-                <div className="integration-note">
+                <div className="conversation-context">
+                  <div>
+                    <Icon name="chat" size={15} />
+                    <strong>Conversación persistente</strong>
+                    <span>{detail.messages.length} mensajes guardados</span>
+                  </div>
                   <span className="tag pending">Agentes pendientes</span>
-                  <p>Esta fase guarda tus mensajes. No genera respuestas ni ejecuta tareas.</p>
                 </div>
+                <p className="conversation-capability">
+                  Contexto guardado en Cubo. Respuestas y acciones de agentes todavía no
+                  disponibles.
+                </p>
                 {!detail.messages.length && (
                   <p className="muted">
                     Aún no hay mensajes. Guarda el primero para conservar su contexto.

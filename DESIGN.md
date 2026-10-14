@@ -22,7 +22,7 @@ typography:
   headline:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
     fontSize: "23px"
-    fontWeight: 600
+    fontWeight: 650
     lineHeight: 1.3
     letterSpacing: "-0.025em"
   inspector-title:
@@ -52,9 +52,10 @@ typography:
     lineHeight: 1.5
   brand:
     fontFamily: '"Cubo Geist", ui-sans-serif, system-ui, sans-serif'
-    fontSize: "19px"
-    fontWeight: 600
+    fontSize: "21px"
+    fontWeight: 650
     lineHeight: 1.5
+    letterSpacing: "-0.025em"
 rounded:
   badge: "5px"
   icon: "5px"
@@ -62,6 +63,7 @@ rounded:
   task: "8px"
   panel: "9px"
   dialog: "10px"
+  composer: "12px"
 spacing:
   xs: "8px"
   sm: "12px"
@@ -187,19 +189,19 @@ La jerarquía distingue títulos por tamaño y peso sin recurrir a mayúsculas o
 - **Mono:** tiempos e identificadores técnicos.
 - **Brand:** nombre Cubo junto al cubo lineal SVG.
 
-La base de lectura y los campos usan 13px. Los contadores usan 28px, peso 500 y línea 1.35; en móvil usan 25px. Las acciones comunes usan 12px y peso 500. Los tags usan 11px y los estados 12px. La cabecera del chat usa 14px, reducidos a 13px en móvil. Los metadatos de 10px presentes son deuda de legibilidad y no forman una escala normativa para nuevas superficies.
+La base de lectura y los campos usan 13px. Los contadores usan 26px, peso 500 y línea 1.35; en móvil usan 25px. Las acciones comunes usan 12px y peso 600. Los tags y estados usan 11px. La cabecera del chat usa 15px y peso 600, reducidos a 13px en móvil. Los metadatos de 10px presentes son deuda de legibilidad y no forman una escala normativa para nuevas superficies.
 
 **The Lectura numérica Rule.** Los contadores de progreso y resultados usan cifras tabulares; los tiempos e identificadores técnicos usan monospace.
 
 ## Layout
 
-El workspace ocupa 100dvh. Una barra global de 42px abarca todo el ancho; debajo, la sidebar de 208px comparte fila con contenido flexible. Los módulos usan padding de 26px 32px 32px, sin ancho máximo. Recientes tiene desplazamiento interno y el pie cloud permanece al fondo de la sidebar con tamaño estable.
+El workspace ocupa 100dvh. Una barra global de 42px abarca todo el ancho; debajo, la sidebar de 208px comparte fila con contenido flexible. Los módulos usan padding de 22px 28px 28px, sin ancho máximo. Recientes tiene desplazamiento interno y el pie cloud permanece al fondo de la sidebar con tamaño estable.
 
 Tareas muestra tres métricas en una fila y un registro de ancho completo. Ver proceso abre a petición un diálogo lateral derecho de hasta 480px bajo la barra global, sin reservar una columna mientras está cerrado. La cabecera del proceso permanece visible durante el desplazamiento.
 
 Hasta 767px desaparece la columna reservada a la sidebar. La barra conserva 42px, el módulo usa padding de 20px 14px 24px y las métricas y campos pasan a una columna. La búsqueda ocupa toda la fila. La navegación abre un diálogo lateral de 230px; proceso y configuración ocupan todo el ancho bajo la barra. Los diálogos nativos aíslan el foco, cierran con Escape y devuelven el foco al control de apertura. Nueva tarea se centra, mide hasta 620px o el viewport menos 24px y limita su altura al viewport menos 32px.
 
-Chat ocupa todo el panel principal, con cabecera de altura mínima de 48px, conversación desplazable y compositor inferior. Historial siempre abre un diálogo de hasta 440px, con margen mínimo de 12px; no crea otra columna permanente. Configuración añade una columna de 320px a petición, de 280px hasta 1199px. Mensajes y compositor se limitan a 920px y 940px respectivamente. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios. Los campos usan dos columnas y el resumen de proyecto cuatro, reducidas a una y dos en móvil.
+Chat ocupa todo el panel principal, con cabecera de altura mínima de 54px, conversación desplazable y compositor inferior. Historial siempre abre un diálogo de hasta 440px, con margen mínimo de 12px; no crea otra columna permanente. Configuración añade una columna de 320px a petición, de 280px hasta 1199px. Mensajes y compositor se limitan a 920px y 940px respectivamente. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios. Los campos usan dos columnas y el resumen de proyecto cuatro, reducidas a una y dos en móvil.
 
 **The Contexto estable Rule.** La navegación y la barra contextual mantienen su posición; cada módulo concentra filtros, datos y acciones en el contenido.
 
@@ -211,23 +213,23 @@ La profundidad operativa se obtiene mediante tono y bordes de 1px. Las tareas se
 
 ## Shapes
 
-Los controles usan radio de 6px, iconos y tags 5px, tareas 8px, paneles y métricas 9px, diálogos centrados y compositor 10px. Las pestañas tienen recinto de 7px y botones internos de 5px. El proceso lateral ocupa el área de contenido hasta sus bordes. Los indicadores de estado son círculos pequeños. Marca e iconos usan SVG lineal.
+Los controles usan radio de 6px, iconos y tags 5px, tareas 8px, paneles y métricas 9px, diálogos centrados 10px y compositor 12px. Las burbujas de mensajes usan esquinas de 12px, con la inferior derecha de 4px. Las pestañas tienen recinto de 7px y botones internos de 5px. El proceso lateral ocupa el área de contenido hasta sus bordes. Los indicadores de estado son círculos pequeños. Marca e iconos usan SVG lineal.
 
 ## Components
 
 ### Buttons
 
-La acción principal usa lima sólida y tinta oscura; la secundaria usa borde neutral y fondo transparente. Ambas usan padding de 7px 11px y altura mínima de 32px. La variante compacta usa altura mínima de 28px y padding de 4px 8px. Los botones de icono miden 30px por lado y tienen nombre accesible.
+La acción principal usa lima sólida y tinta oscura; la secundaria usa borde neutral y fondo transparente. Ambas usan padding de 7px 11px y altura mínima de 36px. La variante compacta usa altura mínima de 28px y padding de 4px 8px. Los botones de icono miden 30px por lado y tienen nombre accesible.
 
 El hover principal aclara el fondo; el secundario añade tono de aviso. Las transiciones de fondo y borde duran 150ms con `ease`. El foco visible usa contorno lima de 2px y separación de 3px. Los controles deshabilitados usan opacidad 0.5 y cursor de bloqueo. Movimiento reducido elimina las transiciones.
 
 ### Chips
 
-Los tags informativos usan borde neutral, radio de badge y texto compacto. Los estados de ejecución se muestran como punto y etiqueta sin recinto propio. Las funciones pendientes usan ámbar y una explicación textual cuando corresponde.
+Los tags informativos usan borde neutral, radio de badge y texto compacto. Los estados de ejecución reúnen punto y etiqueta en un recinto de borde neutral y radio de badge; el fallo añade fondo y borde semánticos. Las funciones pendientes usan ámbar y una explicación textual cuando corresponde.
 
 ### Cards / Containers
 
-Los paneles comparten superficie, borde y radio de panel. Sus cabeceras reúnen título y acciones con padding de 13px 16px. Resumen y contenido del inspector usan padding de 16px. Las tareas llevan padding de 14px 16px y separación de 10px; la selección cambia el borde. En móvil el padding de tareas pasa a 12px. Los avisos usan menor radio. La aprobación conserva su acción dentro de la tarea seleccionada.
+Los paneles comparten superficie, borde y radio de panel. Sus cabeceras reúnen título y acciones con padding de 13px 16px. Resumen y contenido del inspector usan padding de 16px. Las tareas llevan padding de 11px 14px y separación de 8px; la selección cambia el borde. Primero muestran el estado; debajo, título y metadata comparten fila con un bloque derecho de 270px para ID, actualización, progreso y acción. En móvil este bloque pasa debajo del título, con un divisor superior. En móvil el padding de tareas pasa a 12px. Los avisos usan menor radio. La aprobación conserva su acción dentro de la tarea seleccionada.
 
 ### Inputs / Fields
 
@@ -235,7 +237,7 @@ Los campos usan fondo carbón, borde neutral, texto claro y caret lima. Las etiq
 
 ### Navigation
 
-La sidebar reúne marca, Nueva tarea, cinco módulos, recientes y estado del sistema. Cada enlace usa padding de 9px 10px y altura mínima de 35px. El módulo activo tiene fondo de aviso, texto claro e icono lima; `aria-current` identifica la página. Recientes recupera la selección de una tarea. En móvil un diálogo nativo sustituye al aside y limita el foco al menú abierto.
+La sidebar reúne marca, Nueva tarea, cinco módulos, recientes y estado del sistema. Nueva tarea usa la acción principal de lima sólida a todo el ancho. Recientes se separa de los módulos mediante un divisor; los contadores tienen recinto compacto de borde neutral y fondo carbón. Cada enlace usa padding de 9px 10px y altura mínima de 35px. El módulo activo tiene fondo de aviso, texto claro e icono lima; `aria-current` identifica la página. Recientes recupera la selección de una tarea. En móvil un diálogo nativo sustituye al aside y limita el foco al menú abierto.
 
 ### Inspector y progreso
 
@@ -247,7 +249,7 @@ La barra nativa de progreso mide 4px. Lleva pista neutral y relleno lima, acompa
 
 El historial usa botones compactos de borde neutral y radio de control, separados por 4px. La selección cambia el borde a lima; el título puede partir palabras largas y la fecha usa texto secundario. El listado siempre aparece en un diálogo a petición.
 
-Los mensajes guardados se alinean a la derecha, con autor, fecha, estado textual Guardado, burbuja de superficie, saltos de línea preservados y acción Copiar. La lista tiene separación de 26px y ancho máximo de mensaje del 85%, ampliado al 94% en móvil. El compositor inferior reúne textarea, adjuntos, configuración, selector de modelo/agente, guardado y esfuerzo. Guardar persiste el mensaje; inferencia, herramientas y esfuerzo permanecen pendientes y deshabilitados. La configuración permite renombrar, fijar y eliminar conversaciones. La eliminación requiere confirmación nativa. Los avisos usan `role="status"`; los errores, `role="alert"`.
+Los mensajes guardados se alinean a la derecha, con autor, fecha, estado textual Guardado, burbuja de superficie, saltos de línea preservados y acción Copiar. Las burbujas llevan borde neutral, padding de 13px 16px y línea de lectura 1.65. La lista tiene separación de 18px y ancho máximo de mensaje del 80%, ampliado al 94% en móvil. El compositor inferior reúne textarea transparente, adjuntos, configuración, selector de modelo/agente, guardado y esfuerzo en una superficie común. El esfuerzo forma un grupo delimitado con fondo carbón; sus opciones siguen deshabilitadas. La cabecera muestra el estado de modelo y la configuración abierta tiene estado activo visible. El resumen persistente de conversación precede a los mensajes con un divisor. Guardar persiste el mensaje; inferencia, herramientas y esfuerzo permanecen pendientes y deshabilitados. La configuración permite renombrar, fijar y eliminar conversaciones. La eliminación requiere confirmación nativa. Los avisos usan `role="status"`; los errores, `role="alert"`.
 
 ### Métricas y funciones pendientes
 
