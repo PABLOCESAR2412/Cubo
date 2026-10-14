@@ -1,5 +1,8 @@
 import { executeDemo } from "../packages/runner/src/demo.ts";
+import { importRepository } from "../packages/runner/src/repository-import.ts";
 import type { RunnerContext, RunnerUpdate } from "../packages/shared/src/index.ts";
+import type { RepositorySnapshot } from "../packages/shared/src/repository.ts";
+import { isImportInput } from "../packages/shared/src/repository-safety.ts";
 
 async function main(): Promise<void> {
   const executionId = process.env.EXECUTION_ID ?? "";
@@ -47,6 +50,22 @@ async function main(): Promise<void> {
   }
   await request("claim", {});
   const context = (await (await request("context")).json()) as RunnerContext;
+  if (isImportInput(context.task.input)) {
+    const snapshot = (await (await request("import-checkpoint")).json()) as {
+      snapshot: RepositorySnapshot | null;
+    };
+    let privateKey: string | null = null;
+    if (context.task.input.access === "SSH") {
+      privateKey = ((await (await request("repository-key")).json()) as { privateKey: string })
+        .privateKey;
+      for (const line of privateKey.trim().split("\n")) console.log(`::add-mask::${line}`);
+    }
+    await importRepository(context.task.input, snapshot.snapshot, privateKey, async (update) => {
+      await request("import-progress", update);
+      console.log(`Etapa ${update.sequence} de importación guardada.`);
+    });
+    return;
+  }
   await executeDemo(
     context,
     async (update: RunnerUpdate) => {

@@ -1,4 +1,11 @@
-import type { Approval, Checkpoint, Task, TaskEvent, TaskStatus } from "@cubo/shared";
+import type {
+  Approval,
+  Checkpoint,
+  RepositorySnapshot,
+  Task,
+  TaskEvent,
+  TaskStatus,
+} from "@cubo/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export const labels: Record<TaskStatus, string> = {
@@ -13,6 +20,7 @@ export type Detail = {
   task: Task;
   events: TaskEvent[];
   checkpoint: Checkpoint | null;
+  repositoryCheckpoint?: RepositorySnapshot | null;
   approvals: Approval[];
 };
 async function api<T>(path: string, body?: unknown, key?: string): Promise<T> {

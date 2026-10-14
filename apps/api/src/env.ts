@@ -11,4 +11,5 @@ export interface Env {
   OWNER_PASSWORD?: string;
   SESSION_SECRET?: string;
   LOCAL_DEV?: string;
+  PROJECT_ENCRYPTION_KEY?: string;
 }

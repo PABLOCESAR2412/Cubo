@@ -20,6 +20,10 @@ export class TaskEngine {
         const execution = await this.store.findExecution(executionId);
         if (!execution) throw new Error("Ejecución desconocida.");
         if (isTerminal(execution.status)) return true;
+        if (this.store.reserveExecution && !(await this.store.reserveExecution(executionId))) {
+          await this.store.deferExecution(executionId, "EXECUTION_SLOT_BUSY");
+          return true;
+        }
         try {
           await this.backend.start({ executionId, taskId: execution.taskId });
         } catch (error) {

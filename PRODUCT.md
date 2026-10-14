@@ -33,8 +33,16 @@ interacciones de ChatGPT/Claude. Siguiente vertical: proyectos persistentes con
 repositorio opcional y chats asociados; APIs, MCPs, skills, memoria y secretos
 aislados por proyecto, historial aislado por chat. Ver [PLAN.md](PLAN.md).
 Base de proyectos implementada: creación/listado, instrucciones/memoria manual y
-chats propios. URL GitHub guardada como referencia; importación y conexión pendientes.
-Ver [docs/projects.md](docs/projects.md) para el alcance verificable.
+chats propios. Importación GitHub de solo lectura implementada por revisión, con
+inventario, textos acotados y contexto persistido separado de la memoria manual.
+Un clone público real y las cuatro etapas se comprobaron localmente. Generación
+Ed25519, formato OpenSSH, cifrado y aislamiento entre proyectos también se
+comprobaron localmente; la clave maestra está configurada como Secret remoto.
+La aceptación cloud de esta importación pública/privada sigue pendiente. Añadir
+una deploy key pública en GitHub no demuestra acceso privado: lo confirma una
+importación completada. Inferencia y acciones de escritura Git siguen pendientes.
+Ver [docs/projects.md](docs/projects.md) y
+[docs/repository-import.md](docs/repository-import.md) para el alcance verificable.
 PWA muestra instalación cuando el navegador la ofrece y actualizaciones de assets
 publicados con recarga confirmada. Ver [docs/pwa.md](docs/pwa.md). No compara commits
 no desplegados ni detiene tareas remotas al actualizar la interfaz.

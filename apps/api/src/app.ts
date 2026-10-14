@@ -1,5 +1,10 @@
-import { D1TaskStore, StoreError } from "@cubo/database";
-import { demoInputSchema, runnerUpdateSchema } from "@cubo/shared";
+import { D1RepositoryStore, D1TaskStore, StoreError } from "@cubo/database";
+import {
+  demoInputSchema,
+  importUpdateSchema,
+  isImportInput,
+  runnerUpdateSchema,
+} from "@cubo/shared";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { deleteCookie, setCookie } from "hono/cookie";
@@ -12,8 +17,10 @@ import {
   sessionToken,
 } from "./auth.ts";
 import { chatRoutes } from "./chat";
+import { containsSecret } from "./content-safety";
 import type { Env } from "./env.ts";
 import { projectRoutes } from "./projects";
+import { decryptProjectKey } from "./repository-keys";
 export async function dispatchOutbox(env: Env): Promise<void> {
   const store = new D1TaskStore(env.DB);
   for (const item of await store.outbox()) {
@@ -33,12 +40,11 @@ export async function dispatchOutbox(env: Env): Promise<void> {
   }
 }
 const app = new Hono<{ Bindings: Env; Variables: { runnerId: string } }>();
-app.use(
-  "/api/*",
+app.use("/api/*", async (c, next) =>
   bodyLimit({
-    maxSize: 8192,
+    maxSize: /^\/api\/executions\/[^/]+\/import-progress$/.test(c.req.path) ? 131072 : 8192,
     onError: (c) => c.json({ error: "Solicitud demasiado grande." }, 413),
-  }),
+  })(c, next),
 );
 app.use("/api/*", async (c, next) => {
   c.header("Cache-Control", "no-store");
@@ -119,6 +125,9 @@ app.get("/api/tasks/:id", async (c) => {
     task,
     events: await store.events(task.id),
     checkpoint: await store.latestCheckpoint(task.id),
+    repositoryCheckpoint: isImportInput(task.input)
+      ? await new D1RepositoryStore(c.env.DB).snapshot(task.id)
+      : null,
     approvals: await store.approvals(task.id),
   });
 });
@@ -163,6 +172,35 @@ app.post("/api/executions/:id/progress", async (c) => {
   const body = runnerUpdateSchema.safeParse(await c.req.json());
   if (!body.success) return c.json({ error: "Checkpoint inválido." }, 400);
   await new D1TaskStore(c.env.DB).saveProgress(c.req.param("id"), c.get("runnerId"), body.data);
+  return c.json({ ok: true });
+});
+app.get("/api/executions/:id/import-checkpoint", async (c) => {
+  const context = await new D1TaskStore(c.env.DB).context(c.req.param("id"), c.get("runnerId"));
+  if (!isImportInput(context.task.input)) return c.json({ error: "No es una importación." }, 400);
+  return c.json({ snapshot: await new D1RepositoryStore(c.env.DB).snapshot(context.task.id) });
+});
+app.get("/api/executions/:id/repository-key", async (c) => {
+  const context = await new D1TaskStore(c.env.DB).context(c.req.param("id"), c.get("runnerId"));
+  if (
+    context.execution.status !== "RUNNING" ||
+    !isImportInput(context.task.input) ||
+    context.task.input.access !== "SSH" ||
+    !c.env.PROJECT_ENCRYPTION_KEY
+  )
+    return c.json({ error: "Credencial no autorizada." }, 403);
+  const key = await new D1RepositoryStore(c.env.DB).key(context.task.input.projectId);
+  if (key?.id !== context.task.input.keyId) return c.json({ error: "Conexión no válida." }, 409);
+  return c.json({ privateKey: await decryptProjectKey(key, c.env.PROJECT_ENCRYPTION_KEY) });
+});
+app.post("/api/executions/:id/import-progress", async (c) => {
+  const input = importUpdateSchema.safeParse(await c.req.json());
+  if (!input.success || containsSecret(JSON.stringify(input.success ? input.data : {}), c.env))
+    return c.json({ error: "Snapshot inválido o no permitido." }, 400);
+  await new D1RepositoryStore(c.env.DB).saveProgress(
+    c.req.param("id"),
+    c.get("runnerId"),
+    input.data,
+  );
   return c.json({ ok: true });
 });
 app.notFound((c) => c.json({ error: "Ruta desconocida." }, 404));

@@ -30,7 +30,7 @@ export default function App() {
   const [drawer, setDrawer] = useState(false);
   const [composer, setComposer] = useState(false);
   const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);
-  const [inspecting, setInspecting] = useState(false);
+  const [inspecting, setInspecting] = useState(() => Boolean(taskIdFromHash()));
   const [recentChats, setRecentChats] = useState<Conversation[]>([]);
   const [activeChat, setActiveChat] = useState(() =>
     new URL(window.location.href).searchParams.get("chat"),
@@ -74,6 +74,7 @@ export default function App() {
       setView(currentView());
       setDrawer(false);
       const id = taskIdFromHash();
+      if (id) setInspecting(true);
       if (id && id !== w.selected) w.chooseTask(id);
     };
     window.addEventListener("hashchange", change);

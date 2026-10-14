@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 export function database(path = ":memory:"): { sqlite: Database; db: D1Database } {
   const sqlite = new Database(path);
   sqlite.exec(readFileSync("packages/database/migrations/0001_tasks.sql", "utf8"));
+  for (const name of ["0002_chat.sql", "0003_projects.sql", "0004_repository_imports.sql"])
+    sqlite.exec(readFileSync(`packages/database/migrations/${name}`, "utf8"));
   function prepare(sql: string, params: unknown[] = []) {
     return {
       bind: (...values: unknown[]) => prepare(sql, values),

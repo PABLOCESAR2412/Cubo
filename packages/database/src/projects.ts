@@ -63,6 +63,18 @@ export class D1ProjectStore {
     return this.find(id);
   }
   async remove(id: string, version: number): Promise<void> {
+    if (
+      await this.db
+        .prepare(
+          "SELECT 1 AS found FROM project_repository_keys WHERE project_id=? UNION ALL SELECT 1 FROM repository_snapshots WHERE project_id=? UNION ALL SELECT 1 FROM tasks WHERE json_extract(input,'$.projectId')=? LIMIT 1",
+        )
+        .bind(id, id, id)
+        .first()
+    )
+      throw new StoreError(
+        409,
+        "El proyecto tiene conexión o importaciones guardadas; su eliminación requiere archivar esos datos primero.",
+      );
     const result = await this.db
       .prepare(
         "DELETE FROM projects WHERE id=? AND version=? AND NOT EXISTS(SELECT 1 FROM conversations WHERE project_id=?)",

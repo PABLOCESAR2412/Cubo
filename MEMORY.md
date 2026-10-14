@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-14, instalación y avisos de actualización PWA publicados y comprobados.
+Última actualización significativa: 2026-10-14, importación GitHub implementada localmente; aceptación cloud en curso.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
@@ -229,7 +229,25 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   Demo SUCCEEDED/91 preservada, sin runners nuevos ni secretos cambiados.
   Ciclo v1→v2 validado en loopback; no se provocó otro deploy cloud solo para probarlo.
 
-## Mantenimiento
+## Importación GitHub en curso
+
+- Nuevo tipo REPOSITORY_IMPORT usa el motor existente y GitHub Actions. Cuatro
+  checkpoints, revisión fija, inventario y textos acotados en D1 por proyecto.
+  No ejecuta agentes ni scripts del repositorio; memoria manual separada.
+- Migración aditiva 0004 y slot global; jobs serializados, contendientes QUEUED.
+  Runner Node 24 comprobado mediante clone público real, SHA de Hello-World
+  7fd1a60b01f91b314f59955a4e4d4e80d8edf11d. No es prueba cloud.
+- Claves Ed25519 por proyecto, privadas AES-GCM con AAD proyecto/clave. OpenSSH
+  y aislamiento comprobados; ninguna privada se devuelve a la UI.
+- Usuario configuró PROJECT_ENCRYPTION_KEY como Secret en cubo-dev; Wrangler
+  confirmó su nombre. No se leyó el valor ni se modificaron secretos automáticamente.
+- 24 tests/114 comprobaciones, tipos y build pasan. UI 1440/390 sin overflow;
+  Ver proceso desde proyecto abre el inspector. Aceptación cloud pública/privada
+  pendiente, antes de avanzar a agentes. Ver docs/repository-import.md.
+- Publicar workflow/runner antes de Worker; no hacer rollback a código que ignore
+  importaciones o aislamiento. Rotación de claves y archivado aún no implementados.
+
+## Mantenimiento de la memoria
 
 Leer al iniciar sesión y actualizar solo decisiones, hitos, bloqueos o pendientes
 duraderos. Reemplazar estado obsoleto; no acumular comandos, secretos ni logs completos.

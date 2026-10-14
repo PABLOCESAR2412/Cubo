@@ -1,7 +1,9 @@
 import { z } from "zod";
+import type { RepositoryImportInput, RepositoryImportResult } from "./repository";
 
 export * from "./chat";
 export * from "./project";
+export * from "./repository";
 export const taskStatuses = [
   "QUEUED",
   "RUNNING",
@@ -15,7 +17,8 @@ export type ExecutionStatus = TaskStatus | "UNKNOWN" | "EXECUTION_QUOTA_EXHAUSTE
 export type ExecutionBlockReason =
   | "EXECUTION_QUOTA_EXHAUSTED"
   | "COST_GUARD_NOT_VERIFIED"
-  | "EXECUTION_CONFIGURATION_REQUIRED";
+  | "EXECUTION_CONFIGURATION_REQUIRED"
+  | "EXECUTION_SLOT_BUSY";
 export class ExecutionBlockedError extends Error {
   constructor(public readonly reason: ExecutionBlockReason) {
     super(reason);
@@ -34,7 +37,7 @@ export interface Task {
   id: string;
   title: string;
   status: TaskStatus;
-  input: DemoInput;
+  input: DemoInput | RepositoryImportInput;
   executionId: string;
   attempt: number;
   progress: number;
@@ -42,7 +45,7 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
   error: string | null;
-  result: DemoResult | null;
+  result: DemoResult | RepositoryImportResult | null;
 }
 export interface DemoResult {
   sum: number;
@@ -118,6 +121,7 @@ export interface RunnerContext {
   checkpoint: Checkpoint | null;
 }
 export interface TaskRepository {
+  reserveExecution?(id: string): Promise<boolean>;
   findTask(id: string): Promise<Task | null>;
   findExecution(id: string): Promise<Execution | null>;
   setDispatched(id: string): Promise<void>;

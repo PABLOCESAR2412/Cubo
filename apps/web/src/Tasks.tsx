@@ -1,4 +1,5 @@
 import type { TaskStatus } from "@cubo/shared";
+import { isImportInput } from "@cubo/shared/repository-safety";
 import { useState } from "react";
 import { Icon } from "./Icon";
 import { MetricCard, PageHeader, ProcessEvent, RightPanel, StatusBadge, TaskRow } from "./ui";
@@ -186,11 +187,13 @@ export function Tasks({
                     <span>
                       {task.error === "EXECUTION_QUOTA_EXHAUSTED"
                         ? "Cuota gratuita agotada. La tarea permanece pendiente."
-                        : task.error === "EXECUTION_CONFIGURATION_REQUIRED"
-                          ? "Ejecución remota pendiente de configuración."
-                          : task.error === "COST_GUARD_NOT_VERIFIED"
-                            ? "Bloqueo de gasto pendiente de verificar."
-                            : task.error}
+                        : task.error === "EXECUTION_SLOT_BUSY"
+                          ? "Esperando el turno de ejecución."
+                          : task.error === "EXECUTION_CONFIGURATION_REQUIRED"
+                            ? "Ejecución remota pendiente de configuración."
+                            : task.error === "COST_GUARD_NOT_VERIFIED"
+                              ? "Bloqueo de gasto pendiente de verificar."
+                              : task.error}
                     </span>
                     {task.status === "QUEUED" && w.guard && (
                       <button
@@ -224,8 +227,17 @@ export function Tasks({
                 {task.result && (
                   <div className="result-summary">
                     <span>Resultado persistido</span>
-                    <strong>{task.result.sum}</strong>
-                    <small>Suma de cuadrados · {task.result.steps} pasos</small>
+                    {"revision" in task.result ? (
+                      <>
+                        <strong>{task.result.importedFileCount} textos</strong>
+                        <small className="mono">{task.result.revision}</small>
+                      </>
+                    ) : (
+                      <>
+                        <strong>{task.result.sum}</strong>
+                        <small>Suma de cuadrados · {task.result.steps} pasos</small>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -251,7 +263,28 @@ export function Tasks({
                   </ol>
                 )}
                 {tab === "Checkpoint" &&
-                  (w.detail?.checkpoint ? (
+                  (isImportInput(task.input) ? (
+                    w.detail?.repositoryCheckpoint ? (
+                      <>
+                        <p className="hint">
+                          Etapa {w.detail.repositoryCheckpoint.sequence}/4 · revisión persistida
+                        </p>
+                        <pre>
+                          {JSON.stringify(
+                            {
+                              revision: w.detail.repositoryCheckpoint.revision,
+                              digest: w.detail.repositoryCheckpoint.digest,
+                              createdAt: w.detail.repositoryCheckpoint.createdAt,
+                            },
+                            null,
+                            2,
+                          )}
+                        </pre>
+                      </>
+                    ) : (
+                      <p className="muted">La importación aún no guardó un checkpoint.</p>
+                    )
+                  ) : w.detail?.checkpoint ? (
                     <>
                       <dl className="definition">
                         <div>

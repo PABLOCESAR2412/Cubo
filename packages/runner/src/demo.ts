@@ -1,13 +1,16 @@
 import type { RunnerContext, RunnerUpdate } from "@cubo/shared";
+import { isImportInput } from "../../shared/src/repository-safety.ts";
 export async function executeDemo(
   context: RunnerContext,
   persist: (update: RunnerUpdate) => Promise<void>,
   sleep: (ms: number) => Promise<void>,
 ): Promise<void> {
+  const input = context.task.input;
+  if (isImportInput(input)) throw new Error("Ejecutor de demostración incompatible.");
   let cursor = context.checkpoint?.cursor ?? 0;
   let sum = context.checkpoint?.sum ?? 0;
   while (cursor < context.task.input.steps) {
-    await sleep(context.task.input.delaySeconds * 1000);
+    await sleep(input.delaySeconds * 1000);
     cursor++;
     sum += cursor * cursor;
     const outcome =

@@ -175,7 +175,9 @@ export function TaskRow({
             {task.title}
           </button>
           <div className="task-row-meta" title="Proyecto y modelo aún no disponibles">
-            <AgentBadge name="Runner de validación" />
+            <AgentBadge
+              name={"type" in task.input ? "Importador de repositorio" : "Runner de validación"}
+            />
             <span>{task.input.steps} pasos</span>
             {task.input.pauseAt && <span>Pausa con aprobación</span>}
           </div>

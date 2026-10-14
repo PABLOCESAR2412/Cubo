@@ -23,8 +23,19 @@ Implementada y validada localmente. Publicación registrada en MEMORY.md al cier
 
 Ampliación solicitada: instalación PWA y aviso de nueva versión publicada, botón
 Actualizar, recarga confirmada y tareas remotas conservadas. Implementado y probado
-con dos service workers reales; ver docs/pwa.md. La importación GitHub sigue siendo
-el siguiente trabajo funcional de Proyectos.
+con dos service workers reales; ver docs/pwa.md. La importación GitHub es el trabajo
+funcional activo de Proyectos.
+
+### Importación GitHub en curso
+
+Implementada localmente: importador remoto de lectura, cuatro checkpoints, archivos
+acotados por proyecto y claves SSH generadas por Cubo, privadas cifradas en D1.
+Una ejecución global se reserva en el backend; las demás quedan en cola.
+Ver [docs/repository-import.md](docs/repository-import.md). Falta aceptación cloud
+de esta vertical. El usuario confirmó crear PROJECT_ENCRYPTION_KEY como Secret;
+su presencia en cubo-dev fue verificada por nombre, sin leer su valor.
+Para acceso privado deberá añadir la pública del proyecto como deploy key de lectura.
+No avanzar a agentes antes de cerrar esta aceptación.
 
 ## Siguiente vertical: proyectos y chats asociados
 

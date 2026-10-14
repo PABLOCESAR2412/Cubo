@@ -226,7 +226,9 @@ pausa/aprobación tiene tests locales y requiere su propia comprobación cloud.
 Rediseño UI del workspace implementado y validado localmente; conserva el backend.
 Chat tiene una primera vertical de persistencia. Proyectos guarda registros,
 instrucciones, memoria manual y chats propios; ver [docs/projects.md](docs/projects.md).
-Importación GitHub, agentes y proveedores siguen pendientes. No volver a un backend
+Importación GitHub implementada localmente, aceptación cloud en curso;
+ver [docs/repository-import.md](docs/repository-import.md). Agentes y proveedores
+siguen pendientes. No volver a un backend
 sin filtrado de project_id después de crear conversaciones asociadas.
 Ver [docs/chat.md](docs/chat.md) y [docs/design-workspace.md](docs/design-workspace.md).
 UI publicada en cubo-dev por instrucción explícita del usuario el 2026-10-13;

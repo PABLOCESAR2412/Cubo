@@ -1,5 +1,6 @@
 import type { Conversation, StoredProject } from "@cubo/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { RepositoryPanel } from "./RepositoryPanel";
 import { EmptyState, PageHeader, ProjectRow, SectionCard, StatusBadge } from "./ui";
 import { requestApi as api, time } from "./workspace";
 
@@ -156,8 +157,8 @@ export function Projects() {
                   </label>
                 </div>
                 <p className="hint">
-                  La URL se guarda como referencia. Importación de archivos y conexión SSH
-                  pendientes; no introducir claves aquí.
+                  Después de crear el proyecto podrás importar una revisión. Si es privado, Cubo
+                  generará una deploy key de lectura; no introducir claves aquí.
                 </p>
                 <div className="toolbar-actions">
                   <button className="primary" type="submit" disabled={busy || !name.trim()}>
@@ -369,7 +370,7 @@ function ProjectDetail({
           </div>
           <div>
             <span>GitHub</span>
-            <strong>Importación pendiente</strong>
+            <strong>Importación por revisión</strong>
           </div>
           <div>
             <span>Versión del contexto</span>
@@ -377,6 +378,7 @@ function ProjectDetail({
           </div>
         </div>
       </SectionCard>
+      <RepositoryPanel projectId={project.id} repository={project.repository} />
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -407,8 +409,8 @@ function ProjectDetail({
         </SectionCard>
         <SectionCard title="Memoria">
           <p className="hint">
-            Memoria funcional editable de este proyecto. Independiente de MEMORY.md; importación y
-            aprendizaje automáticos pendientes.
+            Memoria funcional editable de este proyecto. Independiente de MEMORY.md y del contexto
+            importado.
           </p>
           <label>
             Memoria del proyecto
@@ -452,18 +454,14 @@ function ProjectDetail({
       </SectionCard>
       <SectionCard title="Herramientas y conexiones">
         <div className="project-capabilities">
-          {[
-            "Archivos del repositorio",
-            "Skills",
-            "APIs y MCPs",
-            "Variables y secretos",
-            "Tareas del proyecto",
-          ].map((label) => (
-            <div key={label}>
-              <span>{label}</span>
-              <StatusBadge>Integración pendiente</StatusBadge>
-            </div>
-          ))}
+          {["Skills", "APIs y MCPs", "Variables y secretos", "Tareas mediante agentes"].map(
+            (label) => (
+              <div key={label}>
+                <span>{label}</span>
+                <StatusBadge>Integración pendiente</StatusBadge>
+              </div>
+            ),
+          )}
         </div>
       </SectionCard>
       <button

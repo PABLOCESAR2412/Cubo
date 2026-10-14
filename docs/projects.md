@@ -7,10 +7,11 @@ GitHub. El detalle guarda instrucciones y memoria funcional manuales, conserva
 una versión del contexto y permite abrir chats propios. Cada conversación tiene
 un project_id inmutable o NULL para las conversaciones anteriores.
 
-La URL es una referencia: aún no valida visibilidad, clona archivos ni importa
-memoria. No se presentan skills, APIs/MCPs, secretos, archivos ni tareas del
-proyecto como integraciones activas. Memoria manual no significa aprendizaje
-automático. Inferencia y agentes reales siguen pendientes.
+La importación de lectura por tarea, archivos acotados y claves SSH cifradas están
+implementados localmente; aceptación cloud en curso. Ver
+[importación GitHub](repository-import.md). Skills, APIs/MCPs, variables de agentes
+y tareas con inferencia continúan pendientes. Memoria manual no significa
+aprendizaje automático. Inferencia y agentes reales siguen pendientes.
 
 ## Persistencia y aislamiento
 

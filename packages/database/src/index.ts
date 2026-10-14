@@ -5,6 +5,8 @@ import {
   type Execution,
   type ExecutionBlockReason,
   expectedSum,
+  isImportInput,
+  type RepositoryImportInput,
   type RunnerContext,
   type RunnerUpdate,
   type Task,
@@ -17,6 +19,7 @@ type Row = Record<string, string | number | null>;
 
 export { D1ChatStore } from "./chat";
 export { D1ProjectStore } from "./projects";
+export { D1RepositoryStore } from "./repository";
 export class StoreError extends Error {
   constructor(
     public readonly code: number,
@@ -62,12 +65,19 @@ export class D1TaskStore implements TaskRepository {
     const row = await this.db.prepare("SELECT * FROM executions WHERE id=?").bind(id).first<Row>();
     return row ? executionFrom(row) : null;
   }
-  async listTasks(): Promise<Task[]> {
+  async listTasks(projectId?: string): Promise<Task[]> {
     return (
-      await this.db.prepare("SELECT * FROM tasks ORDER BY created_at DESC LIMIT 100").all<Row>()
+      await (projectId
+        ? this.db
+            .prepare(
+              "SELECT * FROM tasks WHERE json_extract(input,'$.type')='REPOSITORY_IMPORT' AND json_extract(input,'$.projectId')=? ORDER BY created_at DESC LIMIT 100",
+            )
+            .bind(projectId)
+        : this.db.prepare("SELECT * FROM tasks ORDER BY created_at DESC LIMIT 100")
+      ).all<Row>()
     ).results.map(taskFrom);
   }
-  async createTask(id: string, input: DemoInput): Promise<Task> {
+  async createTask(id: string, input: DemoInput | RepositoryImportInput): Promise<Task> {
     const existing = await this.findTask(id);
     if (existing) {
       if (JSON.stringify(existing.input) !== JSON.stringify(input))
@@ -81,7 +91,15 @@ export class D1TaskStore implements TaskRepository {
         .prepare(
           "INSERT INTO tasks(id,title,status,input,execution_id,created_at,updated_at) SELECT ?,?,'QUEUED',?,?,?,? WHERE (SELECT COUNT(*) FROM tasks WHERE created_at>=?)<20 AND (SELECT COUNT(*) FROM tasks WHERE status IN ('QUEUED','RUNNING'))<3 ON CONFLICT(id) DO NOTHING",
         )
-        .bind(id, "Prueba durable", JSON.stringify(input), executionId, now, now, now.slice(0, 10)),
+        .bind(
+          id,
+          isImportInput(input) ? "Importar repositorio" : "Prueba durable",
+          JSON.stringify(input),
+          executionId,
+          now,
+          now,
+          now.slice(0, 10),
+        ),
       this.db
         .prepare(
           "INSERT INTO executions(id,task_id,backend,status,created_at) SELECT ?,id,'github-actions','QUEUED',? FROM tasks WHERE id=? AND execution_id=? ON CONFLICT(id) DO NOTHING",
@@ -95,7 +113,10 @@ export class D1TaskStore implements TaskRepository {
     ]);
     const task = await this.findTask(id);
     if (!task)
-      throw new StoreError(429, "Límite gratuito: 20 tareas por día y 3 ejecuciones activas.");
+      throw new StoreError(
+        429,
+        "Límite interno de Cubo: 20 tareas por día y 3 tareas pendientes/activas.",
+      );
     if (JSON.stringify(task.input) !== JSON.stringify(input))
       throw new StoreError(409, "La clave de creación ya corresponde a otros datos.");
     return task;
@@ -117,6 +138,8 @@ export class D1TaskStore implements TaskRepository {
     await this.db.prepare("UPDATE executions SET dispatched=1 WHERE id=?").bind(id).run();
   }
   async claim(id: string, runId: string): Promise<void> {
+    if (!(await this.reserveExecution(id)))
+      throw new StoreError(409, "Otra ejecución está activa.");
     const now = new Date().toISOString();
     await this.db.batch([
       this.db
@@ -169,6 +192,8 @@ export class D1TaskStore implements TaskRepository {
   }
   async saveProgress(id: string, runId: string, update: RunnerUpdate): Promise<void> {
     const { task, execution, checkpoint } = await this.context(id, runId);
+    if (isImportInput(task.input))
+      throw new StoreError(400, "Esta ejecución requiere progreso de importación.");
     if (
       update.cursor > task.input.steps ||
       update.sequence !== update.cursor ||
@@ -378,7 +403,9 @@ export class D1TaskStore implements TaskRepository {
   }
   async deferExecution(id: string, reason: ExecutionBlockReason): Promise<void> {
     const now = new Date();
-    const retry = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    const retry = new Date(
+      now.getTime() + (reason === "EXECUTION_SLOT_BUSY" ? 60000 : 24 * 60 * 60 * 1000),
+    ).toISOString();
     await this.db.batch([
       this.db
         .prepare(
@@ -408,5 +435,17 @@ export class D1TaskStore implements TaskRepository {
         .bind(task.executionId),
     ]);
     return (await this.findTask(taskId)) as Task;
+  }
+  async reserveExecution(id: string): Promise<boolean> {
+    await this.db
+      .prepare(
+        "UPDATE execution_slot SET execution_id=? WHERE slot=1 AND (execution_id IS NULL OR execution_id=? OR EXISTS(SELECT 1 FROM executions e WHERE e.id=execution_slot.execution_id AND e.status IN ('SUCCEEDED','FAILED','CANCELLED','WAITING_APPROVAL')))",
+      )
+      .bind(id, id)
+      .run();
+    const row = await this.db
+      .prepare("SELECT execution_id FROM execution_slot WHERE slot=1")
+      .first<{ execution_id: string }>();
+    return row?.execution_id === id;
   }
 }

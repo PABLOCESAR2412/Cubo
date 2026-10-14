@@ -22,8 +22,10 @@ Chat tiene ahora una primera vertical de persistencia: conversaciones, mensajes,
 renombrado, fijado, eliminación y exportación. La inferencia sigue pendiente.
 Ver [alcance real de Chat](docs/chat.md) y su estado de publicación.
 Proyectos tiene creación/listado, instrucciones y memoria manual, y conversaciones
-propias persistentes. La URL GitHub aún no importa archivos; herramientas,
-secretos y tareas asociadas siguen pendientes. Ver [alcance de Proyectos](docs/projects.md).
+propias persistentes. La importación GitHub de lectura, archivos acotados y claves
+SSH cifradas están implementados localmente; su aceptación cloud está en curso.
+Herramientas y tareas mediante agentes siguen pendientes. Ver
+[alcance de Proyectos](docs/projects.md) e [importación GitHub](docs/repository-import.md).
 Ver [alcance y comprobación de la interfaz](docs/design-workspace.md).
 La corrección estructural directa contra las capturas está documentada en
 [comparación de interfaz con Telo](docs/telo-interface-comparison.md).
@@ -64,6 +66,7 @@ las tareas quedan en cola con un motivo explícito; no se simula ejecución clou
 - [Alcance funcional objetivo y roadmap](docs/functional-scope.md).
 - [Plan actual por verticales](PLAN.md).
 - [Proyectos y chats asociados](docs/projects.md).
+- [Importación de repositorios y conexión SSH](docs/repository-import.md).
 - [Instalación PWA y botón de actualización](docs/pwa.md).
 - [Arquitectura durable](docs/architecture.md).
 - [Configuración cloud y credenciales](docs/cloud-setup.md).
