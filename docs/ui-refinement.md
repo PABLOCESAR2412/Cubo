@@ -55,3 +55,21 @@ El primer intento de despliegue terminó con `ConnectionRefused` al consultar
 GitHub `/user`, antes de realizar operaciones remotas en Cloudflare. El segundo
 intento completó identidad, validación, comprobación de secretos, migraciones y
 publicación sin cambiar credenciales ni código para sortear la comprobación.
+
+## Refinamiento de interacciones de Chat
+
+La conversación posterior aprueba la base de diseño y pide una mejora discreta,
+con interacción semejante a ChatGPT/Claude. Se añade Acciones del chat para
+renombrar, fijar/desfijar y eliminar utilizando los endpoints existentes. El menú
+mantiene controles nativos, Escape, foco visible y cierre al salir del grupo.
+Burbujas y compositor usan radios de 16px; foco del input delimita su superficie.
+
+La revisión detectó que el aviso de ejecución pendiente podía desplazar el
+compositor fuera del viewport. El workspace de Chat ahora distribuye altura con
+flex y reserva el espacio del aviso sin reducir el acceso al input. Capturas y
+comprobación de bounds confirman el compositor completo a 390px con aviso activo.
+Prueba D1 local: renombrar/fijar desde menú, gestión, cierre/reapertura y borrado
+del registro propio. Revisión final: ship, sin defectos materiales pendientes.
+
+PLAN.md y functional-scope.md registran los nuevos requisitos funcionales y la
+siguiente vertical de proyectos; no los presentan como implementados.

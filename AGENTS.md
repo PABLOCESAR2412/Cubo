@@ -66,6 +66,8 @@ Las métricas deben distinguir exact, estimated, stale y unavailable; no inventa
    contratos de agentes ni en la UI.
 4. Separar el adaptador del agente del proveedor de ejecución. Incorporar otro
    agente no debe exigir reemplazar la orquestación.
+   APIs, MCPs, skills, variables y memoria funcional se autorizan por proyecto.
+   Cada chat tiene historial propio; no compartir contexto entre proyectos/chats.
 5. Diseñar operaciones con identificadores estables, checkpoints versionados,
    reintentos e idempotencia. Una recuperación no debe duplicar efectos externos.
 6. Guardar en D1 estado, eventos, checkpoints y resultados de la demo. Reconciliar
@@ -166,6 +168,10 @@ libremente ni añadir datos simulados. Ver [docs/telo-interface-comparison.md](d
 
 - Al comenzar una sesión, Codex y OpenCode deben leer este archivo y después
   [MEMORY.md](MEMORY.md), la memoria compartida del desarrollo de Cubo.
+- Consultar [PLAN.md](PLAN.md) para la secuencia actual y
+  [docs/functional-scope.md](docs/functional-scope.md) para el producto objetivo.
+  La siguiente vertical es proyectos reales y chats asociados; no confundirla
+  con las vistas pendientes actuales ni añadir todas las integraciones a la vez.
 - Actualizar MEMORY.md al cerrar avances significativos: decisiones, fases,
   integraciones, limitaciones, problemas o pendientes necesarios para continuar.
   No escribir después de cada comando ni mantener memorias independientes por agente.

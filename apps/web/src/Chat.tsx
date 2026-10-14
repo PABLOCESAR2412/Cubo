@@ -38,6 +38,7 @@ export function Chat() {
   const createKey = useRef<string | null>(null);
   const pendingMessage = useRef<{ id: string; chat: string; content: string } | null>(null);
   const historyDialog = useRef<HTMLDialogElement>(null);
+  const actionsMenu = useRef<HTMLDetailsElement>(null);
   const conversationPane = useRef<HTMLDivElement>(null);
   const lastMessage = detail?.messages.at(-1)?.id;
   useEffect(() => {
@@ -303,6 +304,57 @@ export function Chat() {
               >
                 Configuración
               </button>
+              <details
+                className="chat-actions-menu"
+                ref={actionsMenu}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    event.currentTarget.open = false;
+                    event.currentTarget.querySelector("summary")?.focus();
+                  }
+                }}
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+                    event.currentTarget.open = false;
+                }}
+              >
+                <summary aria-label="Acciones del chat" title="Acciones del chat">
+                  <Icon name="more" />
+                </summary>
+                <div className="chat-actions-list">
+                  <button
+                    type="button"
+                    disabled={!detail || busy}
+                    onClick={() => {
+                      if (actionsMenu.current) actionsMenu.current.open = false;
+                      setConfig(true);
+                    }}
+                  >
+                    Renombrar chat
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!detail || busy}
+                    onClick={() => {
+                      if (actionsMenu.current) actionsMenu.current.open = false;
+                      void update(!detail?.conversation.pinned);
+                    }}
+                  >
+                    {detail?.conversation.pinned ? "Desfijar chat" : "Fijar chat"}
+                  </button>
+                  <button
+                    type="button"
+                    className="chat-delete-action"
+                    disabled={!detail || busy}
+                    onClick={() => {
+                      if (actionsMenu.current) actionsMenu.current.open = false;
+                      void remove();
+                    }}
+                  >
+                    Eliminar conversación
+                  </button>
+                </div>
+              </details>
             </div>
           </div>
           {(error || syncError) && (

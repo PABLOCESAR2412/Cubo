@@ -90,8 +90,14 @@ La exclusión global, cancelación y recuperación completas aún requieren impl
 
 ## Proyectos
 
-- Crear y administrar proyectos asociados a repositorios GitHub.
+- Listar, crear y administrar proyectos con nombre y repositorio GitHub opcional.
+- Proyecto primero, chats y tareas asociados después. Cada chat mantiene historial
+  propio y solo recibe el contexto autorizado del proyecto al que pertenece.
+- Importación remota durable de repositorios públicos o privados. Acceso SSH
+  privado por proyecto, guía de configuración y credenciales cifradas; la memoria
+  registra conocimiento relevante con referencia a la revisión importada.
 - Instrucciones, memoria, skills disponibles y secretos propios por proyecto.
+- Conexiones API, servidores MCP y variables de entorno propios del proyecto.
 - Aislamiento estricto de contextos, archivos, ejecuciones y credenciales.
 - Explorar archivos en modo lectura, con historial de chats y tareas relacionados.
 - Estadísticas y estado del proyecto basados en datos disponibles.
@@ -108,8 +114,15 @@ La exclusión global, cancelación y recuperación completas aún requieren impl
 
 - Codex y OpenCode inicialmente, mediante interfaz común y adaptadores ampliables.
 - Task Engine independiente de sus implementaciones y sesiones internas.
+- Orquestación mediante subagentes ejecutores y revisores con subtareas, contexto
+  mínimo y permisos delimitados. Herramientas de navegador y multimedia por
+  adaptadores, sujetas a capacidades, aislamiento y coste autorizado.
 - Separar agentes de proveedores. Preservar integraciones definidas y contemplar
   Gemini, Groq y NVIDIA; admitir varios modelos por proveedor.
+- Groq se escribe con Q; no añadir Grok/xAI por la interpretación errónea del audio.
+  OpenCode Zen/Go y conexiones por cuentas ChatGPT/Codex, Google y Claude son
+  integraciones objetivo que requieren comprobación individual de autenticación,
+  capacidades y condiciones; no asumir equivalencia entre suscripción y API.
 - Registrar capacidades y compatibilidad antes de habilitar combinaciones.
 - Fallback solo cuando sea técnicamente compatible y autorizado por la política.
 - Registrar tokens, uso y costes cuando se puedan conocer; no completar datos ausentes
@@ -118,6 +131,8 @@ La exclusión global, cancelación y recuperación completas aún requieren impl
 ## Uso, analíticas y cuotas
 
 - KPIs, tareas realizadas, duración, actividad por período y gráficos.
+- Filtros 7/30/90 días y rango personalizado, proyecto y modelo; volumen de llamadas,
+  distribución por modelo y ejecuciones recientes cuando haya datos suficientes.
 - Uso y tokens por agente/modelo/proveedor, con gasto estimado si hay datos suficientes.
 - Calidad explícita de cada dato: `exact`, `estimated`, `stale` o `unavailable`.
   Conservar procedencia y fecha; una estimación debe explicar cómo se calculó.
@@ -130,6 +145,8 @@ La exclusión global, cancelación y recuperación completas aún requieren impl
 - Agente/modelo predeterminado, esfuerzo, notificaciones y apariencia.
 - Proveedores, conexiones, skills instaladas y backend de ejecución.
 - Uso/cuotas y estado general de Cubo con estados reales de configuración.
+- Apariencia clara/oscura, instalación PWA, almacenamiento con ubicación, uso y
+  retención visibles. Versionado major.minor.patch por tipo de entrega; 1.0.0 futuro.
 
 ## Seguridad
 
@@ -142,6 +159,9 @@ La exclusión global, cancelación y recuperación completas aún requieren impl
 - Autenticación/autorización personal, sesiones y cookies seguras, CSP y políticas
   web estrictas; auditoría de aprobaciones y operaciones sensibles.
 - Aplicar estas reglas en código y permisos, no únicamente mediante instrucciones al agente.
+- No compartir contextos entre chats ni proyectos por defecto. Compartirlos mediante
+  permisos explícitos queda fuera de esta fase. No añadir registro público; mantener
+  el acceso personal existente mientras Cubo controle datos y ejecuciones remotas.
 
 ## Interfaz
 
@@ -150,6 +170,8 @@ La exclusión global, cancelación y recuperación completas aún requieren impl
 - Densidad compacta, escritorio sólido y móvil responsive, sin scroll horizontal.
 - Estados reales. Funciones sin backend identificadas como pendientes o deshabilitadas.
 - No confundir estructura visual lista con capacidad funcional implementada.
+- Refinamiento de Chat con interacciones de ChatGPT/Claude, manteniendo shell,
+  composición general y paleta aprobados; no realizar otro rediseño completo.
 
 ## Equivalencias cloud, no herencia de VM
 
@@ -198,8 +220,9 @@ exige el adaptador de agente/proveedor correspondiente y no se simula como termi
 - No considerar implementados por este documento el scheduler, cancelación completa,
   exclusión global, memoria por proyecto ni telemetría de modelos.
 - Primera vertical de Chat publicada y comprobada en cloud; consultar
-  docs/chat.md para aceptación y publicación. Siguiente ampliación: inferencia y
-  eventos de agente con dependencias explícitas, sin fingir una sesión conectada.
+  docs/chat.md para aceptación y publicación. La conversación del 2026-10-14 fija
+  como siguiente ampliación proyectos reales y chats asociados, antes de conectar
+  inferencia y eventos de agente. Ver PLAN.md para dependencias y puertas de cierre.
 
 Cada fase debe documentar capacidades implementadas, aceptación comprobada,
 limitaciones gratuitas y pendientes en MEMORY.md y en su documentación específica.

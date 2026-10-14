@@ -59,6 +59,7 @@ las tareas quedan en cola con un motivo explícito; no se simula ejecución clou
 ## Arquitectura y configuración
 
 - [Alcance funcional objetivo y roadmap](docs/functional-scope.md).
+- [Plan actual por verticales](PLAN.md).
 - [Arquitectura durable](docs/architecture.md).
 - [Configuración cloud y credenciales](docs/cloud-setup.md).
 - [Política de coste cero](docs/cost-policy.md).

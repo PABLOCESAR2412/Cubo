@@ -10,6 +10,7 @@ export type IconName =
   | "refresh"
   | "close"
   | "menu"
+  | "more"
   | "arrow"
   | "logs"
   | "check"
@@ -28,6 +29,7 @@ const paths: Record<IconName, string> = {
   refresh: "M20 8a8 8 0 0 0-14-3L3 8M3 3v5h5M4 16a8 8 0 0 0 14 3l3-3M21 21v-5h-5",
   close: "M6 6l12 12M18 6 6 18",
   menu: "M4 6h16M4 12h16M4 18h16",
+  more: "M5 12h.01M12 12h.01M19 12h.01",
   arrow: "M5 12h14M14 7l5 5-5 5",
   logs: "M4 5h16v14H4zM7 9l3 3-3 3M13 15h4",
   check: "M5 12l4 4L19 6",

@@ -450,6 +450,11 @@ time {
   overflow: auto;
   min-width: 0;
 }
+#workspace-content.chat-workspace {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 .module {
   padding: 22px 28px 28px;
   max-width: none;
@@ -939,6 +944,10 @@ label,
 .persistent-chat {
   display: block;
 }
+.chat-workspace > .persistent-chat {
+  flex: 1;
+  height: auto;
+}
 .chat-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1044,7 +1053,7 @@ label,
 }
 .chat-message-list :where(p) {
   white-space: pre-wrap;
-  border-radius: 12px 12px 4px 12px;
+  border-radius: 16px 16px 5px 16px;
   background: var(--color-surface);
   padding: 13px 16px;
   margin: 7px 0;
@@ -1062,7 +1071,7 @@ label,
 .chat-composer {
   flex-shrink: 0;
   border: 1px solid var(--color-line);
-  border-radius: 12px;
+  border-radius: 16px;
   background: var(--color-surface);
   padding: 12px 14px;
   margin: 0 auto 14px;
@@ -1563,6 +1572,64 @@ label,
 }
 
 /* Refinement of existing workspace components. */
+.chat-actions-menu {
+  position: relative;
+}
+.chat-actions-menu > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  list-style: none;
+}
+.chat-actions-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.chat-actions-menu > summary:hover,
+.chat-actions-menu[open] > summary {
+  background: var(--color-base);
+  border-color: var(--color-line);
+}
+.chat-actions-menu > summary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.chat-actions-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 5;
+  width: 196px;
+  padding: 5px;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+  display: grid;
+  gap: 2px;
+}
+.chat-actions-list button {
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  padding: 9px 10px;
+  text-align: left;
+  font-size: 12px;
+}
+.chat-actions-list button:hover:not(:disabled) {
+  background: var(--color-base);
+}
+.chat-actions-list .chat-delete-action {
+  color: #ffb3b7;
+  border-top: 1px solid var(--color-line);
+  margin-top: 3px;
+}
+.chat-composer:focus-within {
+  border-color: #546069;
+}
 .task-row-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 270px;

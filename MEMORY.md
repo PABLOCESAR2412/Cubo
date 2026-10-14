@@ -105,65 +105,25 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   también corregido PostToolUse. Backup y evidencia en docs/hook-incident.md.
   No se alteraron hashes de confianza; cierre automático final depende del host.
 
-## Próximos pasos
+## Estado entregado y próximos pasos
 
-- El usuario rechazó la interpretación visual anterior: Telo es referencia directa
-  de distribución, densidad, jerarquía y comportamiento. Paleta aprobada intacta.
-- Nuevo shell: topbar global 42px, sidebar 208px, pane completo, Chat con scroll propio
-  y compositor inferior. Tareas con listado completo y proceso abierto a petición.
-  Proyectos listado/detalle, Analíticas y seis tabs de Ajustes preparados sin backend falso.
-- Componentes compartidos centralizados en ui.tsx. Nueva tarea contempla campos de
-  agente/proyecto/modelo/esfuerzo/instrucción; validación durable secundaria y explícita.
-- Comparación de siete referencias/25 capturas a 1440 y 390 documentada en
-  docs/telo-interface-comparison.md. Reviewer resolvió centrado de Nueva tarea.
-  Legacy #task_id corregido tras fallo de recuperación; navegador local vuelve a pasar.
-- API, esquema y motor intactos. Chat persistente conserva operaciones reales.
-  Validación local actual: 20 tests/85 comprobaciones, lint, tipos, build, móvil y offline.
-  Corrección publicada en fba6305 y cubo-dev, sin migraciones nuevas ni cambios de secretos.
-- Aceptación remota: bundle heFQ1N8d, cinco módulos, móvil, PWA y API privada 401.
-  Tarea previa SUCCEEDED/91 conservada. Chat cloud 066c1647 recuperado tras cierre
-  de cliente, gestión/exportación/eliminación probadas; no se lanzaron runners nuevos.
-
-- Chat persistente implementado: conversaciones/mensajes en D1, renombrar, fijar,
-  eliminar con confirmación, copiar y exportar. Inferencia unavailable; no lanza agentes.
-- Migración 0002 aditiva, idempotencia de creación/mensajes y CAS de cambios/eliminación.
-  Prueba local real de D1/browser: cierre completo, recuperación móvil, edición,
-  exportación, eliminación, 409 por conflicto y 400/403 por token/origen inválido pasan.
-- Revisión visual final aprobó la corrección del layout de mensajes. DESIGN actualizado.
-  Ver docs/chat.md. Publicación autorizada: commit 43a8577 en main, migración 0002
-  remota y Worker nuevo publicados en cubo-dev sin modificar secretos.
-- Prueba cloud Chat 673bce9f-dd88-41ed-9043-5e1a61864cc7: cierre de cliente y
-  recuperación móvil, renombrado/fijado, exportación, idempotencia y eliminación
-  del registro recién creado pasan. API sin sesión 401; no inferencia ni runner nuevo.
-  Tarea durable anterior conserva SUCCEEDED/91. Evidencia artifacts/chat-proof-cloud.json.
-- Deploy ahora verifica secretos existentes por nombre sin modificar valores y
-  aplica migraciones D1 antes de publicar. Motor durable y tablas de tareas preservados.
-
-- Rediseño estructural inspirado en las siete capturas de Telo implementado:
-  sidebar persistente, barra contextual, cinco módulos, listado e inspector compactos,
-  conservando la paleta oscura de Cubo. Ver docs/design-workspace.md.
-- Tareas conserva el backend real; lógica UI extraída a workspace.ts con selección
-  estable y protección ante respuestas atrasadas. Motor durable sin cambios en esta fase.
-- Proyectos y proveedores preparados visualmente, pendientes/deshabilitados.
-  Analíticas solo utiliza historial real de tareas; no inventa métricas de modelos.
-- Navegación y detalle móviles usan dialog nativo: foco aislado, Escape, retorno
-  visible y apertura desde Recientes. QA visual con API cloud en modo solo lectura.
-- Validación actual: 20 tests/85 comprobaciones, lint, typecheck y build pasan.
-  Creación local, cierre/reapertura, móvil y shell offline pasan en D1 aislada;
-  la D1 local anterior respondió 429 por tareas pendientes y no se borró.
-- Rediseño publicado en GitHub main y Cloudflare personal cubo-dev. Se conservan
-  secretos, D1 y Workflows existentes; sin servicios pagos ni nuevas tareas cloud.
-- Comprobación posterior: bundle index-CZe-IC6e.js actual, cinco módulos, diálogos
-  móviles, manifest PWA y API privada (401 sin sesión). Tarea 6c644134 recuperada
-  con SUCCEEDED y resultado 91. Capturas ignoradas artifacts/deployed-workspace-*.png.
-- DESIGN.md y su sidecar actualizados; reviewer confirmó las cuatro correcciones
-  finales resueltas. Metadatos de 9–10px registrados como deuda, no norma de diseño.
-
-- La prioridad de ejecución durable solicitada está demostrada. No se añadieron agentes.
-- Cambios de desarrollo publicados por autorización explícita del usuario.
-- Pausa/aprobación/nuevo runner está probada localmente, pendiente de prueba cloud específica.
-- Apagar físicamente PC/teléfono no se probó; el cierre completo del navegador sí.
-- Continuar los hitos de proyectos GitHub y agentes únicamente por nueva instrucción.
+- Shell Telo y paleta Cubo aprobados. Barra 42px, sidebar 208px, cinco módulos,
+  Chat con scroll propio/compositor inferior, Tareas con proceso abierto a petición.
+  Componentes compartidos en ui.tsx; legacy #task_id recupera Tareas correctamente.
+- Chat persistente D1 con renombrar, fijar, eliminar, copiar y exportar. Migración
+  0002 aditiva, idempotencia y CAS; inferencia unavailable. Ver docs/chat.md.
+- Pruebas cloud de Chat: cierre completo, recuperación móvil, gestión, exportación,
+  eliminación y rechazos por conflicto/origen/token pasan. API sin sesión 401.
+  Demo durable previa SUCCEEDED/91 conservada; no se ejecutaron agentes reales.
+- Deploy comprueba identidad, recursos gratuitos, secretos existentes por nombre
+  y migraciones; no reescribe credenciales. Ver docs/ui-refinement.md para versión.
+- Proyectos y proveedores preparados sin backend. Analíticas solo usa tareas reales.
+  Memoria propia, MCPs, APIs y skills por proyecto son funcionalidades pendientes.
+- Siguiente vertical autorizada: proyectos persistentes y chats vinculados; seguir
+  PLAN.md. Importación GitHub y agentes se conectarán con aislamiento real.
+- Pausa/aprobación/nuevo runner probados localmente; aceptación cloud pendiente.
+  Cierre completo del cliente probado; apagado físico de dispositivos no probado.
+- Metadata de 10px conservada como deuda de legibilidad, no norma de diseño.
 
 ## Refinamiento visual del 2026-10-14
 
@@ -198,6 +158,31 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - Copia global anterior de Graphify restaurada tras actualización inicial accidental;
   usar exclusivamente skill/runtime locales. No hay grafo generado ni CodeGraphContext.
 - Ponytail simplifica trabajo; no es un sistema automático de poda del contexto.
+
+## Alcance aclarado y siguiente vertical: 2026-10-14
+
+- Diseño actual y paleta aprobados: refinar Chat con interacciones de ChatGPT/Claude,
+  conservar shell y motor. PLAN.md registra secuencia, dependencias y aceptación.
+- Proyecto con nombre y repositorio opcional primero; chats y tareas asociados
+  después. Proyectos reales/importación aún pendientes. No perder chats existentes
+  al asociarlos ni compartir historial entre chats automáticamente.
+- APIs, MCPs, skills, variables, archivos y memoria autorizados por proyecto;
+  agentes/subagentes reciben solo contexto y permisos de su ejecución.
+  Compartir entre proyectos/chats queda fuera de alcance. Mantener acceso privado.
+- Groq con Q confirmado; Grok/xAI fue interpretación errónea. OpenCode Zen/Go,
+  cuentas ChatGPT/Codex, Google y Claude requieren compatibilidad y condiciones
+  verificadas. Herramientas remotas/multimedia y orquestación son capacidades futuras.
+- Analíticas 7/30/90/rango, modo claro, almacenamiento visible y versiones semánticas
+  registrados como objetivo. No inventar cuotas ni acceso gratis a APIs.
+- Esta iteración añade acciones directas de Chat sobre endpoints existentes;
+  no incorpora nuevo backend ni conexiones de proveedores.
+- Menú Acciones del chat: renombrar, fijar/desfijar y eliminar con confirmación;
+  cierre por Escape y salida de foco. Burbujas/compositor refinados sin cambiar
+  tokens de paleta. Layout flexible corrige recorte del compositor con avisos.
+- QA local: gestión desde menú, recuperación tras cerrar cliente, borrado del
+  registro de prueba, menú y compositor dentro de 390px con aviso activo; escritorio
+  1440px, cinco módulos y sin overflow. Reviewer ship, sin correcciones pendientes.
+  20 tests/85, lint, typecheck y build pasan. Publicación pendiente de cierre.
 
 ## Mantenimiento
 

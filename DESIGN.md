@@ -63,7 +63,7 @@ rounded:
   task: "8px"
   panel: "9px"
   dialog: "10px"
-  composer: "12px"
+  composer: "16px"
 spacing:
   xs: "8px"
   sm: "12px"
@@ -201,7 +201,7 @@ Tareas muestra tres métricas en una fila y un registro de ancho completo. Ver p
 
 Hasta 767px desaparece la columna reservada a la sidebar. La barra conserva 42px, el módulo usa padding de 20px 14px 24px y las métricas y campos pasan a una columna. La búsqueda ocupa toda la fila. La navegación abre un diálogo lateral de 230px; proceso y configuración ocupan todo el ancho bajo la barra. Los diálogos nativos aíslan el foco, cierran con Escape y devuelven el foco al control de apertura. Nueva tarea se centra, mide hasta 620px o el viewport menos 24px y limita su altura al viewport menos 32px.
 
-Chat ocupa todo el panel principal, con cabecera de altura mínima de 54px, conversación desplazable y compositor inferior. Historial siempre abre un diálogo de hasta 440px, con margen mínimo de 12px; no crea otra columna permanente. Configuración añade una columna de 320px a petición, de 280px hasta 1199px. Mensajes y compositor se limitan a 920px y 940px respectivamente. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios. Los campos usan dos columnas y el resumen de proyecto cuatro, reducidas a una y dos en móvil.
+Chat ocupa todo el panel principal, con cabecera de altura mínima de 54px, conversación desplazable y compositor inferior. Su contenedor flexible descuenta el espacio de los avisos globales para mantener el compositor dentro del viewport. Historial siempre abre un diálogo de hasta 440px, con margen mínimo de 12px; no crea otra columna permanente. Configuración añade una columna de 320px a petición, de 280px hasta 1199px. Mensajes y compositor se limitan a 920px y 940px respectivamente. Proyectos, Analíticas y Ajustes reutilizan paneles, filas y formularios. Los campos usan dos columnas y el resumen de proyecto cuatro, reducidas a una y dos en móvil.
 
 **The Contexto estable Rule.** La navegación y la barra contextual mantienen su posición; cada módulo concentra filtros, datos y acciones en el contenido.
 
@@ -213,7 +213,7 @@ La profundidad operativa se obtiene mediante tono y bordes de 1px. Las tareas se
 
 ## Shapes
 
-Los controles usan radio de 6px, iconos y tags 5px, tareas 8px, paneles y métricas 9px, diálogos centrados 10px y compositor 12px. Las burbujas de mensajes usan esquinas de 12px, con la inferior derecha de 4px. Las pestañas tienen recinto de 7px y botones internos de 5px. El proceso lateral ocupa el área de contenido hasta sus bordes. Los indicadores de estado son círculos pequeños. Marca e iconos usan SVG lineal.
+Los controles usan radio de 6px, iconos y tags 5px, tareas 8px, paneles y métricas 9px, diálogos centrados 10px y compositor 16px. Las burbujas de mensajes usan esquinas de 16px, con la inferior derecha de 5px. Las pestañas tienen recinto de 7px y botones internos de 5px. El proceso lateral ocupa el área de contenido hasta sus bordes. Los indicadores de estado son círculos pequeños. Marca e iconos usan SVG lineal.
 
 ## Components
 
@@ -250,6 +250,8 @@ La barra nativa de progreso mide 4px. Lleva pista neutral y relleno lima, acompa
 El historial usa botones compactos de borde neutral y radio de control, separados por 4px. La selección cambia el borde a lima; el título puede partir palabras largas y la fecha usa texto secundario. El listado siempre aparece en un diálogo a petición.
 
 Los mensajes guardados se alinean a la derecha, con autor, fecha, estado textual Guardado, burbuja de superficie, saltos de línea preservados y acción Copiar. Las burbujas llevan borde neutral, padding de 13px 16px y línea de lectura 1.65. La lista tiene separación de 18px y ancho máximo de mensaje del 80%, ampliado al 94% en móvil. El compositor inferior reúne textarea transparente, adjuntos, configuración, selector de modelo/agente, guardado y esfuerzo en una superficie común. El esfuerzo forma un grupo delimitado con fondo carbón; sus opciones siguen deshabilitadas. La cabecera muestra el estado de modelo y la configuración abierta tiene estado activo visible. El resumen persistente de conversación precede a los mensajes con un divisor. Guardar persiste el mensaje; inferencia, herramientas y esfuerzo permanecen pendientes y deshabilitados. La configuración permite renombrar, fijar y eliminar conversaciones. La eliminación requiere confirmación nativa. Los avisos usan `role="status"`; los errores, `role="alert"`.
+
+El menú de tres puntos de la cabecera concentra Renombrar chat, Fijar/Desfijar chat y Eliminar conversación. Renombrar abre la configuración existente. El control SVG mide 32px; el desplegable alineado a la derecha mide 196px, usa superficie plana, borde neutral y radio de 10px. Eliminar conserva color de fallo, separación superior y confirmación nativa. Escape cierra el menú y devuelve el foco al control; salir del menú también lo cierra. Sus acciones se deshabilitan mientras hay una operación en curso o falta una conversación seleccionada. Al enfocar el compositor, su borde se aclara a gris; el contorno lima de los campos conserva el foco visible.
 
 ### Métricas y funciones pendientes
 

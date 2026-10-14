@@ -301,7 +301,7 @@ export default function App() {
         </div>
       </Sidebar>
       <div className="workspace-main">
-        <main id="workspace-content">
+        <main id="workspace-content" className={view === "chat" ? "chat-workspace" : undefined}>
           {(w.error || w.pollError) && (
             <div className="workspace-alert error" role="alert">
               {w.error || w.pollError}
