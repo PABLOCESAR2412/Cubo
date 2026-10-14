@@ -133,7 +133,7 @@ components:
 
 Cubo usa carbón, gris frío y lima suave para una consola operativa. La densidad compacta permite leer tareas, progreso y acciones sin perder la jerarquía. Una barra global y la navegación lateral mantienen el contexto de trabajo; el contenido ocupa el espacio restante.
 
-Las superficies son planas, delimitadas por líneas y cambios de tono. La tipografía local y las esquinas discretas mantienen una lectura sobria. La arquitectura, distribución y densidad siguen directamente las siete referencias de Telo, conservando íntegramente la paleta de Cubo. Los módulos preparados distinguen funciones pendientes de los datos disponibles. Las capturas documentan la UI local.
+Las superficies son planas, delimitadas por líneas y cambios de tono. La tipografía local y las esquinas discretas mantienen una lectura sobria. La arquitectura, distribución y densidad siguen directamente las siete referencias de Telo, conservando íntegramente la paleta de Cubo. Proyectos y Chat muestran datos persistidos y distinguen las integraciones pendientes de las acciones disponibles. Las capturas documentan la UI local.
 
 **Key Characteristics:**
 
@@ -255,7 +255,15 @@ El menú de tres puntos de la cabecera concentra Renombrar chat, Fijar/Desfijar 
 
 ### Métricas y funciones pendientes
 
-Las métricas de tareas y actividad se derivan del historial disponible y explican su alcance. Costes, tokens, modelos y cuotas sin integración muestran indisponibilidad, nunca cifras inventadas. Proyectos, agentes y proveedores reutilizan campos y estados del sistema, con acciones pendientes deshabilitadas. Nueva tarea separa el formulario futuro de IA de la validación durable existente mediante un desplegable.
+Las métricas de tareas y actividad se derivan del historial disponible y explican su alcance. Costes, tokens, modelos y cuotas sin integración muestran indisponibilidad, nunca cifras inventadas. Agentes y proveedores reutilizan campos y estados del sistema, con acciones pendientes deshabilitadas. Nueva tarea separa el formulario futuro de IA de la validación durable existente mediante un desplegable.
+
+### Proyectos y contexto
+
+El listado reúne nombre y repositorio a la izquierda; contador de chats, fecha y Abrir proyecto a la derecha, con separación de 14px y texto secundario de 12px. En móvil la metadata ocupa una fila propia y permite salto de línea. Las URLs largas pueden partir palabras para conservar el ancho disponible. Nuevo proyecto abre un formulario dentro del módulo, con nombre y URL opcional; esta se presenta como referencia, sin prometer importación de GitHub.
+
+El detalle conserva el enlace Volver a Proyectos, título y Abrir chat, seguido de paneles para resumen, instrucciones, memoria manual, chats y conexiones pendientes. Nombre, instrucciones y memoria usan campos existentes; Guardar contexto confirma la persistencia mediante un aviso textual. El resumen muestra repositorio, número de chats, importación pendiente y versión del contexto. Los chats abren su conversación propia; el resumen del chat y su configuración identifican el proyecto. Las conversaciones anteriores sin proyecto siguen disponibles en su historial. Eliminar proyecto vacío exige confirmación nativa y queda deshabilitado cuando contiene chats.
+
+Archivos, skills, APIs/MCPs, variables/secretos y tareas del proyecto se presentan como filas con etiqueta Integración pendiente, divisores y padding vertical de 9px. La memoria editable está disponible; importación y aprendizaje automáticos permanecen pendientes. Los errores y confirmaciones reutilizan los avisos accesibles del sistema.
 
 ## Do's and Don'ts
 

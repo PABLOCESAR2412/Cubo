@@ -32,6 +32,9 @@ Actualización 2026-10-14: diseño actual y paleta aprobados. Refinar Chat con
 interacciones de ChatGPT/Claude. Siguiente vertical: proyectos persistentes con
 repositorio opcional y chats asociados; APIs, MCPs, skills, memoria y secretos
 aislados por proyecto, historial aislado por chat. Ver [PLAN.md](PLAN.md).
+Base de proyectos implementada: creación/listado, instrucciones/memoria manual y
+chats propios. URL GitHub guardada como referencia; importación y conexión pendientes.
+Ver [docs/projects.md](docs/projects.md) para el alcance verificable.
 Groq con Q; no Grok. Modelos/cuentas gratuitas o suscripciones requieren verificar
 compatibilidad y condiciones antes de habilitarse. Sin registro público; conservar
 acceso privado existente. Analíticas, modo claro y herramientas avanzadas siguen

@@ -1572,6 +1572,42 @@ label,
 }
 
 /* Refinement of existing workspace components. */
+.project-list-row,
+.project-list-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+}
+.project-list-row .hint {
+  overflow-wrap: anywhere;
+  margin-top: 5px;
+}
+.project-list-meta {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.project-capabilities > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--color-line);
+}
+@media (max-width: 767px) {
+  .project-list-row {
+    flex-wrap: wrap;
+  }
+  .project-list-meta {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .project-summary strong {
+    overflow-wrap: anywhere;
+  }
+}
 .chat-actions-menu {
   position: relative;
 }

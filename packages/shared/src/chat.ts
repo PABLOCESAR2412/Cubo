@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export interface Conversation {
   id: string;
+  projectId: string | null;
   title: string;
   pinned: boolean;
   version: number;

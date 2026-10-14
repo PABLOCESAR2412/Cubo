@@ -1,6 +1,6 @@
 # Memoria del desarrollo de Cubo
 
-Última actualización significativa: 2026-10-14, plan centrado en proyectos actualizado y acciones directas de Chat publicadas y comprobadas en cloud.
+Última actualización significativa: 2026-10-14, proyectos persistentes y chats asociados implementados y validados localmente.
 
 Alcance objetivo ampliado y registrado en docs/functional-scope.md: equivalencia
 funcional de Telo adaptada a cloud, sin heredar soluciones de VM. Orden aprobado:
@@ -117,10 +117,9 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   Demo durable previa SUCCEEDED/91 conservada; no se ejecutaron agentes reales.
 - Deploy comprueba identidad, recursos gratuitos, secretos existentes por nombre
   y migraciones; no reescribe credenciales. Ver docs/ui-refinement.md para versión.
-- Proyectos y proveedores preparados sin backend. Analíticas solo usa tareas reales.
-  Memoria propia, MCPs, APIs y skills por proyecto son funcionalidades pendientes.
-- Siguiente vertical autorizada: proyectos persistentes y chats vinculados; seguir
-  PLAN.md. Importación GitHub y agentes se conectarán con aislamiento real.
+- Proyectos persisten registros, instrucciones, memoria manual y chats vinculados.
+  Proveedores, importación GitHub, MCPs, APIs y skills del proyecto pendientes.
+  Analíticas solo usa tareas reales. Seguir PLAN.md y docs/projects.md.
 - Pausa/aprobación/nuevo runner probados localmente; aceptación cloud pendiente.
   Cierre completo del cliente probado; apagado físico de dispositivos no probado.
 - Metadata de 10px conservada como deuda de legibilidad, no norma de diseño.
@@ -164,7 +163,7 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
 - Diseño actual y paleta aprobados: refinar Chat con interacciones de ChatGPT/Claude,
   conservar shell y motor. PLAN.md registra secuencia, dependencias y aceptación.
 - Proyecto con nombre y repositorio opcional primero; chats y tareas asociados
-  después. Proyectos reales/importación aún pendientes. No perder chats existentes
+  después. Base de proyectos y chats implementada; importación pendiente. No perder chats existentes
   al asociarlos ni compartir historial entre chats automáticamente.
 - APIs, MCPs, skills, variables, archivos y memoria autorizados por proyecto;
   agentes/subagentes reciben solo contexto y permisos de su ejecución.
@@ -174,8 +173,8 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   verificadas. Herramientas remotas/multimedia y orquestación son capacidades futuras.
 - Analíticas 7/30/90/rango, modo claro, almacenamiento visible y versiones semánticas
   registrados como objetivo. No inventar cuotas ni acceso gratis a APIs.
-- Esta iteración añade acciones directas de Chat sobre endpoints existentes;
-  no incorpora nuevo backend ni conexiones de proveedores.
+- La iteración de acciones directas de Chat conservó endpoints existentes.
+  La ampliación posterior añade proyectos D1 y scope de conversaciones, sin proveedores.
 - Menú Acciones del chat: renombrar, fijar/desfijar y eliminar con confirmación;
   cierre por Escape y salida de foco. Burbujas/compositor refinados sin cambiar
   tokens de paleta. Layout flexible corrige recorte del compositor con avisos.
@@ -187,6 +186,21 @@ aprobaciones. La memoria de repositorios ejecutados por Cubo es una función fut
   Bundle index-C1TF_vXu.js comprobado; PWA, móvil, cinco vistas y API privada pasan.
   Menú y gestión de Chat probados en D1 cloud, cierre/reapertura y borrado del
   registro propio; demo previa SUCCEEDED/91. Sin runners nuevos ni cambios de secretos.
+
+## Base de proyectos y chats asociados
+
+- Migración aditiva 0003: projects y conversations.project_id NULL para chats
+  anteriores. FK y trigger impiden reasignación; borrado de proyecto con chats bloqueado.
+- Crear/listar/detalle, nombre y URL GitHub opcional, instrucciones y memoria manual,
+  chats del proyecto y recuperación por URL implementados. No clona repositorios.
+- API autenticada y scope SQL obligatorio en consultas/mutaciones de Chat;
+  sin project= solo se accede a chats anteriores. No compartir historiales.
+  La sesión del propietario administra todos los proyectos; permisos de runner pendientes.
+- D1 local: dos proyectos/contextos distintos, chats, ocho accesos cruzados rechazados,
+  cliente cerrado y recuperación móvil; chats anteriores intactos. 1440/390 sin overflow.
+  Tests 20/86, lint, typecheck y build pasan; motor sin cambios, ningún runner nuevo.
+- Importación SSH/GitHub, secretos cifrados, herramientas y tareas por proyecto
+  pendientes. docs/projects.md define compatibilidad y rollback sin borrar datos.
 
 ## Mantenimiento
 

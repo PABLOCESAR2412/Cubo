@@ -40,7 +40,7 @@ export function NewTask({
           <label>
             Proyecto
             <select disabled>
-              <option>Sin proyectos conectados</option>
+              <option>Vinculación de tareas a proyectos pendiente</option>
             </select>
           </label>
           <label>

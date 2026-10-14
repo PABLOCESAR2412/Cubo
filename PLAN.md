@@ -23,6 +23,11 @@ Implementada y validada localmente. Publicación registrada en MEMORY.md al cier
 
 ## Siguiente vertical: proyectos y chats asociados
 
+Base implementada: creación/listado D1, detalle, instrucciones y memoria manual,
+chats asociados e historial anterior conservado. Aceptación en docs/projects.md.
+Importación de repositorios, herramientas/secretos y tareas asociadas continúan
+pendientes; el hito completo de integración GitHub no se declara terminado.
+
 1. Listar y crear proyectos persistentes: nombre y repositorio GitHub opcional.
 2. Asociar conversaciones y tareas a un proyecto; conservar y migrar de forma
    explícita los chats existentes sin asignarlos silenciosamente al proyecto equivocado.

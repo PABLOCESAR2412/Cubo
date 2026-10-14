@@ -15,7 +15,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 ## Alcance confirmado
 
-Solo UI: conservar motor durable, API, esquema y Chat persistente existentes.
+El rediseño original fue solo UI. La vertical posterior de proyectos añade D1 y
+rutas de contexto/chats asociados; conserva motor durable y backend de ejecución.
 Telo es referencia directa, no inspiración libre. La paleta de Cubo no cambia.
 Conexiones sin backend permanecen explícitamente pendientes/deshabilitadas.
 
@@ -32,8 +33,9 @@ secundaria; ejecutar instrucciones de agentes todavía está deshabilitado.
   compositor inferior y configuración a la derecha. Historial mediante acción y
   recientes, sin tercera columna permanente. Capacidades futuras preparadas.
 - Tareas: tres métricas, filtros, listado completo y proceso abierto a petición.
-- Proyectos: listado vacío real y vista de configuración/detalle preparada con
-  resumen, instrucciones, memoria propia, skills, secretos y actividad.
+- Proyectos: listado y creación reales, detalle con instrucciones/memoria manual
+  editables y chats propios. GitHub/importación, herramientas, secretos, archivos
+  y tareas del proyecto permanecen pendientes. Ver projects.md.
 - Analíticas: filtros, tres métricas, actividad real de tareas y distribución
   por modelo vacía. Gasto y tokens unavailable, sin números inventados.
 - Ajustes: seis tabs; agentes y proveedores separados, con estado pendiente real.

@@ -224,8 +224,11 @@ runner GitHub real, cliente cerrado, checkpoints y resultado 91 recuperado de D1
 Ver [docs/cloud-validation.md](docs/cloud-validation.md). Agentes reales siguen pendientes;
 pausa/aprobación tiene tests locales y requiere su propia comprobación cloud.
 Rediseño UI del workspace implementado y validado localmente; conserva el backend.
-Chat tiene una primera vertical de persistencia; inferencia, Proyectos y proveedores
-siguen pendientes. Ver [docs/chat.md](docs/chat.md) y [docs/design-workspace.md](docs/design-workspace.md).
+Chat tiene una primera vertical de persistencia. Proyectos guarda registros,
+instrucciones, memoria manual y chats propios; ver [docs/projects.md](docs/projects.md).
+Importación GitHub, agentes y proveedores siguen pendientes. No volver a un backend
+sin filtrado de project_id después de crear conversaciones asociadas.
+Ver [docs/chat.md](docs/chat.md) y [docs/design-workspace.md](docs/design-workspace.md).
 UI publicada en cubo-dev por instrucción explícita del usuario el 2026-10-13;
 cinco módulos, móvil, PWA y recuperación del resultado existente comprobados.
 Chat persistente publicado y comprobado en cloud: cierre del cliente y recuperación

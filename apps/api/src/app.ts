@@ -13,6 +13,7 @@ import {
 } from "./auth.ts";
 import { chatRoutes } from "./chat";
 import type { Env } from "./env.ts";
+import { projectRoutes } from "./projects";
 export async function dispatchOutbox(env: Env): Promise<void> {
   const store = new D1TaskStore(env.DB);
   for (const item of await store.outbox()) {
@@ -166,6 +167,7 @@ app.post("/api/executions/:id/progress", async (c) => {
 });
 app.notFound((c) => c.json({ error: "Ruta desconocida." }, 404));
 app.route("/api/conversations", chatRoutes);
+app.route("/api/projects", projectRoutes);
 app.onError((error, c) => {
   if (error instanceof StoreError)
     return c.json({ error: error.message }, error.code as 400 | 403 | 404 | 409 | 429);

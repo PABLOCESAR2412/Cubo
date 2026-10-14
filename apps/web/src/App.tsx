@@ -40,7 +40,10 @@ export default function App() {
     if (!w.authenticated) return;
     let disposed = false;
     const refresh = () => {
-      void requestApi<{ conversations: Conversation[] }>("conversations")
+      const project = new URL(location.href).searchParams.get("project");
+      void requestApi<{ conversations: Conversation[] }>(
+        project ? `conversations?project=${encodeURIComponent(project)}` : "conversations",
+      )
         .then((data) => {
           if (!disposed) {
             setRecentChats(data.conversations.slice(0, 5));
@@ -99,10 +102,13 @@ export default function App() {
     navigate("tareas");
     setInspecting(true);
   }
-  function openChat(id: string) {
+  function openChat(chat: Conversation) {
+    const id = chat.id;
     setActiveChat(id);
     const url = new URL(window.location.href);
     url.searchParams.set("chat", id);
+    if (chat.projectId) url.searchParams.set("project", chat.projectId);
+    else url.searchParams.delete("project");
     history.replaceState(null, "", url);
     navigate("chat");
     window.dispatchEvent(new Event("cubo-chat-selected"));
@@ -247,7 +253,7 @@ export default function App() {
               key={chat.id}
               type="button"
               className={view === "chat" && activeChat === chat.id ? "active" : ""}
-              onClick={() => openChat(chat.id)}
+              onClick={() => openChat(chat)}
             >
               <Icon name="chat" size={14} />
               <span>

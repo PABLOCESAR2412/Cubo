@@ -16,6 +16,7 @@ import {
 type Row = Record<string, string | number | null>;
 
 export { D1ChatStore } from "./chat";
+export { D1ProjectStore } from "./projects";
 export class StoreError extends Error {
   constructor(
     public readonly code: number,

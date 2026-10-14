@@ -1,8 +1,13 @@
-import type { Conversation, ConversationDetail } from "@cubo/shared";
+import type { Conversation, ConversationDetail, StoredProject } from "@cubo/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
 import { ChatComposer } from "./ui";
-import { requestApi as api, time } from "./workspace";
+import { requestApi, time } from "./workspace";
+
+function api<T>(path: string, init?: RequestInit): Promise<T> {
+  const project = new URL(window.location.href).searchParams.get("project");
+  return requestApi<T>(project ? `${path}?project=${encodeURIComponent(project)}` : path, init);
+}
 
 function selectedChat() {
   return new URL(window.location.href).searchParams.get("chat") ?? "";
@@ -14,6 +19,23 @@ export function Chat() {
   const [draft, setDraft] = useState("");
   const [title, setTitle] = useState("");
   const [config, setConfig] = useState(false);
+  const projectId = new URL(window.location.href).searchParams.get("project");
+  const [projectName, setProjectName] = useState("");
+  useEffect(() => {
+    let disposed = false;
+    setProjectName("");
+    if (projectId)
+      void requestApi<{ project: StoredProject }>(`projects/${projectId}`)
+        .then((result) => {
+          if (!disposed) setProjectName(result.project.name);
+        })
+        .catch(() => {
+          if (!disposed) setProjectName("Proyecto no disponible");
+        });
+    return () => {
+      disposed = true;
+    };
+  }, [projectId]);
   const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);
   const configDialog = useRef<HTMLDialogElement>(null);
   const Configuration = mobile ? "dialog" : "aside";
@@ -135,6 +157,11 @@ export function Chat() {
     }
   }
   async function create() {
+    if (!projectId) {
+      historyDialog.current?.close();
+      window.location.hash = "/proyectos";
+      return;
+    }
     await action(async () => {
       createKey.current ??= crypto.randomUUID();
       const result = await api<{ conversation: Conversation }>("conversations", {
@@ -237,7 +264,7 @@ export function Chat() {
           disabled={busy}
           onClick={() => void create()}
         >
-          Nuevo chat
+          {projectId ? "Nuevo chat" : "Abrir proyectos"}
         </button>
       </div>
       <div className="chat-history-items">
@@ -279,7 +306,7 @@ export function Chat() {
                 disabled={busy}
                 onClick={() => void create()}
               >
-                Nuevo chat
+                {projectId ? "Nuevo chat" : "Abrir proyectos"}
               </button>
               <button
                 className="secondary compact chat-history-toggle"
@@ -383,8 +410,10 @@ export function Chat() {
                 <Icon name="chat" size={26} />
                 <h2>Conversaciones persistentes</h2>
                 <p>
-                  Crea un chat o abre su historial. Los mensajes confirmados se recuperan desde
-                  Cubo.
+                  {projectId
+                    ? "Crea un chat para este proyecto o abre su historial."
+                    : "Abre un proyecto para crear un chat. Las conversaciones anteriores siguen disponibles en Historial."}{" "}
+                  Los mensajes confirmados se recuperan desde Cubo.
                 </p>
                 <button
                   className="primary"
@@ -392,7 +421,7 @@ export function Chat() {
                   disabled={busy}
                   onClick={() => void create()}
                 >
-                  Nuevo chat
+                  {projectId ? "Nuevo chat" : "Abrir proyectos"}
                 </button>
               </div>
             ) : (
@@ -401,7 +430,10 @@ export function Chat() {
                   <div>
                     <Icon name="chat" size={15} />
                     <strong>Conversación persistente</strong>
-                    <span>{detail.messages.length} mensajes guardados</span>
+                    <span>
+                      {projectId ? projectName || "Cargando proyecto…" : "Sin proyecto"} ·{" "}
+                      {detail.messages.length} mensajes guardados
+                    </span>
                   </div>
                   <span className="tag pending">Agentes pendientes</span>
                 </div>
@@ -525,9 +557,14 @@ export function Chat() {
               </label>
               <label>
                 Proyecto
-                <select disabled>
-                  <option>Proyectos pendientes</option>
-                </select>
+                <input
+                  readOnly
+                  value={
+                    projectId
+                      ? projectName || "Cargando proyecto…"
+                      : "Sin proyecto (conversación existente)"
+                  }
+                />
               </label>
               <p className="hint">
                 Uso y coste: unavailable. Contexto persistido: solo mensajes del usuario; todavía no

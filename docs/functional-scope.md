@@ -214,8 +214,9 @@ exige el adaptador de agente/proveedor correspondiente y no se simula como termi
 - Motor durable demostrativo validado en cloud: runner real, checkpoints, cliente
   cerrado y recuperación de SUCCEEDED/91. No es todavía ejecución de agentes de IA.
 - UI de workspace publicada. Tareas tiene backend; Chat tiene persistencia de
-  conversaciones/mensajes y gestión, sin inferencia. Proyectos y proveedores
-  siguen pendientes. Analíticas usa solo el historial disponible de tareas.
+  conversaciones/mensajes y gestión, sin inferencia. Proyectos ya guarda registros,
+  instrucciones, memoria manual y chats asociados. GitHub, herramientas de proyecto
+  y proveedores siguen pendientes. Analíticas usa solo el historial disponible de tareas.
 - Aprobación de continuación probada localmente; aprobación Git no implementada.
 - No considerar implementados por este documento el scheduler, cancelación completa,
   exclusión global, memoria por proyecto ni telemetría de modelos.
