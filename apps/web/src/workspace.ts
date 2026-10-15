@@ -30,6 +30,11 @@ async function api<T>(path: string, body?: unknown, key?: string): Promise<T> {
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
 }
+export type Theme = "dark" | "light";
+function initialTheme(): Theme {
+  const stored = window.localStorage.getItem("cubo-theme");
+  return stored === "light" ? "light" : "dark";
+}
 export async function requestApi<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`/api/${path}`, {
     ...init,
@@ -54,6 +59,7 @@ export function useWorkspace() {
   const [busy, setBusy] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
   const [pause, setPause] = useState(false);
+  const [theme, setThemeState] = useState<Theme>(initialTheme);
   const [lastSync, setLastSync] = useState<string | null>(null);
   const key = useRef<string | null>(null);
   const selectedRef = useRef(selected);
@@ -99,6 +105,16 @@ export function useWorkspace() {
         setAuthenticated(null);
       });
   }, []);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("cubo-theme", theme);
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", theme === "light" ? "#eef0e6" : "#101416");
+  }, [theme]);
+  function setTheme(next: Theme) {
+    setThemeState(next);
+  }
   useEffect(() => {
     void checkSession();
   }, [checkSession]);
@@ -243,6 +259,8 @@ export function useWorkspace() {
     online,
     pause,
     updatePause,
+    theme,
+    setTheme,
     lastSync,
     chooseTask,
     refresh,

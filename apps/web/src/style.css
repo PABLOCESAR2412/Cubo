@@ -22,6 +22,43 @@
   font-size: 13px;
   line-height: 1.5;
 }
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-base: #eef0e6;
+  --color-surface: #ffffff;
+  --color-muted: #57666d;
+  --color-line: #d5dcd6;
+  --color-ink: #1c2422;
+}
+:root[data-theme="light"] .secondary:hover:not(:disabled),
+:root[data-theme="light"] .icon-button:hover:not(:disabled),
+:root[data-theme="light"] .main-nav :where(a.active),
+:root[data-theme="light"] .main-nav :where(a:hover),
+:root[data-theme="light"] .recents :where(button:hover),
+:root[data-theme="light"] .recents :where(button.active),
+:root[data-theme="light"] .tabs :where(button.active),
+:root[data-theme="light"] .agent-tabs :where(button.active),
+:root[data-theme="light"] .secondary.active,
+:root[data-theme="light"] .workspace-alert {
+  background: #e6ebdd;
+}
+:root[data-theme="light"] .workspace-alert.error,
+:root[data-theme="light"] .inline-notice.error,
+:root[data-theme="light"] .status-badge.failed {
+  background: #fbe7e8;
+}
+:root[data-theme="light"] .inline-notice,
+:root[data-theme="light"] .approval {
+  background: #eff3df;
+}
+:root[data-theme="light"] .chat-actions-menu > summary:hover,
+:root[data-theme="light"] .chat-actions-menu[open] > summary,
+:root[data-theme="light"] .chat-actions-list button:hover:not(:disabled),
+:root[data-theme="light"] .repository-file-link.active,
+:root[data-theme="light"] .repository-file-link:hover:not(:disabled),
+:root[data-theme="light"] .recent-chat-row.active {
+  background: var(--color-base);
+}
 * {
   box-sizing: border-box;
   scrollbar-color: #546069 var(--color-base);
