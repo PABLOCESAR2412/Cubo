@@ -1,7 +1,7 @@
 # Memoria del desarrollo de Cubo
 
-Actualizado: 2026-10-14. Refinamiento minimalista de Chat implementado y validado
-localmente; publicación nueva pendiente. Inferencia real aún sin aceptación.
+Actualizado: 2026-10-14. Cubo 1.0.0 publicado. Chat minimalista y sesión revocable
+comprobados en cloud. Inferencia real aceptada con cierre y recuperación del cliente.
 
 ## Autoridad
 
@@ -77,52 +77,68 @@ el control plane. Esa integración Git de escritura sigue pendiente.
   real v1/v2 probado en loopback; instalación física aún no validada.
 - CSP/headers publicados, SW y shell offline comprobados, API privada 401 y
   recuperación de importación sin violaciones CSP. Estilos inline permitidos para barras.
-- Código actual publicado: b5f1250. Worker e979833a-e768-4491-9f7e-5ce992155a1b.
-  Migración 0005 aplicada en D1 personal sin borrar resultados anteriores.
+- Código actual publicado: 1d8250a. Worker a4843c5e-deae-48bc-b4b1-43008873bbe4.
+  Migraciones 0005/0006 aplicadas en D1 personal sin borrar resultados anteriores.
 
-## Refinamiento actual, publicación pendiente
+## Cubo 1.0.0 publicado y validado
 
-- Petición posterior: sidebar ocupa altura completa; Recientes con acciones directas
-  de renombrar/fijar/eliminar. Header Chat solo título, iconos de exportar/configurar,
-  sin Nuevo chat ni Guardado. Markdown seguro con fondo transparente; medida760px
-  compartida con compositor y estado. Paleta conservada. Finish reviewer: ship.
-- Nuevo chat se crea en el proyecto; Abrir chat reutiliza el existente y espera la
-  carga del historial. Se corrigió una carrera detectada en QA que creaba otro chat.
-- Proveedor general en Ajustes, por instrucción nueva. Clave global AES-GCM/AAD;
-  se preservan claves antiguas de proyecto sin moverlas automáticamente. Contextos
-  de proyecto/chat siguen aislados y solo el runner OIDC autorizado recibe la clave.
-- Sesión backend sin expiración temporal, registro revocable en D1. Logout revoca.
-  Cookie400d renovada al abrir, por límite de navegador; legacy válido se actualiza.
-  Fallos de conexión no simulan logout. Borrar cookies/rotar secreto exige login.
-- Selector integra modelo/esfuerzo/uso. Esfuerzos solo anunciados por catálogo;
-  cuotas unavailable si no se exponen. No confundir contexto máximo con saldo.
-- Respaldo gratuito explícito y único ante HTTP404/503/429. Sin fallback tras
-  timeout incierto, respuesta inválida, credencial rechazada ni coste inesperado.
-  Coste inesperado bloquea globalmente si se usa conexión general.
-- Adjuntos TXT/MD/HTML/PDF/DOCX/XLSX/PPTX: extracción/preview de texto,4 archivos,
-  5MB por archivo,12000 caracteres por extracto/24000 total, PDF30 páginas sin OCR.
-  No binarios originales en D1; extractos persistidos con mensaje/turno y scope.
-  Dictado del navegador con consentimiento; micrófono físico no probado.
-- Inicio versión1.0.0; build calcula major/minor/patch desde commits posteriores
-  a version.json. Sin commits/tags automáticos. Ver scripts/version.ts.
-- Carga de chat directa sin listado previo, polling2s activo/10s inactivo, pausa
-  oculto; cuota fuera de carga inicial. Cache catálogo1min y revalidación runner.
-  Arranque GitHub Actions sigue añadiendo latencia; no prometer streaming.
-- Migración0006 aditiva local: owner_sessions, provider_keys, app_settings,
-  chat_messages.attachments. Falta aplicar remota y publicar en cuenta personal.
-- 37 tests/206 comprobaciones, lint/typecheck/build correctos. QA1440/390 sin
-  overflow/JS/CSP: Markdown con fixture identificada local,7 formatos extraídos,
-  dragdrop,gestión Recientes,reutilizar chat y dictado callback simulado.
-- Incidente dev: workerd huérfano retenía8851 y devolvía assets404 tras rebuild.
-  Proceso propio9444 verificado y detenido; nuevo servidor8852 sirve200.
-- Comprobación remota posterior: el usuario guardó la clave a18:12:32.111UTC en
-  proyecto077e6b47-e19b-4ff5-afda-77c3f366f9d7. Su turno82ecf4fc-2d71-4fe0-8262-7ce347f7b27a
-  SUCCEEDED con nvidia/nemotron-3-ultra-550b-a55b:free, tokens137/675 y USD0exact.
-  Otro turno4c8ca6c4-d0a7-45cd-8c90-162a4cc49002 falló PROVIDER_REQUEST_FAILED.
-  No se leyó la clave ni se atribuye cierre del cliente a esa ejecución del usuario.
-  Conservar conexiónlegacy; el usuario puede guardar su clave en Ajustes generales.
-- Próximo cierre: commit/push/deploy autorizado, validar cloud y sesión/logout,
-  actualizar esta instantánea. Ver docs/chat-refinement.md.
+- Sidebar de altura completa y acciones directas en Recientes. Chat sin proveedor
+  en el encabezado, sin Nuevo chat ni Guardado; exportación/configuración con iconos.
+  Markdown seguro y fondo transparente; medida compartida de 760px. Paleta intacta.
+  Finish reviewer: ship, incluida evidencia adicional del formulario general.
+- Nuevo chat se crea desde el proyecto. Abrir chat reutiliza el existente y espera
+  la carga del historial; se corrigió una carrera detectada durante la prueba.
+- Proveedores se configuran en Ajustes generales por petición del usuario. La clave
+  general usa AES-GCM/AAD; claves antiguas de proyecto se conservan sin moverlas.
+  Contextos y conversaciones continúan aislados. Solo el runner OIDC autorizado
+  recibe la clave; no se entrega a agentes ni se revela al frontend.
+- Sesión sin expiración temporal en el backend y con registro revocable en D1.
+  Logout revoca el token. Cookie de 400 días renovada al abrir, sometida a políticas
+  del navegador; sesión antigua válida se actualiza. Un error de red no simula logout.
+  Borrar cookies o rotar el secreto puede exigir autenticación.
+- Selector integra modelo, esfuerzo y uso. Los niveles proceden del catálogo;
+  cuotas no expuestas permanecen unavailable. Contexto máximo no equivale a saldo.
+  Respaldo gratuito explícito, una vez ante HTTP 404/503/429; no tras timeout incierto,
+  credencial rechazada o coste inesperado. Este último bloquea la conexión general.
+- Adjuntos TXT/MD/HTML/PDF/DOCX/XLSX/PPTX con extracción y preview de texto. Límite:
+  cuatro archivos de 5MB, 12000 caracteres por extracto y 24000 totales; PDF hasta
+  30 páginas, sin OCR. D1 conserva extractos y nombres, no binarios originales.
+  Dictado del navegador con consentimiento; micrófono físico todavía no probado.
+- Versión inicial 1.0.0. El build calcula major/minor/patch según commits posteriores
+  a version.json, sin crear commits ni tags automáticamente. Ver scripts/version.ts.
+- Chat consulta directamente su detalle; polling de dos segundos activo y diez
+  inactivo, suspendido cuando está oculto. La cuota no bloquea la carga inicial.
+  Catálogo en cache un minuto y revalidación en el runner. GitHub Actions aún añade
+  latencia de arranque; no hay streaming. Migración 0006 aplicada en cloud.
+- 38 tests y 211 comprobaciones, lint/typecheck/build correctos. QA 1440/390 sin
+  overflow, errores JS ni CSP. Se probaron siete formatos, arrastrar archivos,
+  acciones en Recientes, reutilización de chat y dictado con callback simulado.
+- Incidente local: workerd huérfano en 8851 servía assets404 tras rebuild y fallo
+  EPERM del watcher. Se verificó y detuvo solo el proceso propio; servidor nuevo200.
+  Primer deploy falló por conexión a GitHub antes de mutar recursos; reintento limpio.
+- Turno real: tarea f91dbf75-5b20-4d5c-95c1-8a863c0f45e8, run 38663139233 y chat
+  2fa9ca7a-44ca-4ebb-93bf-a2b8c93d0e22 del proyecto 077e6b47-e19b-4ff5-afda-77c3f366f9d7.
+  UTC 2026-10-15: cliente cerrado 00:59:31.212, runner conectado 00:59:38.853,
+  resultado 00:59:40.726 y reabierto 00:59:53.299. SUCCEEDED / CUBO_OK; tokens
+  138/31 y USD 0 exact. D1 confirma task/run/resultado y una respuesta. Recuperación
+  en 1440/390; acceso con otro project_id rechazado con 404.
+- Adjunto real: tarea 92e3b545-6b3e-4867-a05e-bac0c5e5c3e9, run 38663634664.
+  Cliente cerrado 01:04:41.099 UTC, runner conectado 01:04:48.628 y reabierto
+  01:05:02.159. SUCCEEDED / CUBO_FILE_OK, tokens 179/69, USD 0 exact. Nombre,
+  extracto y respuesta recuperados en escritorio y móvil. Usó la conexión anterior
+  del mismo proyecto; no prueba una conexión general todavía sin configurar.
+- Sesión cloud sin exp y con jti; cierre/reapertura autenticado. Logout revoca y
+  reutilizar su token devuelve401. PWA/CSP/SW/offline y resultado91 conservados.
+- El usuario guardó la clave anterior a las 18:12:32.111 UTC. Su turno anterior
+  82ecf4fc-2d71-4fe0-8262-7ce347f7b27a tuvo éxito con NVIDIA vía OpenRouter;
+  otro falló PROVIDER_REQUEST_FAILED. No se inspeccionaron sus mensajes privados.
+- El usuario confirmó guardado general, pero provider_keys sigue vacío y solo
+  existe la conexión anterior. No hay turnos activos. La API de guardado general
+  pasó prueba con fixture; falta el mensaje visible y versión del navegador para
+  identificar la causa. No atribuirla sin evidencia ni pedir claves por chat.
+- Ver docs/chat-refinement.md y docs/chat-refinement-validation.md. No se leyó ni
+  copió ninguna clave del usuario; no se activaron servicios pagos. Próximo paso:
+  resolver la configuración general y verificar uso desde otro proyecto.
 
 ## Límites y próximos hitos
 

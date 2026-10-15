@@ -242,8 +242,8 @@ Iteración actual por petición posterior: diagnóstico reúne estado técnico; 
 en Proyectos, tarjetas con acciones reales y Recientes solo chats agrupados. Chat
 se abre desde proyecto/recientes, sin pestaña ni historial duplicado. Paleta intacta.
 Ver [docs/workspace-project-flow.md](docs/workspace-project-flow.md).
-OpenRouter de texto gratuito publicado en desarrollo; aceptación real pendiente de
-clave introducida por el usuario en la PWA. No confundirlo con Codex/OpenCode o
+OpenRouter de texto gratuito publicado y comprobado con cliente cerrado en cloud.
+La conexión general en Ajustes espera guardado del usuario. No confundirlo con Codex/OpenCode o
 herramientas. Contexto congelado por turno y clave cifrada por proyecto; sin fallback
 pago ni reinvocación automática tras entrega incierta. Cancelación revoca callbacks
 y solo marca CANCELLED tras confirmar ausencia de despacho o fin remoto.

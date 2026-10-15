@@ -113,6 +113,38 @@ test("conexión general cifrada se comparte sin compartir contexto ni revelar la
     sqlite.close();
   }
 });
+test("guardar clave general valida, cifra y conserva la conexión sin exponerla", async () => {
+  const { db, sqlite } = database(),
+    env = environment(db),
+    key = `sk-or-v1-${"f".repeat(32)}`;
+  const mock = spyOn(globalThis, "fetch").mockImplementation(
+    Object.assign(async () => Response.json({ data: { limit_remaining: null } }), {
+      preconnect: () => {},
+    }),
+  );
+  try {
+    const saved = await app.request(
+      "http://127.0.0.1/api/providers/openrouter",
+      {
+        method: "PUT",
+        headers: { Origin: "http://127.0.0.1", "Content-Type": "application/json" },
+        body: JSON.stringify({ key }),
+      },
+      env,
+    );
+    expect(saved.status).toBe(200);
+    expect(await saved.json()).toEqual({ configured: true });
+    const row = await db
+      .prepare("SELECT id,ciphertext FROM provider_keys WHERE provider='openrouter'")
+      .first<{ id: string; ciphertext: string }>();
+    expect(row).not.toBeNull();
+    expect(row?.ciphertext).not.toContain(key);
+    expect(await providerKey(env, "", row?.id ?? "")).toBe(key);
+  } finally {
+    mock.mockRestore();
+    sqlite.close();
+  }
+});
 test("adjuntos quedan en mensaje/contexto y nunca en otro proyecto", async () => {
   const { db, sqlite } = database();
   try {

@@ -14,11 +14,12 @@ ChatGPT y Claude son referencias de interacción del chat, no nuevas paletas.
 
 ## Iteración actual: refinamiento de chat y ajustes generales
 
-Implementación local y pruebas terminadas para la solicitud posterior del usuario:
+Publicación 1.0.0 y pruebas terminadas para la solicitud posterior del usuario:
 sesión persistente, acciones directas en Recientes, chat Markdown minimalista,
 selector integrado, proveedor general, respaldo gratuito, dictado y extractos de
-adjuntos. Ver [contrato de esta iteración](docs/chat-refinement.md). Falta cierre
-de revisión, publicación y comprobación cloud. No guardar ni mover claves sin una
+adjuntos. Ver [contrato de esta iteración](docs/chat-refinement.md). Revisión visual
+ship y cloud comprobados, incluida inferencia con cliente cerrado. No guardar ni
+mover claves sin una
 acción del usuario; conservar compatibilidad con conexiones antiguas de proyecto.
 
 ## Iteración anterior: proyectos, diagnóstico y OpenRouter gratuito

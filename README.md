@@ -11,6 +11,8 @@ selector de modelo/esfuerzo/uso, sesión persistente revocable, proveedor genera
 Ajustes, dictado según navegador y adjuntos con previsualización de texto. Alcance,
 límites y versionado 1.0.0 en [Chat refinado](docs/chat-refinement.md). Estado real
 de publicación e inferencia en MEMORY.md.
+Texto y adjunto reales recuperados tras cerrar el navegador; ver
+[validación de 1.0.0](docs/chat-refinement-validation.md).
 
 Implementados localmente: consola React/Vite/Tailwind, API Hono, contratos, persistencia,
 motor durable, GitHubActionsExecutionBackend, runner demostrativo, checkpoints,

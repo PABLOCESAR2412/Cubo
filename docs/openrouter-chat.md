@@ -8,8 +8,9 @@ el contrato actual es [Chat refinado](chat-refinement.md).
 ## Alcance de esta vertical
 
 Implementación publicada en cubo-dev con pruebas: proveedor de texto OpenRouter, modelos gratuitos,
-turnos remotos, mensajes de asistente y uso persistidos. La aceptación con una clave
-real está pendiente. No es ejecución de Codex/OpenCode: no hay herramientas, edición
+turnos remotos, mensajes de asistente y uso persistidos. Texto y adjunto se comprobaron
+con una clave real y cliente cerrado; ver [aceptación actual](chat-refinement-validation.md).
+No es ejecución de Codex/OpenCode: no hay herramientas, edición
 de archivos ni operaciones Git disponibles para el modelo.
 
 El usuario eligió OpenRouter como primera integración. OpenCode Zen, Groq, NVIDIA,
@@ -100,6 +101,9 @@ lectores que etiqueten respuestas como mensajes del usuario ni ignoren project_i
 La migración no borra resultados, chats o checkpoints anteriores.
 
 ## Aceptación pendiente
+
+La aceptación inicial siguiente es histórica. Las pruebas posteriores de texto,
+adjunto y sesión están en [Cubo 1.0.0](chat-refinement-validation.md).
 
 Publicación, cancelación real y límites de la prueba están registrados en
 [validación cloud](openrouter-cloud-validation.md).

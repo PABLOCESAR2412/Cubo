@@ -98,7 +98,7 @@ almacenadas en D1 local aislada. No son inferencia real ni datos añadidos en cl
 El catálogo público sí se consultó realmente; su disponibilidad cambia y no se fija
 un número de modelos como requisito. La conexión se revisó sin clave configurada.
 
-El cierre de validación comunicado para esta iteración informa 36 tests con 203
+El cierre de validación comunicado para esta iteración informa 38 tests con 211
 assertions y lint, typecheck y build correctos. La QA de navegador informa extracción
 de los siete formatos, revisión 1440/390 y ausencia de errores JavaScript,
 violaciones CSP y overflow. Artefactos finales: `index-voL4CcLu.js` y
@@ -112,14 +112,14 @@ sintetizadas y no tokens nuevos de aplicación.
 
 ## Límites de aceptación
 
-La publicación de este refinamiento sigue pendiente. El despliegue anterior en
-cubo-dev corresponde a `b5f1250`, Worker
-`e979833a-e768-4491-9f7e-5ce992155a1b`; ver [aceptación cloud anterior](openrouter-cloud-validation.md).
-Esa aceptación no valida la sesión revocable, conexión general ni composición nueva.
+Refinamiento publicado como Cubo1.0.0, código1d8250a, Worker
+a4843c5e-deae-48bc-b4b1-43008873bbe4. Revisión final ship, también para el formulario
+general y preferencias capturados después de desplazar el workspace. El bundle
+publicado es index-DnNaAuMr.js; conserva el CSS de la revisión visual.
 
-Sigue pendiente inferencia real con clave introducida por el usuario en la PWA,
-incluida recuperación tras cerrar el cliente. Las fixtures no demuestran consumo
-real, respaldo remoto ni cuotas autenticadas. El dictado requiere aceptación con
-micrófono físico y navegador compatible; la instalación física PWA sigue pendiente.
-La continuidad durable previa conserva evidencia independiente en
-[validación cloud](cloud-validation.md).
+Cloud comprobado: UI1440/390, sesión revocable, cierre/reapertura autenticado,
+PWA/CSP/SW/offline y turno real OpenRouter con cliente cerrado. Ver
+[aceptación de1.0.0](chat-refinement-validation.md). Las fixtures locales de formato
+siguen identificadas como tales. El dictado requiere aceptación con micrófono físico;
+instalación física PWA y respaldo remoto forzado siguen pendientes. No se atribuye
+apagado físico de dispositivos a un cierre de navegador.
