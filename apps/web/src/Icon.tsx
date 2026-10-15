@@ -16,6 +16,7 @@ export type IconName =
   | "check"
   | "clock"
   | "link"
+  | "external"
   | "download"
   | "mic"
   | "pin"
@@ -26,6 +27,7 @@ export type IconName =
   | "copy"
   | "chevron";
 const paths: Record<IconName, string> = {
+  external: "M14 3h7v7M21 3l-11 11M10 3H3v18h18v-7",
   mic: "M9 5a3 3 0 0 1 6 0v7a3 3 0 0 1-6 0zM5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8",
   pin: "m9 3 9 9-3 1-3 5-6-6 5-3zM8 16l-5 5",
   edit: "m4 16 11-11 4 4L8 20H4zM14 6l4 4",

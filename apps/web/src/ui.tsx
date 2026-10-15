@@ -231,33 +231,36 @@ export function ProviderCard({ name, kind }: { name: string; kind: "AGENTE" | "P
         </div>
         <StatusBadge>Integración pendiente</StatusBadge>
       </div>
-      <div className="provider-fields">
-        <label>
-          Estado
-          <input disabled value="Sin configurar" readOnly />
-        </label>
-        <label>
-          Modelos disponibles
-          <input disabled value="No disponibles" readOnly />
-        </label>
-        <label>
-          Configuración
-          <input
-            disabled
-            placeholder={kind === "AGENTE" ? "Adaptador pendiente" : "Conexión pendiente"}
-          />
-        </label>
-        <label>
-          Uso
-          <input disabled value="Sin datos todavía" readOnly />
-        </label>
-      </div>
-      <div className="provider-footer">
-        <span>Uso, tokens y coste · unavailable</span>
-        <button className="secondary compact" type="button" disabled>
-          Guardar configuración
-        </button>
-      </div>
+      <details className="provider-details provider-pending-details">
+        <summary>Ver estado y capacidades</summary>
+        <div className="provider-fields">
+          <label>
+            Estado
+            <input disabled value="Sin configurar" readOnly />
+          </label>
+          <label>
+            Modelos disponibles
+            <input disabled value="No disponibles" readOnly />
+          </label>
+          <label>
+            Configuración
+            <input
+              disabled
+              placeholder={kind === "AGENTE" ? "Adaptador pendiente" : "Conexión pendiente"}
+            />
+          </label>
+          <label>
+            Uso
+            <input disabled value="Sin datos todavía" readOnly />
+          </label>
+        </div>
+        <div className="provider-footer">
+          <span>Uso, tokens y coste · unavailable</span>
+          <button className="secondary compact" type="button" disabled>
+            Guardar configuración
+          </button>
+        </div>
+      </details>
     </section>
   );
 }

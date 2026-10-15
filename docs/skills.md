@@ -9,15 +9,16 @@ los equipos. Skills CLI mantiene sus propios registros de instalación.
 
 | Skill | Fuente | Alcance |
 | --- | --- | --- |
-| `impeccable` | Instalación existente en `~/.agents/skills/impeccable/` | Global, reutilizada |
+| `impeccable` | https://github.com/pbakaus/impeccable | Global, CLI oficial |
 | `caveman` y familia existente | https://github.com/JuliusBrussee/caveman | Global, reutilizada |
 | `playwright-cli` | https://github.com/microsoft/playwright-cli | Global |
 | `cloudflare`, `wrangler` | https://github.com/cloudflare/skills | Global |
 | `ponytail` | https://github.com/DietrichGebert/ponytail | Global |
 | `graphify` | https://github.com/Graphify-Labs/graphify | Local |
 
-El origen de Impeccable no estaba registrado en Skills CLI. Se reutiliza la copia
-global disponible sin sustituirla ni instalar una segunda distribución.
+Impeccable se actualizó con la CLI oficial; se verificó su repositorio en los
+metadatos del paquete npm. Codex usa `~/.agents/skills/impeccable/` y OpenCode
+su biblioteca global `~/.config/opencode/skills/impeccable/`.
 Se conservan las demás skills previamente instaladas. Disponibilidad no implica
 activación de todas ellas ni inclusión automática en los contenedores de Cubo.
 
@@ -50,6 +51,35 @@ requiera. Revisar origen y duplicados antes de instalar skills sin URL indicada.
 Las skills nuevas estarán disponibles para descubrimiento en el siguiente turno
 o sesión del agente. No se instalaron aquí los binarios de Playwright o Wrangler;
 sus herramientas y dependencias se configurarán con la aplicación.
+
+## Actualización solicitada el 2026-10-14
+
+Se ejecutaron exactamente los dos comandos suministrados:
+
+```bash
+npx skills use "https://github.com/microsoft/playwright-cli" --skill "playwright-cli"
+npx impeccable install
+```
+
+El primero cargó instrucciones temporales; su salida completa se leyó desde un
+archivo temporal y sus referencias se resolvieron desde el directorio de soporte
+indicado. Playwright también se actualizó globalmente mediante el comando `add`
+anterior. La herramienta local existente permite `npx --no-install playwright cli`;
+no se añadió un ejecutable global innecesario.
+
+El segundo eligió alcance local por defecto. Se corrigió explícitamente:
+
+```bash
+npx impeccable install --providers=codex,opencode --global --no-hooks --yes
+```
+
+Las copias y hooks locales recién generados se apartaron en una carpeta temporal
+fuera del repositorio, tras verificar los destinos. La limpieza por borrado fue
+bloqueada por la revisión automática; se utilizó un traslado reversible. Graphify,
+los workflows y los hooks globales anteriores se conservaron. La skill global de
+Impeccable declara 4.5.2; el motor instalado declara 0.1.14. La CLI informó una
+versión anterior en su resumen de actualización; el archivo instalado es la fuente
+de la versión aquí registrada. Las skills se descubren de nuevo en el próximo turno.
 
 ## Graphify aislado
 

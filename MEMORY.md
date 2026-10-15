@@ -145,6 +145,15 @@ el control plane. Esa integración Git de escritura sigue pendiente.
 
 ## Límites y próximos hitos
 
+- Refinamiento acotado de proveedores: clave/Guardar clave/Obtener clave con icono
+  externo juntos; uso y respaldo desplegables; integraciones pendientes compactas.
+  Playwright CLI revisó cinco vistas en 1440/390, teclado y error de guardado con
+  fixture sin secretos. 38 tests/211 comprobaciones, lint/typecheck/build correctos.
+  Ver docs/provider-settings-refinement.md. No cambia el backend ni configura claves.
+- Skills oficiales actualizadas globalmente: Impeccable 4.5.2 y playwright-cli;
+  comandos exactos del usuario ejecutados. Copias locales accidentales apartadas
+  reversiblemente fuera del repo; Graphify permanece local. Ver docs/skills.md.
+
 - Codex/OpenCode, planner, herramientas remotas, skills/MCPs/APIs de agentes,
   diff/aprobaciones Git, memoria aprendida, otros proveedores y notificaciones pendientes.
   Router general de agentes/proveedores/skills/permisos sigue design-only.

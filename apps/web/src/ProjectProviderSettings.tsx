@@ -1,5 +1,6 @@
 import type { ProjectProviderStatus } from "@cubo/shared";
 import { useCallback, useEffect, useState } from "react";
+import { Icon } from "./Icon";
 import { SectionCard, StatusBadge } from "./ui";
 import { requestApi } from "./workspace";
 
@@ -63,14 +64,7 @@ export function ProviderSettings() {
           </StatusBadge>
         }
       >
-        <div className="panel-heading">
-          <h3>OpenRouter</h3>
-          <span className="tag">Solo modelos gratuitos</span>
-        </div>
-        <p className="hint">
-          Conexión general cifrada. Cada turno utiliza solo los mensajes y el contexto autorizado se
-          envían a OpenRouter al ejecutar un turno; agentes y herramientas siguen pendientes.
-        </p>
+        <p className="hint provider-summary">Solo modelos gratuitos · Conexión general cifrada</p>
         {error && (
           <p className="inline-notice error" role="alert">
             {error}
@@ -88,7 +82,7 @@ export function ProviderSettings() {
           </p>
         )}
         <form
-          className="form-stack"
+          className="provider-key-form"
           onSubmit={(e) => {
             e.preventDefault();
             void save();
@@ -107,20 +101,26 @@ export function ProviderSettings() {
           </label>
           <div className="toolbar-actions">
             <button
-              className="secondary compact"
+              className="primary compact"
               type="submit"
               disabled={busy || !key.trim() || !data?.encryptionConfigured}
             >
               {busy ? "Validando…" : "Guardar clave"}
             </button>
             <a
-              className="back-link"
+              className="secondary compact provider-key-link"
               href="https://openrouter.ai/settings/keys"
               target="_blank"
               rel="noreferrer"
             >
-              Obtener clave en OpenRouter
+              Obtener clave <Icon name="external" size={14} />
             </a>
+          </div>
+        </form>
+        {!data?.encryptionConfigured && <p className="hint">Cifrado pendiente de configurar.</p>}
+        <details className="provider-details">
+          <summary>Uso y límites</summary>
+          <div className="provider-details-body">
             <button
               className="secondary compact"
               type="button"
@@ -131,92 +131,103 @@ export function ProviderSettings() {
             >
               Actualizar uso
             </button>
+            <dl className="provider-usage">
+              <div>
+                <dt>Modelos gratuitos verificados</dt>
+                <dd>{data?.catalogAvailable ? data.models.length : "No disponible"}</dd>
+              </div>
+              <div>
+                <dt>Solicitudes gratuitas restantes hoy</dt>
+                <dd>
+                  {data?.quota?.requestsRemaining ?? "No disponible"}
+                  {data?.quota?.requestsRemaining !== null &&
+                  data?.quota?.requestsRemaining !== undefined
+                    ? ` · ${quality}`
+                    : " · unavailable"}
+                </dd>
+              </div>
+              <div>
+                <dt>Límite monetario restante de la clave</dt>
+                <dd>
+                  {data?.quota?.creditsRemaining !== null &&
+                  data?.quota?.creditsRemaining !== undefined
+                    ? `USD ${data.quota.creditsRemaining} · ${quality}`
+                    : "No disponible · unavailable"}
+                </dd>
+              </div>
+            </dl>
+            {data?.quota && (
+              <p className="hint">
+                Consultado: {new Date(data.quota.checkedAt).toLocaleString()}. Los valores pueden
+                cambiar fuera de Cubo; no equivalen al saldo total de la cuenta.
+              </p>
+            )}
+            <p className="hint">
+              Cada turno envía a OpenRouter solo los mensajes y el contexto autorizado. Agentes y
+              herramientas siguen pendientes.
+            </p>
           </div>
-        </form>
-        {!data?.encryptionConfigured && <p className="hint">Cifrado pendiente de configurar.</p>}
-        <dl className="provider-usage">
-          <div>
-            <dt>Modelos gratuitos verificados</dt>
-            <dd>{data?.catalogAvailable ? data.models.length : "No disponible"}</dd>
-          </div>
-          <div>
-            <dt>Solicitudes gratuitas restantes hoy</dt>
-            <dd>
-              {data?.quota?.requestsRemaining ?? "No disponible"}
-              {data?.quota?.requestsRemaining !== null &&
-              data?.quota?.requestsRemaining !== undefined
-                ? ` · ${quality}`
-                : " · unavailable"}
-            </dd>
-          </div>
-          <div>
-            <dt>Límite monetario restante de la clave</dt>
-            <dd>
-              {data?.quota?.creditsRemaining !== null && data?.quota?.creditsRemaining !== undefined
-                ? `USD ${data.quota.creditsRemaining} · ${quality}`
-                : "No disponible · unavailable"}
-            </dd>
-          </div>
-        </dl>
-        {data?.quota && (
-          <p className="hint">
-            Consultado: {new Date(data.quota.checkedAt).toLocaleString()}. Los valores pueden
-            cambiar fuera de Cubo; no equivalen al saldo total de la cuenta.
-          </p>
-        )}
-        <form
-          className="form-stack provider-preferences"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setBusy(true);
-            setError("");
-            try {
-              await requestApi("providers/openrouter/preferences", {
-                method: "PUT",
-                body: JSON.stringify({ fallbackModel, noticeSeconds }),
-              });
-              setNotice("Preferencias guardadas.");
-              window.dispatchEvent(new Event("cubo-provider-changed"));
-            } catch (error) {
-              setError(error instanceof Error ? error.message : "No se pudo guardar.");
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          <label>
-            Modelo de respaldo
-            <select
-              value={fallbackModel}
-              onChange={(e) => setFallbackModel(e.target.value)}
+        </details>
+        <details className="provider-details">
+          <summary>Respaldo y tiempos de respuesta</summary>
+          <form
+            className="form-stack provider-preferences"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setBusy(true);
+              setError("");
+              try {
+                await requestApi("providers/openrouter/preferences", {
+                  method: "PUT",
+                  body: JSON.stringify({ fallbackModel, noticeSeconds }),
+                });
+                setNotice("Preferencias guardadas.");
+                window.dispatchEvent(new Event("cubo-provider-changed"));
+              } catch (error) {
+                setError(error instanceof Error ? error.message : "No se pudo guardar.");
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <label>
+              Modelo de respaldo
+              <select
+                value={fallbackModel}
+                onChange={(e) => setFallbackModel(e.target.value)}
+                disabled={busy}
+              >
+                <option value="">Sin respaldo automático</option>
+                {data?.models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} · gratuito
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Avisar después de (segundos)
+              <input
+                type="number"
+                min={10}
+                max={180}
+                value={noticeSeconds}
+                onChange={(e) => setNoticeSeconds(Number(e.target.value))}
+              />
+            </label>
+            <p className="hint">
+              El respaldo se intenta una vez ante rechazo explícito por cuota o modelo no
+              disponible. Nunca tras una respuesta incierta o con un modelo de pago.
+            </p>
+            <button
+              className="secondary compact provider-preferences-save"
               disabled={busy}
+              type="submit"
             >
-              <option value="">Sin respaldo automático</option>
-              {data?.models.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name} · gratuito
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Avisar después de (segundos)
-            <input
-              type="number"
-              min={10}
-              max={180}
-              value={noticeSeconds}
-              onChange={(e) => setNoticeSeconds(Number(e.target.value))}
-            />
-          </label>
-          <p className="hint">
-            El respaldo se intenta una vez ante rechazo explícito por cuota o modelo no disponible.
-            Nunca tras una respuesta incierta o con un modelo de pago.
-          </p>
-          <button className="secondary compact" disabled={busy} type="submit">
-            Guardar preferencias
-          </button>
-        </form>
+              Guardar preferencias
+            </button>
+          </form>
+        </details>
       </SectionCard>
     </div>
   );
