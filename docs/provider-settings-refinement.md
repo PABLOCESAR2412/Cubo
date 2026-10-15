@@ -48,6 +48,10 @@ privado y guardia gratuita. No había migraciones nuevas. QA autenticada cloud e
 1440/390 confirmó la versión, formulario y desplegables nuevos, sin overflow ni
 errores JavaScript, y el resultado durable anterior 91 conservado. No se modificaron
 secretos ni se iniciaron nuevos turnos de inferencia. Reviewer: `ship`.
+La consulta autenticada posterior confirmó conexión general OpenRouter configurada
+y cifrado disponible. Se esperó ese estado antes de las capturas cloud definitivas;
+no se leyó ni copió el valor de la clave. La inferencia general desde otro proyecto
+permanece como aceptación funcional posterior.
 
 ## Continuidad del sistema visual
 

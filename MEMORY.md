@@ -154,6 +154,9 @@ el control plane. Esa integración Git de escritura sigue pendiente.
   2e844cf5-ee0f-4929-aa87-5c8235ce38ba. Revisión visual ship; QA cloud 1440/390
   sin overflow ni errores JS, versión y formulario nuevos recuperados y resultado91
   conservado. Sin nuevas migraciones, secretos modificados ni turnos de inferencia.
+  La comprobación posterior confirma OpenRouter general configured=true y
+  encryptionConfigured=true: el usuario completó el guardado antes pendiente.
+  Falta comprobar un turno desde otro proyecto con esa conexión general.
 - Skills oficiales actualizadas globalmente: Impeccable 4.5.2 y playwright-cli;
   comandos exactos del usuario ejecutados. Copias locales accidentales apartadas
   reversiblemente fuera del repo; Graphify permanece local. Ver docs/skills.md.
