@@ -38,3 +38,20 @@ y un servidor nuevo para evitar los assets anteriores del proceso de desarrollo.
 `bun test`: 38 tests y 211 comprobaciones. Lint, typecheck y build correctos.
 La validación de esta iteración es visual y de regresión; no repite ejecuciones de
 Actions ni demuestra de nuevo la aceptación cloud del motor durable.
+
+## Continuidad del sistema visual
+
+La comparación de `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, los
+componentes modificados y las cuatro capturas finales de Ajustes y sus detalles
+abiertos confirma una extensión del sistema existente. Se conservan las seis
+variables de color, Geist local, controles de radio 6px, paneles planos con borde
+neutral, foco lima y el breakpoint móvil de 767px. Los desplegables reorganizan
+información; el enlace externo reutiliza el botón secundario y el sistema SVG.
+No se añaden tokens ni se regeneran `DESIGN.md` o su sidecar.
+
+Hay descripciones históricas pendientes de actualización fuera de este alcance:
+`PRODUCT.md` todavía presenta la inferencia como pendiente de clave, y la sección
+Proveedor general de `DESIGN.md` conserva el estado anterior de publicación y
+describe el formulario previo. Las limitaciones actuales se consultan en
+`docs/openrouter-chat.md`; la composición de esta iteración se describe arriba.
+Esa deriva documental no se convierte en una regla visual ni se corrige aquí.
