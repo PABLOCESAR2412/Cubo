@@ -39,6 +39,16 @@ y un servidor nuevo para evitar los assets anteriores del proceso de desarrollo.
 La validación de esta iteración es visual y de regresión; no repite ejecuciones de
 Actions ni demuestra de nuevo la aceptación cloud del motor durable.
 
+## Publicación
+
+Código `70b078d`, revisión documentada `058b378`, Cubo 1.0.1. Desplegado en el Worker
+de desarrollo personal `cubo-dev`, versión `2e844cf5-ee0f-4929-aa87-5c8235ce38ba`.
+La ruta autorizada de despliegue verificó identidad y cuenta personal, repositorio
+privado y guardia gratuita. No había migraciones nuevas. QA autenticada cloud en
+1440/390 confirmó la versión, formulario y desplegables nuevos, sin overflow ni
+errores JavaScript, y el resultado durable anterior 91 conservado. No se modificaron
+secretos ni se iniciaron nuevos turnos de inferencia. Reviewer: `ship`.
+
 ## Continuidad del sistema visual
 
 La comparación de `PRODUCT.md`, `DESIGN.md`, `.impeccable/design.json`, los

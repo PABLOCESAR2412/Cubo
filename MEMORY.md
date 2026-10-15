@@ -150,6 +150,10 @@ el control plane. Esa integración Git de escritura sigue pendiente.
   Playwright CLI revisó cinco vistas en 1440/390, teclado y error de guardado con
   fixture sin secretos. 38 tests/211 comprobaciones, lint/typecheck/build correctos.
   Ver docs/provider-settings-refinement.md. No cambia el backend ni configura claves.
+  Publicado como Cubo 1.0.1: código 70b078d, documentación 058b378, Worker
+  2e844cf5-ee0f-4929-aa87-5c8235ce38ba. Revisión visual ship; QA cloud 1440/390
+  sin overflow ni errores JS, versión y formulario nuevos recuperados y resultado91
+  conservado. Sin nuevas migraciones, secretos modificados ni turnos de inferencia.
 - Skills oficiales actualizadas globalmente: Impeccable 4.5.2 y playwright-cli;
   comandos exactos del usuario ejecutados. Copias locales accidentales apartadas
   reversiblemente fuera del repo; Graphify permanece local. Ver docs/skills.md.
