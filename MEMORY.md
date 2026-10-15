@@ -1,7 +1,7 @@
 # Memoria del desarrollo de Cubo
 
-Actualizado: 2026-10-14. Nueva UI centrada en proyectos y OpenRouter de texto
-publicados en desarrollo; aceptación real de inferencia pendiente de guardar la clave.
+Actualizado: 2026-10-14. Refinamiento minimalista de Chat implementado y validado
+localmente; publicación nueva pendiente. Inferencia real aún sin aceptación.
 
 ## Autoridad
 
@@ -80,48 +80,49 @@ el control plane. Esa integración Git de escritura sigue pendiente.
 - Código actual publicado: b5f1250. Worker e979833a-e768-4491-9f7e-5ce992155a1b.
   Migración 0005 aplicada en D1 personal sin borrar resultados anteriores.
 
-## Iteración actual publicada, inferencia por aceptar
+## Refinamiento actual, publicación pendiente
 
-- Por petición posterior: Diagnóstico sustituye breadcrumb, hora y ajustes del topbar;
-  reúne sincronización/disponibilidad de API, Actions y presupuesto. No confunde
-  sincronización local con cloud. Sidebar Nuevo proyecto, Recientes solo chats
-  agrupados, sin horas. Chat no figura en navegación; abre desde proyecto o recientes.
-- Proyectos inicia en listado de tarjetas con abrir/editar/renombrar reales.
-  Fuente de instrucciones/memoria desde AGENTS.md/CLAUDE.md y MEMORY.md de la raíz;
-  campos adicionales manuales no se sobrescriben. No hay aprendizaje automático.
-- Documentos de contexto hasta 64 KiB se escanean y pueden guardarse como extractos
-  de 4000 caracteres señalados. Clone público local de openai/openai-agents-python,
-  SHA 2938d87a2837537138dc7839003317a27ed3441f, recuperó AGENTS.md con esa marca.
-  La primera sonda openai/codex no tenía AGENTS.md raíz; no era fallo del importador.
-- Usuario eligió OpenRouter, solo modelos gratuitos. Adaptador de API de texto,
-  clave AES-GCM por proyecto, catálogo verificado, sin plugins ni fallback pago.
-  No equivale a Codex/OpenCode. GET /key muestra solo cuotas recibidas, fecha/calidad;
-  nunca convertir saldo en llamadas. UI marca datos stale tras cinco minutos.
-- CHAT_TURN crea usuario/tarea/contexto congelado atómicamente, usa el backend
-  efímero existente y guarda respuesta/uso. Contexto solo del proyecto y chat actual.
-  Entrega de solicitud/clave una vez; no reinvocar automáticamente tras incertidumbre.
-- Cancelación añade ledger de intención y solicitud durable. Revoca callbacks;
-  confirma CANCELLED solo sin despacho posible o tras estado remoto terminal.
-  Workflow/cron reconcilian; un fallo remoto conserva cancelación sin confirmar.
-- Migración 0005 aditiva aplicada en cloud. Conserva mensajes viejos como
-  user. Legacy writers inicializan intención conservadora; nuevos writers la ponen 0.
-  Runner compatible detecta protocolo 2; publicar runner primero y Worker después.
-  No hacer rollback a lectores que confundan roles o ignoren project_id.
-- 29 tests/168 comprobaciones, lint/typecheck/build pasan. QA local 1440/390:
-  tarjetas, edición, chat real guardado/fijado, cierre y recuperación, diagnóstico,
-  metadata real del catálogo; sin overflow ni errores JS. Inferencia aún no probada.
-- Finish reviewer: ship tras corregir etiqueta de disponibilidad; documenter completado.
-  Publicación cloud pasó PWA/CSP/SW/offline, UI 1440/390 y recuperación del resultado 91.
-- Cancelación real: tarea 6c2e8129-1482-4d6a-80f2-7da1699109ba, run 38612464241.
-  Solicitada 18:07:40.057 UTC, mantuvo RUNNING/CANCELLATION_REQUESTED; confirmada
-  18:08:27.852 UTC con run completed/cancelled. Sin resultado ni callbacks tardíos.
-- El usuario informó clave guardada, pero D1 y API aún no encuentran conexión.
-  Proyecto de su navegador: 077e6b47-e19b-4ff5-afda-77c3f366f9d7. API 200,
-  cifrado disponible, catálogo real 15 modelos, configured=false. Chrome aislado
-  sin errores; globals-front.js/content.js no son assets de Cubo. Falta mensaje
-  concreto al guardar, sin compartir la clave. No se lanzó inferencia real.
-- Ver docs/workspace-project-flow.md y docs/openrouter-chat.md. Próxima aceptación:
-  clave manual desde PWA y turno OpenRouter real con cliente cerrado.
+- Petición posterior: sidebar ocupa altura completa; Recientes con acciones directas
+  de renombrar/fijar/eliminar. Header Chat solo título, iconos de exportar/configurar,
+  sin Nuevo chat ni Guardado. Markdown seguro con fondo transparente; medida760px
+  compartida con compositor y estado. Paleta conservada. Finish reviewer: ship.
+- Nuevo chat se crea en el proyecto; Abrir chat reutiliza el existente y espera la
+  carga del historial. Se corrigió una carrera detectada en QA que creaba otro chat.
+- Proveedor general en Ajustes, por instrucción nueva. Clave global AES-GCM/AAD;
+  se preservan claves antiguas de proyecto sin moverlas automáticamente. Contextos
+  de proyecto/chat siguen aislados y solo el runner OIDC autorizado recibe la clave.
+- Sesión backend sin expiración temporal, registro revocable en D1. Logout revoca.
+  Cookie400d renovada al abrir, por límite de navegador; legacy válido se actualiza.
+  Fallos de conexión no simulan logout. Borrar cookies/rotar secreto exige login.
+- Selector integra modelo/esfuerzo/uso. Esfuerzos solo anunciados por catálogo;
+  cuotas unavailable si no se exponen. No confundir contexto máximo con saldo.
+- Respaldo gratuito explícito y único ante HTTP404/503/429. Sin fallback tras
+  timeout incierto, respuesta inválida, credencial rechazada ni coste inesperado.
+  Coste inesperado bloquea globalmente si se usa conexión general.
+- Adjuntos TXT/MD/HTML/PDF/DOCX/XLSX/PPTX: extracción/preview de texto,4 archivos,
+  5MB por archivo,12000 caracteres por extracto/24000 total, PDF30 páginas sin OCR.
+  No binarios originales en D1; extractos persistidos con mensaje/turno y scope.
+  Dictado del navegador con consentimiento; micrófono físico no probado.
+- Inicio versión1.0.0; build calcula major/minor/patch desde commits posteriores
+  a version.json. Sin commits/tags automáticos. Ver scripts/version.ts.
+- Carga de chat directa sin listado previo, polling2s activo/10s inactivo, pausa
+  oculto; cuota fuera de carga inicial. Cache catálogo1min y revalidación runner.
+  Arranque GitHub Actions sigue añadiendo latencia; no prometer streaming.
+- Migración0006 aditiva local: owner_sessions, provider_keys, app_settings,
+  chat_messages.attachments. Falta aplicar remota y publicar en cuenta personal.
+- 37 tests/206 comprobaciones, lint/typecheck/build correctos. QA1440/390 sin
+  overflow/JS/CSP: Markdown con fixture identificada local,7 formatos extraídos,
+  dragdrop,gestión Recientes,reutilizar chat y dictado callback simulado.
+- Incidente dev: workerd huérfano retenía8851 y devolvía assets404 tras rebuild.
+  Proceso propio9444 verificado y detenido; nuevo servidor8852 sirve200.
+- Comprobación remota posterior: el usuario guardó la clave a18:12:32.111UTC en
+  proyecto077e6b47-e19b-4ff5-afda-77c3f366f9d7. Su turno82ecf4fc-2d71-4fe0-8262-7ce347f7b27a
+  SUCCEEDED con nvidia/nemotron-3-ultra-550b-a55b:free, tokens137/675 y USD0exact.
+  Otro turno4c8ca6c4-d0a7-45cd-8c90-162a4cc49002 falló PROVIDER_REQUEST_FAILED.
+  No se leyó la clave ni se atribuye cierre del cliente a esa ejecución del usuario.
+  Conservar conexiónlegacy; el usuario puede guardar su clave en Ajustes generales.
+- Próximo cierre: commit/push/deploy autorizado, validar cloud y sesión/logout,
+  actualizar esta instantánea. Ver docs/chat-refinement.md.
 
 ## Límites y próximos hitos
 

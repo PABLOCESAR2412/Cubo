@@ -53,11 +53,13 @@ export class OpenRouterProvider implements ChatProviderAdapter {
     });
     if (!response.ok)
       throw new ProviderRequestError(
-        response.status === 429
-          ? "PROVIDER_QUOTA_EXHAUSTED"
-          : response.status === 401
-            ? "PROVIDER_CREDENTIAL_REJECTED"
-            : "PROVIDER_REQUEST_FAILED",
+        [404, 503].includes(response.status)
+          ? "PROVIDER_MODEL_UNAVAILABLE"
+          : response.status === 429
+            ? "PROVIDER_QUOTA_EXHAUSTED"
+            : response.status === 401
+              ? "PROVIDER_CREDENTIAL_REJECTED"
+              : "PROVIDER_REQUEST_FAILED",
       );
     const raw = await response.text();
     if (raw.length > 4000000) throw new ProviderRequestError("PROVIDER_RESPONSE_TOO_LARGE");
@@ -81,7 +83,29 @@ export class OpenRouterProvider implements ChatProviderAdapter {
           (pricing.request !== undefined && !zero(pricing.request))
         )
           return [];
-        return [{ id: model.id, name: typeof model.name === "string" ? model.name : model.id }];
+        const reasoning =
+          model.reasoning && typeof model.reasoning === "object" ? object(model.reasoning) : {};
+        const allowed = ["none", "minimal", "low", "medium", "high", "xhigh", "max"];
+        const advertised =
+          reasoning.supported_efforts === null
+            ? allowed
+            : Array.isArray(reasoning.supported_efforts)
+              ? reasoning.supported_efforts
+              : [];
+        return [
+          {
+            id: model.id,
+            name: typeof model.name === "string" ? model.name : model.id,
+            efforts: advertised.filter(
+              (v): v is string =>
+                typeof v === "string" &&
+                allowed.includes(v) &&
+                !(v === "none" && reasoning.mandatory === true),
+            ),
+            contextLength:
+              typeof model.context_length === "number" ? model.context_length : undefined,
+          },
+        ];
       })
       .slice(0, 40);
   }
@@ -104,8 +128,10 @@ export class OpenRouterProvider implements ChatProviderAdapter {
     key: string,
     model: string,
     messages: ChatProviderMessage[],
+    effort?: string,
   ): Promise<ChatTurnOutput> {
-    if (!(await this.freeModels()).some((item) => item.id === model))
+    const selected = (await this.freeModels()).find((item) => item.id === model);
+    if (!selected || (effort && !selected.efforts?.includes(effort)))
       throw new ProviderRequestError("FREE_MODEL_REQUIRED");
     const response = await this.request("chat/completions", key, {
       model,
@@ -114,6 +140,7 @@ export class OpenRouterProvider implements ChatProviderAdapter {
       max_tokens: 1024,
       provider: { allow_fallbacks: false },
       plugins: [],
+      ...(effort ? { reasoning: { effort, exclude: true } } : {}),
     });
     const choice = Array.isArray(response.choices) ? object(response.choices[0]) : {};
     const content = object(choice.message).content;
@@ -138,5 +165,24 @@ export class OpenRouterProvider implements ChatProviderAdapter {
       costUsd: 0,
       costQuality: exactCost ? "exact" : "estimated",
     };
+  }
+  async completeWithFallback(
+    key: string,
+    model: string,
+    messages: ChatProviderMessage[],
+    options: { effort?: string; fallbackModel?: string } = {},
+  ): Promise<ChatTurnOutput> {
+    try {
+      return await this.complete(key, model, messages, options.effort);
+    } catch (error) {
+      if (
+        !options.fallbackModel ||
+        options.fallbackModel === model ||
+        !(error instanceof ProviderRequestError) ||
+        !["PROVIDER_QUOTA_EXHAUSTED", "PROVIDER_MODEL_UNAVAILABLE"].includes(error.reason)
+      )
+        throw error;
+      return this.complete(key, options.fallbackModel, messages);
+    }
   }
 }

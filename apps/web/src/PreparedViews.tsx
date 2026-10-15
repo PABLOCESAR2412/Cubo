@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ProviderSettings } from "./ProjectProviderSettings";
 import { EmptyState, MetricCard, PageHeader, ProviderCard, SectionCard, Tabs } from "./ui";
 import type { Workspace } from "./workspace";
 
@@ -148,15 +149,7 @@ export function Settings({ w }: { w: Workspace }) {
             <h2>Proveedores</h2>
             <span className="hint">Servicios de modelos; independientes de los agentes.</span>
           </div>
-          <SectionCard title="OpenRouter">
-            <p className="hint">
-              API de texto con modelos gratuitos. Conexión, clave cifrada y cuota se gestionan por
-              proyecto.
-            </p>
-            <a className="secondary compact" href="/?panel=provider#/proyectos">
-              Configurar en un proyecto
-            </a>
-          </SectionCard>
+          <ProviderSettings />
           {["OpenCode Zen", "OpenAI", "Gemini", "Groq", "NVIDIA"].map((name) => (
             <ProviderCard name={name} kind="PROVEEDOR" key={name} />
           ))}

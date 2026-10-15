@@ -1,6 +1,5 @@
 import type { Conversation, StoredProject } from "@cubo/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ProjectProviderSettings } from "./ProjectProviderSettings";
 import { RepositoryPanel } from "./RepositoryPanel";
 import { EmptyState, PageHeader, ProjectRow, SectionCard, StatusBadge } from "./ui";
 import { requestApi as api, time } from "./workspace";
@@ -349,6 +348,7 @@ function ProjectDetail({
   const [instructions, setInstructions] = useState(project.instructions);
   const [memory, setMemory] = useState(project.memory);
   const [chats, setChats] = useState<Conversation[]>([]);
+  const [chatsLoaded, setChatsLoaded] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -362,7 +362,10 @@ function ProjectDetail({
     let disposed = false;
     void api<{ conversations: Conversation[] }>(`conversations?project=${project.id}`)
       .then((r) => {
-        if (!disposed) setChats(r.conversations);
+        if (!disposed) {
+          setChats(r.conversations);
+          setChatsLoaded(true);
+        }
       })
       .catch(() => {
         if (!disposed) setError("No se pudieron cargar los chats del proyecto.");
@@ -444,8 +447,8 @@ function ProjectDetail({
           <button
             className="primary"
             type="button"
-            disabled={busy}
-            onClick={() => void createChat()}
+            disabled={busy || !chatsLoaded}
+            onClick={() => (chats[0] ? openChat(project.id, chats[0].id) : void createChat())}
           >
             Abrir chat
           </button>
@@ -540,7 +543,19 @@ function ProjectDetail({
           </button>
         </SectionCard>
       </form>
-      <SectionCard title="Chats del proyecto">
+      <SectionCard
+        title="Chats del proyecto"
+        actions={
+          <button
+            className="secondary compact"
+            type="button"
+            disabled={busy}
+            onClick={() => void createChat()}
+          >
+            Nuevo chat
+          </button>
+        }
+      >
         {!chats.length ? (
           <EmptyState
             title="Sin chats todavía"
@@ -577,7 +592,6 @@ function ProjectDetail({
           )}
         </div>
       </SectionCard>
-      <ProjectProviderSettings projectId={project.id} />
       <button
         className="secondary"
         type="button"

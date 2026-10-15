@@ -67,6 +67,8 @@ Las métricas deben distinguir exact, estimated, stale y unavailable; no inventa
 4. Separar el adaptador del agente del proveedor de ejecución. Incorporar otro
    agente no debe exigir reemplazar la orquestación.
    APIs, MCPs, skills, variables y memoria funcional se autorizan por proyecto.
+   Por petición posterior, proveedores de texto del propietario se configuran en
+   Ajustes generales. Esto no comparte contextos ni entrega claves a los agentes.
    Cada chat tiene historial propio; no compartir contexto entre proyectos/chats.
 5. Diseñar operaciones con identificadores estables, checkpoints versionados,
    reintentos e idempotencia. Una recuperación no debe duplicar efectos externos.
@@ -246,3 +248,7 @@ herramientas. Contexto congelado por turno y clave cifrada por proyecto; sin fal
 pago ni reinvocación automática tras entrega incierta. Cancelación revoca callbacks
 y solo marca CANCELLED tras confirmar ausencia de despacho o fin remoto.
 Ver [docs/openrouter-chat.md](docs/openrouter-chat.md). No solicitar claves por chat.
+La iteración posterior simplifica Chat, hace persistente la sesión revocable y
+añade dictado/extractos de adjuntos. Contrato: [docs/chat-refinement.md](docs/chat-refinement.md).
+Versiones desde 1.0.0, calculadas en build según intención de commits; no crear tags
+ni commits automáticamente. Mantener compatibilidad con claves antiguas de proyecto.

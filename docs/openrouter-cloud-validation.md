@@ -46,6 +46,14 @@ no se guardaron checkpoints ni resultado después de solicitar la cancelación.
 
 ## Inferencia todavía pendiente
 
+Comprobación posterior durante el refinamiento: se encontró una conexión de proyecto
+creada a las 18:12:32.111 UTC. El turno del usuario
+82ecf4fc-2d71-4fe0-8262-7ce347f7b27a terminó SUCCEEDED con
+nvidia/nemotron-3-ultra-550b-a55b:free, 137 tokens de entrada, 675 de salida y
+coste USD 0 exact. Otro turno falló PROVIDER_REQUEST_FAILED. No se inspeccionó
+contenido privado ni clave, y esta observación no prueba cierre/reapertura del
+cliente. El relato siguiente conserva el diagnóstico anterior a ese guardado.
+
 El usuario eligió OpenRouter gratuito y confirmó haber guardado una clave. La
 comprobación posterior de D1 encontró cero conexiones de proveedor. En el proyecto
 077e6b47-e19b-4ff5-afda-77c3f366f9d7, API 200 confirmó configured=false,

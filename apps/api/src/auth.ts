@@ -18,12 +18,15 @@ export async function ownerAuthorized(c: AuthContext): Promise<boolean> {
   const cookie = getCookie(c, "cubo_session");
   if (!cookie) return false;
   try {
-    await jwtVerify(cookie, new TextEncoder().encode(c.env.SESSION_SECRET), {
+    const { payload } = await jwtVerify(cookie, new TextEncoder().encode(c.env.SESSION_SECRET), {
       issuer: "cubo",
       audience: "owner",
       algorithms: ["HS256"],
     });
-    return true;
+    if (!payload.jti) return payload.role === "owner"; // Upgrade valid legacy sessions on /session.
+    return Boolean(
+      await c.env.DB.prepare("SELECT 1 FROM owner_sessions WHERE id=?").bind(payload.jti).first(),
+    );
   } catch {
     return false;
   }
@@ -31,13 +34,43 @@ export async function ownerAuthorized(c: AuthContext): Promise<boolean> {
 export async function sessionToken(env: Env): Promise<string> {
   if (!env.SESSION_SECRET || env.SESSION_SECRET.length < 32)
     throw new Error("Autenticación sin configurar.");
+  const id = crypto.randomUUID();
+  await env.DB.prepare("INSERT INTO owner_sessions(id,created_at) VALUES(?,?)")
+    .bind(id, new Date().toISOString())
+    .run();
   return new SignJWT({ role: "owner" })
+    .setJti(id)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setIssuer("cubo")
     .setAudience("owner")
-    .setExpirationTime("8h")
     .sign(new TextEncoder().encode(env.SESSION_SECRET));
+}
+export async function revokeSession(c: AuthContext): Promise<void> {
+  const cookie = getCookie(c, "cubo_session");
+  if (!cookie || !c.env.SESSION_SECRET) return;
+  try {
+    const { payload } = await jwtVerify(cookie, new TextEncoder().encode(c.env.SESSION_SECRET), {
+      issuer: "cubo",
+      audience: "owner",
+      algorithms: ["HS256"],
+    });
+    if (payload.jti)
+      await c.env.DB.prepare("DELETE FROM owner_sessions WHERE id=?").bind(payload.jti).run();
+  } catch {
+    /* Missing or invalid sessions are already closed. */
+  }
+}
+export async function persistentSession(c: AuthContext): Promise<string | null> {
+  if (localAccess(c) || !(await ownerAuthorized(c))) return null;
+  const cookie = getCookie(c, "cubo_session");
+  if (!cookie) return null;
+  const { payload } = await jwtVerify(cookie, new TextEncoder().encode(c.env.SESSION_SECRET), {
+    issuer: "cubo",
+    audience: "owner",
+    algorithms: ["HS256"],
+  });
+  return payload.jti ? cookie : sessionToken(c.env);
 }
 export async function passwordMatches(value: string, expected: string): Promise<boolean> {
   const [a, b] = await Promise.all(

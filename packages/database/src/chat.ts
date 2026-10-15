@@ -20,6 +20,7 @@ function message(row: Row): ChatMessage {
     sequence: Number(row.sequence),
     content: String(row.content),
     role: row.role === "assistant" ? "assistant" : "user",
+    attachments: JSON.parse(String(row.attachments ?? "[]")),
     status: "STORED",
     createdAt: String(row.created_at),
   };
@@ -92,7 +93,9 @@ export class D1ChatStore {
       conversation: conversation(row),
       messages: (rows.results as Row[]).map(message),
       inference: (await this.db
-        .prepare("SELECT 1 FROM project_provider_keys WHERE project_id=? AND provider='openrouter'")
+        .prepare(
+          "SELECT 1 FROM provider_keys WHERE provider='openrouter' UNION ALL SELECT 1 FROM project_provider_keys WHERE project_id=? AND provider='openrouter'",
+        )
         .bind(this.projectId)
         .first())
         ? "configured"
@@ -100,15 +103,18 @@ export class D1ChatStore {
       turns: (
         await this.db
           .prepare(
-            "SELECT t.id,t.status,t.error,t.result,t.input FROM tasks t JOIN chat_turns r ON r.task_id=t.id WHERE r.conversation_id=? AND r.project_id IS ? ORDER BY t.created_at DESC LIMIT 50",
+            "SELECT t.id,t.status,t.error,t.result,t.input,t.created_at,t.updated_at FROM tasks t JOIN chat_turns r ON r.task_id=t.id WHERE r.conversation_id=? AND r.project_id IS ? ORDER BY t.created_at DESC LIMIT 50",
           )
           .bind(id, this.projectId)
           .all<Row>()
       ).results.map((row) => ({
         taskId: String(row.id),
+        createdAt: String(row.created_at),
+        updatedAt: String(row.updated_at),
         status: String(row.status),
         error: row.error as string | null,
         model: JSON.parse(String(row.input)).model as string,
+        effort: JSON.parse(String(row.input)).effort ?? "",
         result: row.result ? (JSON.parse(String(row.result)) as ChatTurnResult) : null,
       })),
     };

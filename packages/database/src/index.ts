@@ -146,7 +146,7 @@ export class D1TaskStore implements TaskRepository {
         ? [
             this.db
               .prepare(
-                "INSERT INTO chat_messages(id,conversation_id,sequence,content,created_at,role) SELECT ?,?,COALESCE((SELECT MAX(sequence) FROM chat_messages WHERE conversation_id=?),0)+1,?,?,'user' FROM tasks WHERE id=? ON CONFLICT(id) DO NOTHING",
+                "INSERT INTO chat_messages(id,conversation_id,sequence,content,created_at,role,attachments) SELECT ?,?,COALESCE((SELECT MAX(sequence) FROM chat_messages WHERE conversation_id=?),0)+1,?,?,'user',? FROM tasks WHERE id=? ON CONFLICT(id) DO NOTHING",
               )
               .bind(
                 input.userMessageId,
@@ -154,6 +154,7 @@ export class D1TaskStore implements TaskRepository {
                 input.conversationId,
                 chatContext?.messages.at(-1)?.content,
                 now,
+                JSON.stringify(chatContext?.attachments ?? []),
                 id,
               ),
             this.db

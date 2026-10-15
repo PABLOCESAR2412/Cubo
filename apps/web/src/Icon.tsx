@@ -16,8 +16,24 @@ export type IconName =
   | "check"
   | "clock"
   | "link"
-  | "download";
+  | "download"
+  | "mic"
+  | "pin"
+  | "edit"
+  | "trash"
+  | "logout"
+  | "file"
+  | "copy"
+  | "chevron";
 const paths: Record<IconName, string> = {
+  mic: "M9 5a3 3 0 0 1 6 0v7a3 3 0 0 1-6 0zM5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8",
+  pin: "m9 3 9 9-3 1-3 5-6-6 5-3zM8 16l-5 5",
+  edit: "m4 16 11-11 4 4L8 20H4zM14 6l4 4",
+  trash: "M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7",
+  logout: "M10 4H4v16h6M14 8l4 4-4 4M8 12h12",
+  file: "M5 3h9l5 5v13H5zM14 3v6h5",
+  copy: "M9 8h11v13H9zM15 8V3H4v13h5",
+  chevron: "m7 10 5 5 5-5",
   cube: "M12 3 20 7.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9",
   chat: "M4 4h16v12H9l-5 4z",
   tasks: "M9 5h11M9 12h11M9 19h11M3 5l1 1 2-2M3 12l1 1 2-2M3 19l1 1 2-2",

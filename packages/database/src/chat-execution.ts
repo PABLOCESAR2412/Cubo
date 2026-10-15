@@ -37,7 +37,10 @@ export class D1ChatExecutionStore {
   }
   async complete(executionId: string, runId: string, output: ChatTurnOutput): Promise<void> {
     const { task, execution } = await new D1TaskStore(this.db).context(executionId, runId);
-    if (!isChatTurnInput(task.input) || output.model !== task.input.model)
+    if (
+      !isChatTurnInput(task.input) ||
+      ![task.input.model, task.input.fallbackModel].includes(output.model)
+    )
       throw new StoreError(400, "Resultado de turno inválido.");
     const digest = Array.from(
       new Uint8Array(

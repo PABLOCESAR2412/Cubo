@@ -2,7 +2,9 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { buildVersion } from "../../scripts/version.ts";
 export default defineConfig({
+  define: { "import.meta.env.VITE_CUBO_VERSION": JSON.stringify(buildVersion()) },
   plugins: [
     react(),
     tailwindcss(),
@@ -27,7 +29,7 @@ export default defineConfig({
       workbox: {
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//],
-        globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
+        globPatterns: ["**/*.{js,mjs,css,html,svg,png,woff2}"],
       },
     }),
   ],

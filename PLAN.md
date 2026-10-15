@@ -12,7 +12,16 @@ todavía no ejecuta agentes. Mantener infraestructura USD 0 y la paleta de Cubo.
 Diseño actual aprobado: refinarlo sin reemplazar shell, navegación ni identidad.
 ChatGPT y Claude son referencias de interacción del chat, no nuevas paletas.
 
-## Iteración actual: proyectos, diagnóstico y OpenRouter gratuito
+## Iteración actual: refinamiento de chat y ajustes generales
+
+Implementación local y pruebas terminadas para la solicitud posterior del usuario:
+sesión persistente, acciones directas en Recientes, chat Markdown minimalista,
+selector integrado, proveedor general, respaldo gratuito, dictado y extractos de
+adjuntos. Ver [contrato de esta iteración](docs/chat-refinement.md). Falta cierre
+de revisión, publicación y comprobación cloud. No guardar ni mover claves sin una
+acción del usuario; conservar compatibilidad con conexiones antiguas de proyecto.
+
+## Iteración anterior: proyectos, diagnóstico y OpenRouter gratuito
 
 Solicitud posterior del usuario: inicio en Proyectos, tarjetas con acciones reales,
 Nuevo proyecto en sidebar, Recientes solo chats agrupados, sin pestaña general de

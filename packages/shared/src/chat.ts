@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ChatTurnState } from "./chat-turn";
+import type { ChatAttachment, ChatTurnState } from "./chat-turn";
 
 export interface Conversation {
   id: string;
@@ -11,6 +11,7 @@ export interface Conversation {
   updatedAt: string;
 }
 export interface ChatMessage {
+  attachments?: ChatAttachment[];
   id: string;
   conversationId: string;
   sequence: number;

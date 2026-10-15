@@ -5,6 +5,7 @@ import { Icon, type IconName } from "./Icon";
 import { NewTask } from "./NewTask";
 import { Analytics, Chat, Projects, Settings } from "./PreparedViews";
 import { PwaControls } from "./PwaControls";
+import { RecentChat } from "./RecentChat";
 import { Tasks } from "./Tasks";
 import { AppShell, Sidebar, TopBar } from "./ui";
 import { requestApi, taskIdFromHash, useWorkspace } from "./workspace";
@@ -103,6 +104,7 @@ export default function App() {
     if (mobile && navigationDialog.current?.open) navigationDialog.current.close();
     setView(next);
     window.location.hash = `/${next}`;
+    if (next === "tareas") void w.refresh().catch(() => {});
     setDrawer(false);
     setInspecting(false);
   }
@@ -148,7 +150,14 @@ export default function App() {
           </div>
           <p>Tu centro de control para ejecuciones persistentes.</p>
           {w.authenticated === null ? (
-            <p role="status">Conectando con el workspace…</p>
+            <div>
+              <p role="status">{w.error || "Conectando con el workspace…"}</p>
+              {w.error && (
+                <button className="secondary" type="button" onClick={() => void w.checkSession()}>
+                  Reintentar conexión
+                </button>
+              )}
+            </div>
           ) : (
             <form onSubmit={w.login} className="form-stack">
               <label htmlFor="password">
@@ -261,22 +270,24 @@ export default function App() {
                 chatGroup(recentChats[index - 1] as Conversation) !== chatGroup(chat)) && (
                 <span className="recent-group">{chatGroup(chat)}</span>
               )}
-              <button
-                type="button"
-                className={view === "chat" && activeChat === chat.id ? "active" : ""}
-                onClick={() => openChat(chat)}
-              >
-                <Icon name="chat" size={14} />
-                <span>{chat.title}</span>
-              </button>
+              <RecentChat
+                chat={chat}
+                active={view === "chat" && activeChat === chat.id}
+                open={() => openChat(chat)}
+                removed={() => {
+                  if (activeChat === chat.id) openProjects();
+                }}
+              />
             </div>
           ))}
           {!recentChats.length && <p className="hint">Sin chats todavía</p>}
         </div>
         <div className="sidebar-system">
           <button type="button" className="sign-out" onClick={() => void w.logout()}>
+            <Icon name="logout" size={15} />
             Cerrar sesión
           </button>
+          <span className="app-version">Cubo {import.meta.env.VITE_CUBO_VERSION ?? "1.0.0"}</span>
         </div>
       </Sidebar>
       <div className="workspace-main">

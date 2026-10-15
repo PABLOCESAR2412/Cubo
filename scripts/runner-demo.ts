@@ -62,11 +62,18 @@ async function main(): Promise<void> {
       };
       console.log(`::add-mask::${input.apiKey}`);
       console.log("Turno adquirido; solicitud al modelo gratuito.");
-      const output = await new OpenRouterProvider().complete(
+      const output = await new OpenRouterProvider().completeWithFallback(
         input.apiKey,
         input.model,
         input.context.messages,
+        {
+          ...(context.task.input.effort ? { effort: context.task.input.effort } : {}),
+          ...(context.task.input.fallbackModel
+            ? { fallbackModel: context.task.input.fallbackModel }
+            : {}),
+        },
       );
+      if (output.model !== input.model) console.log("Se utilizó el respaldo gratuito autorizado.");
       if (looksLikeSecret(output.content) || output.content.includes(input.apiKey))
         throw new Error("Contenido sensible.");
       await request("chat-result", output);
@@ -75,6 +82,7 @@ async function main(): Promise<void> {
     } catch (error) {
       const allowed = [
         "PROVIDER_QUOTA_EXHAUSTED",
+        "PROVIDER_MODEL_UNAVAILABLE",
         "PROVIDER_CREDENTIAL_REJECTED",
         "FREE_MODEL_REQUIRED",
         "UNEXPECTED_PROVIDER_COST",

@@ -71,7 +71,7 @@ export function useWorkspace() {
     if (request !== generation.current) return;
     setTasks(data.tasks);
     const id = selected || data.tasks[0]?.id;
-    if (id) {
+    if (id && window.location.hash.startsWith("#/tareas")) {
       if (!selectedRef.current) {
         chooseTask(id);
         return;
@@ -82,10 +82,13 @@ export function useWorkspace() {
     }
     setLastSync(new Date().toISOString());
   }, [chooseTask, selected]);
-  useEffect(() => {
-    api<{ authenticated: boolean; costGuardVerified: boolean; executionConfigured: boolean }>(
-      "session",
-    )
+  const checkSession = useCallback(async () => {
+    setError("");
+    return api<{
+      authenticated: boolean;
+      costGuardVerified: boolean;
+      executionConfigured: boolean;
+    }>("session")
       .then((s) => {
         setAuthenticated(s.authenticated);
         setGuard(s.costGuardVerified);
@@ -93,9 +96,12 @@ export function useWorkspace() {
       })
       .catch(() => {
         setError("No se pudo conectar con Cubo. Revisa la conexión.");
-        setAuthenticated(false);
+        setAuthenticated(null);
       });
   }, []);
+  useEffect(() => {
+    void checkSession();
+  }, [checkSession]);
   useEffect(() => {
     const change = () => setOnline(navigator.onLine);
     window.addEventListener("online", change);
@@ -116,7 +122,11 @@ export function useWorkspace() {
       } catch (e) {
         if (active) setPollError(e instanceof Error ? e.message : "No se pudo actualizar.");
       }
-      if (active) timer = setTimeout(poll, document.hidden ? 30000 : 5000);
+      if (active)
+        timer = setTimeout(
+          poll,
+          document.hidden || !window.location.hash.startsWith("#/tareas") ? 30000 : 5000,
+        );
     };
     void poll();
     return () => {
@@ -236,6 +246,7 @@ export function useWorkspace() {
     lastSync,
     chooseTask,
     refresh,
+    checkSession,
     login,
     logout,
     create,

@@ -1,5 +1,10 @@
 # Chat durable con OpenRouter gratuito
 
+Actualización posterior: la configuración se trasladó a Ajustes generales por
+petición del usuario. El aislamiento de contextos se conserva. Los apartados de
+configuración por proyecto documentan la primera entrega y su compatibilidad;
+el contrato actual es [Chat refinado](chat-refinement.md).
+
 ## Alcance de esta vertical
 
 Implementación publicada en cubo-dev con pruebas: proveedor de texto OpenRouter, modelos gratuitos,

@@ -1,4 +1,13 @@
 import { z } from "zod";
+export const efforts = ["none", "minimal", "low", "medium", "high", "xhigh", "max"] as const;
+export const attachmentSchema = z
+  .object({
+    name: z.string().min(1).max(160),
+    text: z.string().min(1).max(12000),
+    truncated: z.boolean(),
+  })
+  .strict();
+export type ChatAttachment = z.infer<typeof attachmentSchema>;
 
 export const chatTurnInputSchema = z
   .object({
@@ -15,6 +24,8 @@ export const chatTurnInputSchema = z
       .min(1)
       .max(180)
       .regex(/^[A-Za-z0-9_./:-]+$/),
+    effort: z.enum(efforts).optional(),
+    fallbackModel: z.string().max(180).optional(),
   })
   .strict();
 export type ChatTurnInput = z.infer<typeof chatTurnInputSchema>;
@@ -23,6 +34,7 @@ export interface ChatProviderMessage {
   content: string;
 }
 export interface ChatTurnContext {
+  attachments?: ChatAttachment[];
   messages: ChatProviderMessage[];
   projectVersion: number;
   repositoryRevision: string | null;
@@ -45,6 +57,9 @@ export interface ChatTurnResult extends Omit<ChatTurnOutput, "content"> {
   sum?: never;
 }
 export interface ChatTurnState {
+  effort?: string;
+  createdAt?: string;
+  updatedAt?: string;
   taskId: string;
   status: string;
   model: string;
@@ -54,6 +69,8 @@ export interface ChatTurnState {
 export interface FreeModel {
   id: string;
   name: string;
+  efforts?: string[];
+  contextLength?: number | undefined;
 }
 export interface ProviderQuota {
   checkedAt: string;
@@ -63,6 +80,7 @@ export interface ProviderQuota {
   quality: "exact" | "unavailable";
 }
 export interface ProjectProviderStatus {
+  preferences?: { fallbackModel: string; noticeSeconds: number };
   blockedReason: string | null;
   provider: "openrouter";
   configured: boolean;

@@ -15,6 +15,8 @@ import {
   localAccess,
   ownerAuthorized,
   passwordMatches,
+  persistentSession,
+  revokeSession,
   runnerAuthorized,
   sessionToken,
 } from "./auth.ts";
@@ -22,7 +24,7 @@ import { chatRoutes } from "./chat";
 import { containsSecret } from "./content-safety";
 import type { Env } from "./env.ts";
 import { createTaskEngine } from "./execution-engine";
-import { providerKey } from "./project-providers";
+import { globalProviderRoutes, providerKey } from "./project-providers";
 import { projectRoutes } from "./projects";
 import { decryptProjectKey } from "./repository-keys";
 export async function dispatchOutbox(env: Env): Promise<void> {
@@ -48,7 +50,9 @@ app.use("/api/*", async (c, next) =>
   bodyLimit({
     maxSize: /^\/api\/executions\/[^/]+\/(?:import-progress|chat-result)$/.test(c.req.path)
       ? 131072
-      : 8192,
+      : /^\/api\/conversations\/[^/]+\/turn$/.test(c.req.path)
+        ? 131072
+        : 8192,
     onError: (c) => c.json({ error: "Solicitud demasiado grande." }, 413),
   })(c, next),
 );
@@ -69,14 +73,23 @@ app.use("/api/*", async (c, next) => {
 app.get("/api/health", (c) =>
   c.json({ ok: true, service: "cubo", executionBackend: "github-actions" }),
 );
-app.get("/api/session", async (c) =>
-  c.json({
+app.get("/api/session", async (c) => {
+  const token = await persistentSession(c);
+  if (token)
+    setCookie(c, "cubo_session", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      path: "/",
+      maxAge: 34560000,
+    });
+  return c.json({
     authenticated: await ownerAuthorized(c),
     executionConfigured: Boolean(c.env.GITHUB_TOKEN),
     local: localAccess(c),
     costGuardVerified: c.env.GITHUB_ZERO_SPEND_VERIFIED === "true",
-  }),
-);
+  });
+});
 app.post("/api/login", async (c) => {
   if (!c.env.OWNER_PASSWORD || !c.env.SESSION_SECRET)
     return c.json({ error: "Configura el acceso personal del backend." }, 503);
@@ -94,14 +107,16 @@ app.post("/api/login", async (c) => {
     secure: new URL(c.req.url).protocol === "https:",
     sameSite: "Strict",
     path: "/",
-    maxAge: 28800,
+    maxAge: 34560000,
   });
   return c.json({ authenticated: true });
 });
-app.post("/api/logout", (c) => {
+app.post("/api/logout", async (c) => {
+  await revokeSession(c);
   deleteCookie(c, "cubo_session", { path: "/" });
   return c.json({ ok: true });
 });
+app.route("/api/providers", globalProviderRoutes);
 app.use("/api/tasks/*", async (c, next) => {
   if (!(await ownerAuthorized(c)))
     return c.json({ error: "Inicia sesión para acceder a Cubo." }, 401);
@@ -229,6 +244,7 @@ app.post("/api/executions/:id/chat-error", async (c) => {
     .object({
       reason: z.enum([
         "PROVIDER_QUOTA_EXHAUSTED",
+        "PROVIDER_MODEL_UNAVAILABLE",
         "PROVIDER_CREDENTIAL_REJECTED",
         "FREE_MODEL_REQUIRED",
         "UNEXPECTED_PROVIDER_COST",

@@ -6,6 +6,12 @@ runners Linux estándar. Containers y R2 no se utilizan.
 
 ## Estado real
 
+Refinamiento actual: chat Markdown minimalista, acciones directas en Recientes,
+selector de modelo/esfuerzo/uso, sesión persistente revocable, proveedor general en
+Ajustes, dictado según navegador y adjuntos con previsualización de texto. Alcance,
+límites y versionado 1.0.0 en [Chat refinado](docs/chat-refinement.md). Estado real
+de publicación e inferencia en MEMORY.md.
+
 Implementados localmente: consola React/Vite/Tailwind, API Hono, contratos, persistencia,
 motor durable, GitHubActionsExecutionBackend, runner demostrativo, checkpoints,
 aprobación de continuación y control de cuota. Codex/OpenCode siguen pendientes.

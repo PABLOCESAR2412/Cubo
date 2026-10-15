@@ -9,8 +9,12 @@
   "dependencies": {
     "@cubo/shared": "workspace:*",
     "@fontsource-variable/geist": "5.3.0",
+    "fflate": "^0.8.3",
+    "pdfjs-dist": "^6.4.299",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "workbox-window": "7.4.1"
   },
   "devDependencies": {

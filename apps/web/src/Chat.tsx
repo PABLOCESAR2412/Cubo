@@ -1,12 +1,14 @@
 import type {
-  Conversation,
+  ChatAttachment,
   ConversationDetail,
   ProjectProviderStatus,
   StoredProject,
 } from "@cubo/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { ChatComposer } from "./ChatInput";
 import { Icon } from "./Icon";
-import { ChatComposer } from "./ui";
 import { requestApi, time } from "./workspace";
 
 function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -21,6 +23,13 @@ export function Chat() {
   const [selected, setSelected] = useState(selectedChat);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
   const [draft, setDraft] = useState("");
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [effort, setEffort] = useState("");
+  const [clock, setClock] = useState(Date.now);
+  useEffect(() => {
+    const timer = setInterval(() => setClock(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
   const [title, setTitle] = useState("");
   const [config, setConfig] = useState(false);
   const projectId = new URL(window.location.href).searchParams.get("project");
@@ -35,7 +44,7 @@ export function Chat() {
     setProvider(null);
     setModel("");
     if (projectId)
-      void requestApi<ProjectProviderStatus>(`projects/${projectId}/providers/openrouter`)
+      void requestApi<ProjectProviderStatus>(`projects/${projectId}/providers/openrouter?summary=1`)
         .then((status) => {
           if (!disposed) setProvider({ projectId, status });
         })
@@ -97,12 +106,12 @@ export function Chat() {
   const request = useRef(0);
   const active = useRef(selected);
   const locked = useRef(false);
-  const createKey = useRef<string | null>(null);
   const pendingMessage = useRef<{
     id: string;
     chat: string;
     content: string;
     model?: string;
+    signature?: string;
   } | null>(null);
   const actionsMenu = useRef<HTMLDetailsElement>(null);
   const conversationPane = useRef<HTMLDivElement>(null);
@@ -112,15 +121,12 @@ export function Chat() {
       conversationPane.current?.scrollTo({ top: conversationPane.current.scrollHeight });
   }, [lastMessage]);
   const detailRef = useRef(detail);
+  const lastPoll = useRef(0);
   detailRef.current = detail;
   const refresh = useCallback(async () => {
     const generation = ++request.current;
     const id = active.current;
-    const list = await api<{ conversations: Conversation[] }>("conversations");
-    const next =
-      id && list.conversations.some((c) => c.id === id)
-        ? await api<ConversationDetail>(`conversations/${id}`)
-        : null;
+    const next = id ? await api<ConversationDetail>(`conversations/${id}`) : null;
     if (generation !== request.current || id !== active.current) return;
     setDetail(next);
     setSyncError("");
@@ -137,6 +143,8 @@ export function Chat() {
         setSelected(id);
         setDetail(null);
         setDraft("");
+        setAttachments([]);
+        setEffort("");
         setError("");
       }
       void refresh().catch(() => setSyncError("No se pudo cargar la conversación."));
@@ -149,11 +157,20 @@ export function Chat() {
       setSyncError("No se pudo sincronizar Chat. Actualiza o vuelve a iniciar sesión."),
     );
     const interval = setInterval(() => {
-      if (!locked.current)
+      const running = detailRef.current?.turns?.some(
+        (t) => t.status === "QUEUED" || t.status === "RUNNING",
+      );
+      if (
+        !locked.current &&
+        !document.hidden &&
+        (running || Date.now() - lastPoll.current >= 10000)
+      ) {
+        lastPoll.current = Date.now();
         void refresh().catch(() =>
           setSyncError("Sin sincronizar. Los mensajes confirmados permanecen en Cubo."),
         );
-    }, 8000);
+      }
+    }, 2000);
     return () => {
       clearInterval(interval);
       request.current++;
@@ -166,6 +183,9 @@ export function Chat() {
     history.replaceState(null, "", url);
     window.dispatchEvent(new Event("cubo-conversations-changed"));
   }, [selected]);
+  useEffect(() => {
+    setEffort(detail?.turns?.[0]?.effort ?? "");
+  }, [detail?.turns?.[0]?.effort]);
   useEffect(() => {
     setTitle(detail?.conversation.title ?? "");
   }, [detail?.conversation.title]);
@@ -187,30 +207,14 @@ export function Chat() {
       setBusy(false);
     }
   }
-  async function create() {
-    if (!projectId) {
-      window.location.hash = "/proyectos";
-      return;
-    }
-    await action(async () => {
-      createKey.current ??= crypto.randomUUID();
-      const result = await api<{ conversation: Conversation }>("conversations", {
-        method: "POST",
-        headers: { "Idempotency-Key": createKey.current },
-        body: JSON.stringify({ title: "Nuevo chat" }),
-      });
-      createKey.current = null;
-      active.current = result.conversation.id;
-      setSelected(result.conversation.id);
-      setDetail(null);
-      setDraft("");
-    });
+  function openProject() {
+    window.location.hash = "/proyectos";
   }
   async function saveMessage() {
-    const content = draft.trim(),
+    const content = draft.trim() || (attachments.length ? "Revisa los documentos adjuntos." : ""),
       id = active.current;
     if (!content || !id || turn) return;
-    if (configured && !ready) {
+    if (!configured || !ready) {
       setError("No hay un modelo gratuito verificado disponible.");
       return;
     }
@@ -219,32 +223,27 @@ export function Chat() {
         !pendingMessage.current ||
         pendingMessage.current.chat !== id ||
         pendingMessage.current.content !== content ||
-        pendingMessage.current.model !== (configured ? model : undefined)
+        pendingMessage.current.model !== model ||
+        pendingMessage.current.signature !== JSON.stringify({ effort, attachments })
       ) {
         pendingMessage.current = {
           id: crypto.randomUUID(),
           chat: id,
           content,
-          ...(configured ? { model } : {}),
+          model,
+          signature: JSON.stringify({ effort, attachments }),
         };
       }
-      const saved = await api<ConversationDetail>(
-        `conversations/${id}/${configured ? "turn" : "messages"}`,
-        {
-          method: "POST",
-          headers: { "Idempotency-Key": pendingMessage.current.id },
-          body: JSON.stringify({ content, ...(configured ? { model } : {}) }),
-        },
-      );
+      await api(`conversations/${id}/turn`, {
+        method: "POST",
+        headers: { "Idempotency-Key": pendingMessage.current.id },
+        body: JSON.stringify({ content, model, ...(effort ? { effort } : {}), attachments }),
+      });
       pendingMessage.current = null;
       if (active.current === id) {
-        if (!configured) setDetail(saved);
         setDraft("");
-        setNotice(
-          configured
-            ? "Turno guardado en Cubo. Puedes cerrar el cliente; la ejecución es remota."
-            : "Mensaje guardado. Configura OpenRouter en el proyecto para obtener respuestas.",
-        );
+        setAttachments([]);
+        setNotice("");
       }
     });
   }
@@ -322,28 +321,16 @@ export function Chat() {
         <section className="chat-main">
           <div className="chat-toolbar">
             <div>
-              <span className="tag model-status">
-                <Icon name="cube" size={13} />
-                {configured ? "OpenRouter · API de texto" : "Sin modelo conectado"}
-              </span>
               <h1>{detail?.conversation.title ?? "Chat"}</h1>
             </div>
             <div className="toolbar-actions">
               <button
                 className="secondary compact"
                 type="button"
-                disabled={busy}
-                onClick={() => void create()}
-              >
-                {projectId ? "Nuevo chat" : "Abrir proyectos"}
-              </button>
-              <button
-                className="secondary compact"
-                type="button"
                 disabled={!detail || busy}
                 onClick={exportConversation}
               >
-                Exportar
+                <Icon name="download" size={14} /> Exportar
               </button>
               <button
                 type="button"
@@ -351,7 +338,7 @@ export function Chat() {
                 className={config ? "secondary compact active" : "secondary compact"}
                 onClick={() => setConfig(!config)}
               >
-                Configuración
+                <Icon name="settings" size={14} /> Configuración
               </button>
               <details
                 className="chat-actions-menu"
@@ -442,45 +429,23 @@ export function Chat() {
                     ? "Abre una conversación de este proyecto desde la barra lateral."
                     : "Los chats se abren desde cada proyecto o desde Recientes."}{" "}
                 </p>
-                <button
-                  className="primary"
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void create()}
-                >
-                  {projectId ? "Nuevo chat" : "Abrir proyectos"}
+                <button className="primary" type="button" disabled={busy} onClick={openProject}>
+                  Abrir proyecto
                 </button>
               </div>
             ) : (
               <>
-                <div className="conversation-context">
-                  <div>
-                    <Icon name="chat" size={15} />
-                    <strong>{projectName || "Chat"}</strong>
-                    <span>
-                      {detail.messages.length}{" "}
-                      {detail.messages.length === 1 ? "mensaje" : "mensajes"}
-                    </span>
-                  </div>
-                  <span className="tag pending">
-                    {configured ? "Sin herramientas" : "Proveedor pendiente"}
-                  </span>
-                </div>
-                {!configured && projectId && (
+                {!configured && (
                   <p className="conversation-capability">
-                    <a
-                      className="back-link"
-                      href={`?project=${projectId}&panel=provider#/proyectos`}
-                    >
-                      Conectar OpenRouter
-                    </a>{" "}
-                    para obtener respuestas remotas.
+                    Conecta un proveedor en <a href="#/ajustes">Ajustes</a> para empezar.
                   </p>
                 )}
                 {!detail.messages.length && (
-                  <p className="muted">
-                    Aún no hay mensajes. Guarda el primero para conservar su contexto.
-                  </p>
+                  <div className="chat-welcome">
+                    <Icon name="cube" size={26} />
+                    <h2>¿En qué trabajamos?</h2>
+                    <p>Escribe una instrucción o adjunta un documento.</p>
+                  </div>
                 )}
                 <ol className="chat-message-list">
                   {detail.messages.map((m) => (
@@ -491,9 +456,37 @@ export function Chat() {
                       <div>
                         <strong>{m.role === "assistant" ? "Asistente" : "Tú"}</strong>
                         <time dateTime={m.createdAt}>{time(m.createdAt)}</time>
-                        <span className="tag">Guardado</span>
                       </div>
-                      <p>{m.content}</p>
+                      {m.role === "assistant" ? (
+                        <div className="markdown-message">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            skipHtml
+                            components={{
+                              a: ({ children, href }) => (
+                                <a href={href} target="_blank" rel="noreferrer">
+                                  {children}
+                                </a>
+                              ),
+                              img: () => null,
+                            }}
+                          >
+                            {m.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p>{m.content}</p>
+                      )}
+                      {m.attachments?.map((a) => (
+                        <details className="stored-attachment" key={a.name}>
+                          <summary>
+                            <Icon name="file" size={14} />
+                            {a.name}
+                            {a.truncated ? " · extracto" : ""}
+                          </summary>
+                          <pre>{a.text}</pre>
+                        </details>
+                      ))}
                       {m.role === "assistant" &&
                         detail.turns?.find((t) => t.result?.messageId === m.id)?.result &&
                         (() => {
@@ -501,7 +494,7 @@ export function Chat() {
                             (t) => t.result?.messageId === m.id,
                           )?.result;
                           return (
-                            <p className="hint">
+                            <p className="message-usage">
                               {usage?.model} · entrada {usage?.inputTokens ?? "unavailable"} ·
                               salida {usage?.outputTokens ?? "unavailable"} tokens · USD{" "}
                               {usage?.costUsd} ({usage?.costQuality})
@@ -516,7 +509,7 @@ export function Chat() {
                         className="secondary compact"
                         onClick={() => void copy(m.content)}
                       >
-                        Copiar
+                        <Icon name="copy" size={13} /> Copiar
                       </button>
                     </li>
                   ))}
@@ -528,7 +521,7 @@ export function Chat() {
                         ? "Cancelación pendiente de confirmar"
                         : turn.status === "QUEUED"
                           ? "En cola"
-                          : "Solicitud al modelo en ejecución"}{" "}
+                          : "Generando respuesta"}{" "}
                       · {turn.model}
                     </span>
                     <button
@@ -543,6 +536,17 @@ export function Chat() {
                     </button>
                   </div>
                 )}
+                {turn &&
+                  clock -
+                    Date.parse(turn.updatedAt ?? turn.createdAt ?? new Date(clock).toISOString()) >
+                    (provider?.status.preferences?.noticeSeconds ?? 30) * 1000 && (
+                    <p className="slow-turn" role="status">
+                      {turn.status === "QUEUED"
+                        ? "GitHub Actions aún prepara la ejecución."
+                        : "La respuesta está tardando más de lo habitual."}{" "}
+                      Puedes detenerla o ajustar el respaldo en <a href="#/ajustes">Ajustes</a>.
+                    </p>
+                  )}
                 {lastTurn?.status === "FAILED" && (
                   <p className="inline-notice error" role="alert">
                     El último turno falló: {lastTurn.error ?? "Error de ejecución"}. No se usó un
@@ -563,33 +567,28 @@ export function Chat() {
           <ChatComposer
             value={draft}
             onChange={setDraft}
-            onSave={() => void saveMessage()}
-            disabled={!detail || Boolean(turn) || (Boolean(configured) && !ready)}
+            onSend={() => void saveMessage()}
+            disabled={!detail || Boolean(turn)}
             busy={busy}
-            submitLabel={configured ? "Enviar" : "Guardar"}
-            controls={
-              projectId ? (
-                <label className="chat-model-picker">
-                  Modelo
-                  <select
-                    aria-label="Modelo de OpenRouter"
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                    disabled={!configured || busy || Boolean(turn)}
-                  >
-                    {!models.length && <option value="">Sin modelo conectado</option>}
-                    {model && !models.some((m) => m.id === model) && (
-                      <option value={model}>Modelo anterior no disponible</option>
-                    )}
-                    {models.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : undefined
-            }
+            canSend={ready}
+            models={models}
+            model={model}
+            setModel={setModel}
+            effort={effort}
+            setEffort={setEffort}
+            provider={provider?.status ?? null}
+            attachments={attachments}
+            setAttachments={setAttachments}
+            onError={setError}
+            onUsageRefresh={async () => {
+              if (projectId) {
+                const status = await requestApi<ProjectProviderStatus>(
+                  `projects/${projectId}/providers/openrouter`,
+                );
+                if (new URL(location.href).searchParams.get("project") === projectId)
+                  setProvider({ projectId, status });
+              }
+            }}
           />
         </section>
         {config && (
@@ -651,43 +650,9 @@ export function Chat() {
               >
                 Eliminar conversación
               </button>
-              <label>
-                Agente
-                <select disabled>
-                  <option>Integración pendiente</option>
-                  <option>Codex</option>
-                  <option>OpenCode</option>
-                </select>
-              </label>
-              <label>
-                Proveedor / modelo
-                <select
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  disabled={!configured || busy || Boolean(turn)}
-                >
-                  {!models.length && <option value="">Sin conexión</option>}
-                  {model && !models.some((m) => m.id === model) && (
-                    <option value={model}>Modelo anterior no disponible</option>
-                  )}
-                  {models.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      OpenRouter · {m.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {projectId && (
-                <a className="back-link" href={`?project=${projectId}&panel=provider#/proyectos`}>
-                  Configurar OpenRouter en el proyecto
-                </a>
-              )}
-              <label>
-                Nivel de esfuerzo
-                <select disabled>
-                  <option>No disponible</option>
-                </select>
-              </label>
+              <a className="back-link" href="#/ajustes">
+                Proveedores, respaldo y tiempo de aviso
+              </a>
               <label>
                 Proyecto
                 <input

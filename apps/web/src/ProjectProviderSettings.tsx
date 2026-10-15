@@ -3,13 +3,15 @@ import { useCallback, useEffect, useState } from "react";
 import { SectionCard, StatusBadge } from "./ui";
 import { requestApi } from "./workspace";
 
-export function ProjectProviderSettings({ projectId }: { projectId: string }) {
+export function ProviderSettings() {
   const [data, setData] = useState<ProjectProviderStatus | null>(null),
     [key, setKey] = useState("");
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
   const [clock, setClock] = useState(Date.now);
+  const [fallbackModel, setFallbackModel] = useState("");
+  const [noticeSeconds, setNoticeSeconds] = useState(30);
   useEffect(() => {
     const timer = setInterval(() => setClock(Date.now()), 60000);
     return () => clearInterval(timer);
@@ -17,26 +19,29 @@ export function ProjectProviderSettings({ projectId }: { projectId: string }) {
   const quality =
     data?.quota && clock - Date.parse(data.quota.checkedAt) > 300000 ? "stale" : "exact";
   const refresh = useCallback(
-    async () =>
-      setData(
-        await requestApi<ProjectProviderStatus>(`projects/${projectId}/providers/openrouter`),
-      ),
-    [projectId],
+    async () => setData(await requestApi<ProjectProviderStatus>("providers/openrouter")),
+    [],
   );
   useEffect(() => {
     void refresh().catch(() => setError("No se pudo consultar OpenRouter."));
   }, [refresh]);
+  useEffect(() => {
+    if (data?.preferences) {
+      setFallbackModel(data.preferences.fallbackModel);
+      setNoticeSeconds(data.preferences.noticeSeconds);
+    }
+  }, [data]);
   async function save() {
     if (busy) return;
     setBusy(true);
     setError("");
     setNotice("");
     try {
-      await requestApi(`projects/${projectId}/providers/openrouter`, {
+      await requestApi("providers/openrouter", {
         method: "PUT",
         body: JSON.stringify({ key: key.trim() }),
       });
-      setNotice("Conexión guardada y cifrada para este proyecto.");
+      setNotice("Conexión general guardada y cifrada.");
       window.dispatchEvent(new Event("cubo-provider-changed"));
       await refresh();
     } catch (e) {
@@ -47,9 +52,9 @@ export function ProjectProviderSettings({ projectId }: { projectId: string }) {
     }
   }
   return (
-    <div id="project-provider-settings">
+    <div id="provider-settings">
       <SectionCard
-        title="Proveedor del proyecto"
+        title="OpenRouter"
         actions={
           <StatusBadge
             status={data?.blockedReason ? "failed" : data?.configured ? "succeeded" : "pending"}
@@ -63,8 +68,8 @@ export function ProjectProviderSettings({ projectId }: { projectId: string }) {
           <span className="tag">Solo modelos gratuitos</span>
         </div>
         <p className="hint">
-          API de texto. Clave aislada y cifrada por proyecto. Los mensajes y el contexto autorizado
-          se envían a OpenRouter al ejecutar un turno; agentes y herramientas siguen pendientes.
+          Conexión general cifrada. Cada turno utiliza solo los mensajes y el contexto autorizado se
+          envían a OpenRouter al ejecutar un turno; agentes y herramientas siguen pendientes.
         </p>
         {error && (
           <p className="inline-notice error" role="alert">
@@ -159,6 +164,59 @@ export function ProjectProviderSettings({ projectId }: { projectId: string }) {
             cambiar fuera de Cubo; no equivalen al saldo total de la cuenta.
           </p>
         )}
+        <form
+          className="form-stack provider-preferences"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setBusy(true);
+            setError("");
+            try {
+              await requestApi("providers/openrouter/preferences", {
+                method: "PUT",
+                body: JSON.stringify({ fallbackModel, noticeSeconds }),
+              });
+              setNotice("Preferencias guardadas.");
+              window.dispatchEvent(new Event("cubo-provider-changed"));
+            } catch (error) {
+              setError(error instanceof Error ? error.message : "No se pudo guardar.");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <label>
+            Modelo de respaldo
+            <select
+              value={fallbackModel}
+              onChange={(e) => setFallbackModel(e.target.value)}
+              disabled={busy}
+            >
+              <option value="">Sin respaldo automático</option>
+              {data?.models.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name} · gratuito
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Avisar después de (segundos)
+            <input
+              type="number"
+              min={10}
+              max={180}
+              value={noticeSeconds}
+              onChange={(e) => setNoticeSeconds(Number(e.target.value))}
+            />
+          </label>
+          <p className="hint">
+            El respaldo se intenta una vez ante rechazo explícito por cuota o modelo no disponible.
+            Nunca tras una respuesta incierta o con un modelo de pago.
+          </p>
+          <button className="secondary compact" disabled={busy} type="submit">
+            Guardar preferencias
+          </button>
+        </form>
       </SectionCard>
     </div>
   );

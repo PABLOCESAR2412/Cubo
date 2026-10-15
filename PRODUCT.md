@@ -1,6 +1,13 @@
 # Cubo
 ## Platform
 web / PWA.
+## Refinamiento de Chat aprobado el 2026-10-14
+Sidebar de altura completa, acciones directas en chats recientes y chat minimalista
+con Markdown, una sola fila de controles y medida compartida con el compositor.
+Proveedor general en Ajustes; archivos, contexto y memoria permanecen aislados.
+Sesión persistente revocable, dictado según navegador, extractos de adjuntos y
+respaldo gratuito explícito. Ver [alcance preciso](docs/chat-refinement.md).
+Versión inicial 1.0.0; no equivale a declarar terminado todo el producto.
 ## Stack
 TypeScript, React, Vite, Tailwind, Bun, Hono, Cloudflare Workers Free, D1 y Workflows; GitHub Actions estándar.
 ## Users

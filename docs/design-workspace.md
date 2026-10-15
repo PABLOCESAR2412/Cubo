@@ -1,117 +1,125 @@
 # Workspace de Cubo
 
-Actualizado: 2026-10-14. Refinamiento local del workspace aprobado, con paleta
-intacta. Telo sigue siendo referencia directa de arquitectura, proporciones,
-densidad y comportamiento. Ver [comparación](telo-interface-comparison.md),
-[flujo actual](workspace-project-flow.md) y [sistema visual](../DESIGN.md).
+Actualizado: 2026-10-14. Chat minimalista implementado y validado localmente;
+la publicación de esta nueva iteración sigue pendiente. Se conserva la identidad
+aprobada de Cubo. Ver [comparación Telo](telo-interface-comparison.md),
+[flujo de proyectos](workspace-project-flow.md), [sistema visual](../DESIGN.md)
+y [contrato del refinamiento](chat-refinement.md).
 
 ## Dirección conservada
 
 Cubo es una consola de trabajo persistido: carbón, superficie gris fría, acento
 lima, Geist local, controles compactos, bordes finos y superficies planas.
-El estado pertenece al backend y la UI muestra datos persistidos y capacidades
-disponibles. Una captura o una función implementada no sustituyen su aceptación cloud.
+Telo sigue guiando la arquitectura del workspace. El refinamiento de Chat aprobado
+por el usuario incorpora la simplificación de las referencias ChatGPT/Claude.
+No cambia la paleta ni introduce una dirección visual nueva.
 
-El shell conserva barra de 42px, sidebar de 208px y contenido flexible. Hasta
-767px, la navegación abre un diálogo lateral de 230px. Los módulos usan padding
-de 22px 28px 28px, reducido a 20px 14px 24px en móvil. La paleta y los tokens
-normativos existentes de DESIGN.md se conservan.
+El shell ocupa 100dvh. En escritorio, la sidebar de 208px empieza en el borde
+superior y ocupa toda la altura; la barra de 42px empieza a su derecha. Hasta
+767px se conserva el drawer nativo de 230px. Los módulos usan padding de
+22px 28px 28px, reducido a 20px 14px 24px en móvil. La paleta base de seis tokens
+y sus variantes semánticas existentes se conservan en DESIGN.md.
 
 ## Composición actual
 
-La barra global reúne controles de instalación/actualización PWA y Diagnóstico,
-además del menú móvil. Se retiraron Cubo/módulo duplicados, hora y acceso de Ajustes
-de esta barra. Diagnóstico abre un diálogo nativo centrado que reúne sincronización
-API, última observación, disponibilidad de la API, configuración de GitHub Actions, presupuesto
-USD 0 y bloqueo de gasto. Explica que sincronización no demuestra cuota ni
-disponibilidad de runners.
+La barra global reúne instalación/actualización PWA, Diagnóstico y menú móvil.
+Diagnóstico conserva sincronización API, última observación, disponibilidad de
+la API, configuración de Actions y presupuesto USD 0. El acceso a Cubo no demuestra
+cuota ni disponibilidad de runners.
 
-La sidebar conserva marca Cubo y acción principal Nuevo proyecto. Navega a Tareas,
-Proyectos, Analíticas y Ajustes. Chat mantiene su ruta y se abre desde un proyecto
-o Recientes. Recientes solo muestra títulos de chats agrupados en Fijados, Hoy,
-Ayer, Últimos 7 días y Anteriores, sin tareas, horas ni captions por conversación.
-Su área desplaza internamente; Cerrar sesión queda al fondo.
+La sidebar conserva marca, Nuevo proyecto, Tareas, Proyectos, Analíticas y Ajustes.
+Recientes muestra chats agrupados en Fijados, Hoy, Ayer, Últimos 7 días y Anteriores.
+Cada fila incorpora acciones directas con SVG para renombrar, fijar o desfijar y
+eliminar. Renombrar abre un diálogo; eliminar pide confirmación. Los títulos largos
+usan elipsis y los controles tienen nombre accesible. Recientes desplaza dentro
+de su área; Cerrar sesión queda al fondo y Cubo 1.0.0 aparece debajo en este build.
+La versión procede del build; no es un texto que deba fijarse en futuras entregas.
 
-Proyectos es el inicio. Navegar a Proyectos o pulsar Cubo vuelve al listado.
-Las tarjetas compactas muestran nombre, repositorio y número real de chats;
-Abrir, Editar y Renombrar usan las operaciones persistentes existentes. La cuadrícula
-usa columnas automáticas desde 290px cuando caben, separación de 14px, padding de
-16px y radio de 10px. Nuevo proyecto abre el formulario y enfoca el nombre.
+Proyectos sigue siendo el inicio. Sus tarjetas reales conservan Abrir, Editar y
+Renombrar. El detalle conserva importación, repositorio y contexto manual separado
+del contexto importado. Nuevo chat está en los chats del proyecto; Abrir chat
+reutiliza el más reciente cuando existe. La importación privada sigue dependiendo
+de la deploy key del propietario; ver [importación](repository-import.md).
 
-El detalle conserva resumen, repositorio y acceso SSH, importación por revisión,
-archivos de solo lectura, chats y contexto editable. Instrucciones del repositorio
-identifica AGENTS.md o CLAUDE.md de la raíz; Memoria del repositorio identifica
-MEMORY.md. Ambos explicitan revisión, extracto o ausencia. Las instrucciones y
-memoria manual adicionales se guardan por separado. No hay aprendizaje automático
-de memoria. La aceptación pública cloud y la privada pendiente se describen en
-[importación de repositorios](repository-import.md).
+Chat ocupa el panel con nombre, acciones Exportar y Configuración con iconos,
+conversación desplazable y compositor inferior. La cabecera no añade proveedor
+ni Nuevo chat; tampoco existe un historial duplicado. El menú de tres puntos
+conserva renombrar, fijar y eliminar. Configuración del chat se abre a petición
+en una columna de 320px, de 280px hasta 1199px y a ancho completo en móvil.
 
-Chat ocupa el panel completo con cabecera, origen del proyecto, conversación
-desplazable y compositor inferior. No añade ventana Historial ni columna de
-conversaciones. Conserva renombrar, fijar, eliminar, copiar y exportar. El rol
-persistido determina Tú a la derecha y Asistente a la izquierda; las capturas
-actuales no contienen respuestas ficticias de un modelo. El selector obtiene
-modelos del catálogo API. Proveedor pendiente, Sin herramientas y los estados de
-turno expresan la capacidad disponible. Configuración abre a petición y ocupa
-todo el ancho en móvil.
+Mensajes, estados de turno y compositor comparten ancho máximo de 760px. El usuario
+mantiene su burbuja a la derecha. El asistente ocupa el ancho disponible sobre fondo
+transparente, con Markdown seguro: títulos, listas, enlaces, código y tablas,
+sin HTML crudo ni imágenes remotas. Código y tablas limitan su desplazamiento al
+contenido. Hora, rol y Copiar permanecen; la etiqueta Guardado se retiró.
 
-El panel Proveedor del proyecto permite configurar OpenRouter desde la PWA con
-un campo de contraseña. La integración de texto gratuito está implementada
-localmente; agentes, herramientas y escritura Git siguen pendientes. Sin clave,
-Chat permite guardar mensajes y muestra el proveedor pendiente. Con configuración
-válida, el código ofrece Enviar y turnos persistidos. La aceptación real de
-inferencia sigue pendiente de una clave introducida por el usuario; no se solicitan
-claves por chat. Ver [alcance y recuperación](openrouter-chat.md).
+El compositor usa radio de 18px, textarea de 14px y una fila para adjuntos, dictado,
+modelo con esfuerzo seleccionado, Uso y envío circular. Modelo y Uso abren el mismo
+diálogo centrado de hasta 520px, con búsqueda y catálogo público real de OpenRouter.
+La API y la familia del modelo se identifican por separado. Los esfuerzos solo
+aparecen cuando el catálogo anuncia niveles; no se inventan opciones por familia.
+La selección usa superficie carbón, borde y marca lima. El contexto máximo no se
+presenta como saldo. Cuota y fecha muestran datos recibidos o indisponibilidad;
+el consumo del mensaje se conoce al terminar el turno.
 
-Tareas conserva tres métricas, filtros, registro completo e inspector a petición.
-Analíticas conserva actividad derivada de tareas y calidades de datos explícitas;
-no inventa gasto, tokens ni cuota. Ajustes mantiene agentes y proveedores separados.
-La validación durable existente permanece como operación secundaria en Nueva tarea.
+Ajustes / Agentes y proveedores contiene la conexión general de OpenRouter,
+respaldo gratuito elegido expresamente y aviso por demora. Se sustituyó el panel
+de conexión por proyecto. La clave se introduce desde la PWA; no se solicita por
+chat ni se muestra una vez guardada. El contexto, los archivos y las conversaciones
+siguen separados por proyecto y chat. OpenCode, Codex y herramientas conservan
+su estado pendiente. Sin conexión válida, Chat dirige a Ajustes y no permite enviar.
+
+Dictado usa SpeechRecognition del navegador y añade texto al borrador tras permiso
+y aviso previo del posible envío de audio al servicio del navegador. Incompatibilidad
+deshabilita el control. Adjuntar o arrastrar TXT, MD, HTML, PDF, DOCX, XLSX y PPTX
+extrae texto en el navegador, con vista previa desplegable y retirada. La vista
+previa no reproduce la maquetación. Se permiten cuatro archivos de hasta 5MB,
+12000 caracteres por extracto y 24000 en total; PDF limita lectura a 30 páginas,
+sin OCR. El binario original no se conserva. Ver [límites](chat-refinement.md).
+
+La sesión backend se conserva sin expiración temporal y puede revocarse al cerrar
+sesión. La conservación de cookies por el navegador tiene sus propios límites;
+no se promete una sesión que sobreviva a borrar cookies. El detalle de renovación,
+autorización y compatibilidad se documenta en [Chat minimalista](chat-refinement.md).
 
 ## Evidencia de esta iteración
 
-Las capturas finales están en `artifacts/`, en escritorio (1440px) y móvil (390px):
+Capturas finales locales en escritorio (1440px) y móvil (390px):
 
 | Superficie | Escritorio | Móvil |
 | --- | --- | --- |
-| Proyectos | [Listado](../artifacts/workspace-projects-1440.png) | [Listado](../artifacts/workspace-projects-390.png) |
-| Proyecto | [Detalle](../artifacts/workspace-project-1440.png) | [Detalle](../artifacts/workspace-project-390.png) |
-| Chat | [Conversación](../artifacts/workspace-chat-1440.png) | [Conversación](../artifacts/workspace-chat-390.png) |
-| Proveedor | [OpenRouter](../artifacts/workspace-provider-1440.png) | [OpenRouter](../artifacts/workspace-provider-390.png) |
-| Diagnóstico | [Modal](../artifacts/workspace-diagnostics-1440.png) | [Modal](../artifacts/workspace-diagnostics-390.png) |
-| Recientes | — | [Navegación](../artifacts/workspace-recents-390.png) |
+| Chat | [Conversación](../artifacts/refined-chat-1440.png) | [Conversación](../artifacts/refined-chat-390.png) |
+| Modelo y uso | [Selector](../artifacts/refined-models-1440.png) | [Selector](../artifacts/refined-models-390.png) |
+| Ajustes generales | [Ajustes](../artifacts/refined-settings-1440.png) | [Ajustes](../artifacts/refined-settings-390.png) |
+| Recientes | — | [Acciones](../artifacts/refined-recents-390.png) |
 
-Estas imágenes documentan datos reales de una D1 local aislada y operaciones
-de UI. Los mensajes introducidos para validar persistencia no son respuestas de
-un modelo. El catálogo público de OpenRouter se consultó realmente: se observaron
-15 modelos gratuitos, una cantidad que puede cambiar. El formulario se comprobó
-sin clave; no demuestra inferencia ni uso de credenciales reales.
+Las conversaciones y respuestas de estas capturas son fixtures declaradas de QA
+almacenadas en D1 local aislada. No son inferencia real ni datos añadidos en cloud.
+El catálogo público sí se consultó realmente; su disponibilidad cambia y no se fija
+un número de modelos como requisito. La conexión se revisó sin clave configurada.
 
-La revisión local cubrió tarjetas, renombrado y edición persistentes, chat guardado
-y fijado, cierre y recuperación, retorno al listado, diagnóstico y proveedor. El
-registro de QA informa ausencia de overflow y errores JavaScript. La validación
-de implementación de esta iteración informa lint, typecheck, build y 29 tests con
-168 assertions. Capturas de composición: `index-jb7_0pFr.js`; Diagnóstico se corrigió
-y recapturó con `index-Dwu3aXS9.js`, CSS `index-DwGuiYYU.css`. Finish reviewer: ship.
+El cierre de validación comunicado para esta iteración informa 36 tests con 203
+assertions y lint, typecheck y build correctos. La QA de navegador informa extracción
+de los siete formatos, revisión 1440/390 y ausencia de errores JavaScript,
+violaciones CSP y overflow. Artefactos finales: `index-voL4CcLu.js` y
+`index-CEZ_fnF4.css`. La revisión de documentación contrasta código y capturas;
+no vuelve a ejecutar los comandos de validación.
 
-DESIGN.md y `.impeccable/design.json` describen la composición implementada y
-conservan los tokens aprobados. Los metadatos heredados de 10px, incluido Solo ruta,
-siguen documentados como deuda de legibilidad; no se convierten en regla para
-nuevas superficies. Las rampas de color del sidecar son muestras sintetizadas,
-no nuevos tokens de aplicación.
+DESIGN.md y el sidecar local ignorado `.impeccable/design.json` se reconcilian con
+la implementación. Los metadatos heredados de 10px siguen siendo deuda de
+legibilidad; no forman una escala normativa. Las rampas del sidecar son muestras
+sintetizadas y no tokens nuevos de aplicación.
 
 ## Límites de aceptación
 
-Esta iteración está publicada en cubo-dev con código b5f1250, Worker
-e979833a-e768-4491-9f7e-5ce992155a1b. UI cloud 1440/390, PWA y cancelación real
-comprobadas; ver [aceptación cloud](openrouter-cloud-validation.md). La aceptación
-real del turno OpenRouter con cierre/reapertura sigue pendiente. Las pruebas de
-proveedor usan fixtures identificadas y no prueban inferencia real. El renderizado
-de mensajes de asistente y métricas refleja soporte del código, no una ejecución
-real completada durante esta revisión.
+La publicación de este refinamiento sigue pendiente. El despliegue anterior en
+cubo-dev corresponde a `b5f1250`, Worker
+`e979833a-e768-4491-9f7e-5ce992155a1b`; ver [aceptación cloud anterior](openrouter-cloud-validation.md).
+Esa aceptación no valida la sesión revocable, conexión general ni composición nueva.
 
-La publicación anterior de la UI y Chat persistente corresponde a `fba6305`, Worker
-`31e51af7-74f0-42df-ada1-ea28b058c0dc`. Su aceptación remota conserva resultado 91
-de la tarea previa y persistencia de Chat. La continuidad cloud del motor tiene
-evidencia independiente en [validación cloud](cloud-validation.md). Esas pruebas
-anteriores no validan automáticamente el nuevo proveedor ni esta composición local.
+Sigue pendiente inferencia real con clave introducida por el usuario en la PWA,
+incluida recuperación tras cerrar el cliente. Las fixtures no demuestran consumo
+real, respaldo remoto ni cuotas autenticadas. El dictado requiere aceptación con
+micrófono físico y navegador compatible; la instalación física PWA sigue pendiente.
+La continuidad durable previa conserva evidencia independiente en
+[validación cloud](cloud-validation.md).
