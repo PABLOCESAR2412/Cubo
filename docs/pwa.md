@@ -37,6 +37,30 @@ La instalación en el sistema operativo sigue dependiendo del navegador/disposit
 
 ## Prueba y límites
 
+### Recuperación de una versión atascada
+
+El incidente del CSS `index-CEZ_fnF4.css` devolvía `200 text/html`: el fallback SPA
+respondía con el shell cuando el asset antiguo ya no existía. El navegador
+rechazaba ese HTML como stylesheet. No se desactiva `nosniff` ni se falsea el MIME.
+Los assets pasan por una guardia que responde 404 al recibir HTML, y las nuevas
+versiones del service worker excluyen `/assets/` del fallback de navegación.
+
+Abrir `/api/pwa-recovery` permite recuperar incluso shells antiguos: `/api/` ya
+estaba excluido de su fallback offline. El botón comprueba conexión, retira solo
+el registro `/sw.js` y su precaché Workbox de este origen, y vuelve a abrir Cubo.
+Conserva cookies, localStorage, IndexedDB y todas las entidades del backend.
+Puede perderse un borrador no enviado; la página pide guardarlo primero.
+No hay recuperación automática destructiva ni limpieza de todas las cachés.
+Una carga futura con assets rotos muestra el enlace de recuperación sin depender
+del bundle React. El error del botón Actualizar también ofrece esa salida.
+
+La prueba reproducible es `bun run scripts/pwa-recovery-check.ts`, con Wrangler
+local en 8855 y `LOCAL_DEV=true`. Simula un shell antiguo en una caché real y
+comprueba MIME, recuperación, conservación de cookies/localStorage y de una caché
+ajena, con capturas 1440/390. No inicia runners ni consume modelos.
+El comportamiento del fallback está documentado por
+[Cloudflare Static Assets](https://developers.cloudflare.com/workers/static-assets/).
+
 Prueba de navegador con dos versiones reales del service worker en loopback:
 detectar worker en espera, mostrar aviso, comprobar que no recarga automáticamente,
 posponer/cancelar confirmación sin perder la página, confirmar y comprobar recarga

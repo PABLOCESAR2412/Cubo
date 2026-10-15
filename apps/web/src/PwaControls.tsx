@@ -142,6 +142,9 @@ export function PwaControls() {
       {error && (
         <div className="pwa-update-notice error" role="alert">
           {error}
+          <a className="secondary compact" href="/api/pwa-recovery">
+            Recuperar actualización
+          </a>
           <button className="secondary compact" type="button" onClick={() => setError("")}>
             Cerrar
           </button>

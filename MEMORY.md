@@ -145,6 +145,12 @@ el control plane. Esa integración Git de escritura sigue pendiente.
 
 ## Límites y próximos hitos
 
+- Incidente PWA: asset CSS retirado devolvía HTML200 por fallback SPA; confirmado
+  contra cloud. Guardia de MIME para /assets, exclusión offline y recuperación
+  pública /api/pwa-recovery implementadas. Prueba con caché real de shell antiguo
+  recupera app y conserva cookies/localStorage/caché ajena; docs/pwa.md y
+  scripts/pwa-recovery-check.ts. No limpia datos de D1 ni credenciales.
+
 - Refinamiento acotado de proveedores: clave/Guardar clave/Obtener clave con icono
   externo juntos; uso y respaldo desplegables; integraciones pendientes compactas.
   Playwright CLI revisó cinco vistas en 1440/390, teclado y error de guardado con

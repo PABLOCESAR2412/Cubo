@@ -35,7 +35,23 @@ export class TaskWorkflow extends WorkflowEntrypoint<Env, { executionId: string 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const path = new URL(request.url).pathname;
+    if (path === "/api/pwa-recovery" && request.method === "GET") {
+      const url = new URL("/pwa-recovery", request.url);
+      const response = await env.ASSETS.fetch(new Request(url));
+      const headers = new Headers(response.headers);
+      headers.set("Cache-Control", "no-store");
+      return new Response(response.body, { status: response.status, headers });
+    }
     if (path.startsWith("/api/")) return app.fetch(request, env);
+    if (path.startsWith("/assets/")) {
+      const response = await env.ASSETS.fetch(request);
+      if (response.headers.get("Content-Type")?.includes("text/html"))
+        return new Response("Asset no disponible. Actualiza Cubo.", {
+          status: 404,
+          headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+        });
+      return response;
+    }
     return env.ASSETS.fetch(request);
   },
   async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
