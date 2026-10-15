@@ -87,6 +87,13 @@ provider_keys vacío y la conexión anterior intacta. No había turnos activos. 
 pidió versión visible y mensaje de Guardar clave para distinguir caché de UI,
 validación de credencial o error real; todavía no se asigna una causa sin evidencia.
 
+El usuario confirmó después la interfaz nueva. La observación de método, ruta y
+código HTTP, descartando cuerpos y cabeceras, registró GET /api/providers/openrouter
+200 y PUT /api/providers/openrouter/preferences 200. No se observó un PUT a la ruta
+de clave durante esa ventana. Guardar preferencias no guarda la clave; se indicó
+el botón Guardar clave junto al campo de contraseña. La conexión general mantiene
+su aceptación pendiente hasta completar esa operación.
+
 Inferencia mediante conexión general espera configuración. El intento en otro
 proyecto se detuvo antes de despachar un job al detectar que faltaba esa conexión.
 La prueba de adjunto posterior usó explícitamente el proyecto con conexión anterior.

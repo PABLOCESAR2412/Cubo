@@ -134,8 +134,11 @@ el control plane. Esa integración Git de escritura sigue pendiente.
   otro falló PROVIDER_REQUEST_FAILED. No se inspeccionaron sus mensajes privados.
 - El usuario confirmó guardado general, pero provider_keys sigue vacío y solo
   existe la conexión anterior. No hay turnos activos. La API de guardado general
-  pasó prueba con fixture; falta el mensaje visible y versión del navegador para
-  identificar la causa. No atribuirla sin evidencia ni pedir claves por chat.
+  pasó prueba con fixture. El usuario confirmó la interfaz nueva. Observación sin
+  secretos: GET /api/providers/openrouter y PUT /api/providers/openrouter/preferences
+  devolvieron 200, pero no llegó PUT /api/providers/openrouter durante la ventana.
+  Se explicó la diferencia entre Guardar preferencias y Guardar clave. Falta esa
+  última acción y su mensaje visible; no pedir claves por chat.
 - Ver docs/chat-refinement.md y docs/chat-refinement-validation.md. No se leyó ni
   copió ninguna clave del usuario; no se activaron servicios pagos. Próximo paso:
   resolver la configuración general y verificar uso desde otro proyecto.
