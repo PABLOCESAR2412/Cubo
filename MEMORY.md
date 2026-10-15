@@ -150,6 +150,9 @@ el control plane. Esa integración Git de escritura sigue pendiente.
   pública /api/pwa-recovery implementadas. Prueba con caché real de shell antiguo
   recupera app y conserva cookies/localStorage/caché ajena; docs/pwa.md y
   scripts/pwa-recovery-check.ts. No limpia datos de D1 ni credenciales.
+  Publicado como1.0.2, código d0bef84, Worker f497132f-6b4d-44ec-bf4e-b8a2584ee0fc.
+  Recuperación de shell obsoleto probada también contra cloud: CSS antiguo404,
+  CSS actualtext/css, app recuperada y cookies/localStorage/caché ajena conservados.
 
 - Refinamiento acotado de proveedores: clave/Guardar clave/Obtener clave con icono
   externo juntos; uso y respaldo desplegables; integraciones pendientes compactas.

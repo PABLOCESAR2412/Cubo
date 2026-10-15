@@ -61,6 +61,11 @@ ajena, con capturas 1440/390. No inicia runners ni consume modelos.
 El comportamiento del fallback está documentado por
 [Cloudflare Static Assets](https://developers.cloudflare.com/workers/static-assets/).
 
+Corrección publicada como Cubo 1.0.2, commit `d0bef84`, Worker
+`f497132f-6b4d-44ec-bf4e-b8a2584ee0fc`. La misma prueba pasó contra cloud:
+CSS antiguo 404, CSS vigente text/css, recuperación de shell obsoleto y conservación
+de cookies, localStorage y caché ajena. Tests 38/211, lint, tipos y build correctos.
+
 Prueba de navegador con dos versiones reales del service worker en loopback:
 detectar worker en espera, mostrar aviso, comprobar que no recarga automáticamente,
 posponer/cancelar confirmación sin perder la página, confirmar y comprobar recarga
