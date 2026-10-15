@@ -1,13 +1,12 @@
 import type { Conversation } from "@cubo/shared";
 import { useEffect, useRef, useState } from "react";
-import { Diagnostics } from "./Diagnostics";
 import { Icon, type IconName } from "./Icon";
 import { NewTask } from "./NewTask";
 import { Analytics, Chat, Projects, Settings } from "./PreparedViews";
 import { PwaControls } from "./PwaControls";
 import { RecentChat } from "./RecentChat";
 import { Tasks } from "./Tasks";
-import { AppShell, Sidebar, TopBar } from "./ui";
+import { AppShell, Sidebar } from "./ui";
 import { requestApi, taskIdFromHash, useWorkspace } from "./workspace";
 
 type View = "chat" | "tareas" | "proyectos" | "analiticas" | "ajustes";
@@ -188,25 +187,17 @@ export default function App() {
     );
   return (
     <AppShell>
-      <TopBar>
-        <div>
-          <button
-            ref={toggle}
-            type="button"
-            className="icon-button mobile-only"
-            aria-label="Abrir navegación"
-            aria-expanded={drawer}
-            aria-controls="workspace-navigation"
-            onClick={() => setDrawer(!drawer)}
-          >
-            <Icon name="menu" />
-          </button>
-        </div>
-        <div className="systembar-status">
-          <PwaControls />
-          <Diagnostics w={w} />
-        </div>
-      </TopBar>
+      <button
+        ref={toggle}
+        type="button"
+        className="icon-button mobile-menu-trigger mobile-only"
+        aria-label="Abrir navegación"
+        aria-expanded={drawer}
+        aria-controls="workspace-navigation"
+        onClick={() => setDrawer(!drawer)}
+      >
+        <Icon name="menu" />
+      </button>
       <Sidebar mobile={mobile} dialogRef={navigationDialog} close={() => setDrawer(false)}>
         <div className="brand-row">
           <button
@@ -283,6 +274,7 @@ export default function App() {
           {!recentChats.length && <p className="hint">Sin chats todavía</p>}
         </div>
         <div className="sidebar-system">
+          <PwaControls />
           <button type="button" className="sign-out" onClick={() => void w.logout()}>
             <Icon name="logout" size={15} />
             Cerrar sesión

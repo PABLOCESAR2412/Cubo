@@ -84,7 +84,12 @@ el control plane. Esa integración Git de escritura sigue pendiente.
 
 - Sidebar de altura completa y acciones directas en Recientes. Chat sin proveedor
   en el encabezado, sin Nuevo chat ni Guardado; exportación/configuración con iconos.
-  Markdown seguro y fondo transparente; medida compartida de 760px. Paleta intacta.
+  Markdown seguro y fondo transparente. Paleta intacta.
+  Barra superior y botón de diagnóstico eliminados; PwaControls reubicado en la sidebar.
+  Ancho unificado ampliado un 50% de 760px a 1140px compartido entre Chat, Tareas,
+  Proyectos, Analíticas y Ajustes.
+  Módulo de Analíticas implementado con telemetría de tokens, gasto, modelos, proveedores,
+  desglose por proyecto y modelo, y filtros por periodo (Hoy, 7d, 30d, 90d, Todo).
   Finish reviewer: ship, incluida evidencia adicional del formulario general.
 - Nuevo chat se crea desde el proyecto. Abrir chat reutiliza el existente y espera
   la carga del historial; se corrigió una carrera detectada durante la prueba.
