@@ -619,8 +619,13 @@ export function Settings({ w }: { w: Workspace }) {
           <div className="field-grid">
             <label>
               Tema
-              <select disabled>
-                <option>Oscuro · paleta de Cubo</option>
+              <select
+                value={w.theme}
+                onChange={(e) => w.setTheme(e.target.value === "light" ? "light" : "dark")}
+                aria-label="Tema de la interfaz"
+              >
+                <option value="dark">Oscuro · paleta de Cubo</option>
+                <option value="light">Claro · misma paleta base</option>
               </select>
             </label>
             <label>
@@ -630,7 +635,7 @@ export function Settings({ w }: { w: Workspace }) {
               </select>
             </label>
           </div>
-          <p className="hint">Paleta aprobada conservada. Preferencias persistentes pendientes.</p>
+          <p className="hint">Oscuro por defecto. El modo claro reutiliza los mismos componentes.</p>
           <h3>Instalación de Cubo</h3>
           <p className="hint">
             Usa Instalar cuando aparezca en la barra superior. Si no aparece, busca Instalar
