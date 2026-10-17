@@ -10,6 +10,7 @@ export function database(path = ":memory:"): { sqlite: Database; db: D1Database 
     "0005_chat_turns.sql",
     "0006_chat_workspace.sql",
     "0007_tasks_project_id.sql",
+    "0008_multi_providers.sql",
   ])
     sqlite.exec(readFileSync(`packages/database/migrations/${name}`, "utf8"));
   function prepare(sql: string, params: unknown[] = []) {

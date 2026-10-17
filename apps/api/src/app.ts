@@ -12,6 +12,7 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { deleteCookie, setCookie } from "hono/cookie";
 import { z } from "zod";
+import { aiRoutes } from "./ai";
 import {
   localAccess,
   ownerAuthorized,
@@ -118,6 +119,7 @@ app.post("/api/logout", async (c) => {
   return c.json({ ok: true });
 });
 app.route("/api/providers", globalProviderRoutes);
+app.route("/api/ai", aiRoutes);
 app.use("/api/tasks/*", async (c, next) => {
   if (!(await ownerAuthorized(c)))
     return c.json({ error: "Inicia sesión para acceder a Cubo." }, 401);

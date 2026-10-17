@@ -224,6 +224,13 @@ el control plane. Esa integración Git de escritura sigue pendiente.
   - Turnos independientes: Soporte para turnos de chat sin proyecto (`projectId: null`) ejecutados mediante la conexión OpenRouter general del usuario, manteniendo aislamiento estricto y claves cifradas.
   - 55 tests pasando, 0 errores tsc, Biome limpio y desplegado en Cloudflare Workers (`cubo-dev`).
 
+- Multi-proveedores (Gemini, Groq, NVIDIA, OpenRouter), Motor Type-Safe AI y Modo Claro de Precisión:
+  - Multi-proveedores: Adaptadores y validación de claves para Google Gemini (`AIzaSy...`), Groq Cloud (`gsk_...`), NVIDIA NIM (`nvapi-...`) y OpenRouter (`sk-or-v1-...`). Migración D1 `0008_multi_providers.sql` expande la restricción CHECK de `provider_keys` y `project_provider_keys` a los cuatro proveedores.
+  - Motor Type-Safe AI (`@cubo/providers/typesafe-ai`): Salidas estructuradas con validación en tiempo de ejecución de contratos Zod para propuestas de tareas (`taskProposalSchema`), síntesis y actualización de memoria técnica (`projectMemorySchema`) y sugerencias contextuales (`suggestionListSchema`). Endpoints `/api/ai/*` habilitados y protegidos.
+  - Ajustes de Proveedores (`Settings.tsx`): Gestión multi-proveedor interactiva con pestañas dedicadas, claves enmascaradas con revelado, guardado/eliminado cifrado AES-256-GCM, garantía USD $0.00 de gasto cero y banner interactivo de prueba para el motor Type-Safe.
+  - Modo Claro Refinado (Porcelain Precision): Corrección de contraste en burbujas de mensajes de usuario (fondo `#f3f4f6`, borde `#e5e7eb`), bloques de código `pre` y `code` con fondo suave y alto contraste, dropdowns contextuales y elevaciones limpias.
+  - 62 tests pasando (`bun test`), 0 errores TypeScript (`tsc --noEmit`), Biome limpio y build verificado.
+
 Actualizar esta instantánea al cerrar hitos; conservar decisiones y bloqueos,
 no acumular un log de comandos ni memorias divergentes por agente.
 

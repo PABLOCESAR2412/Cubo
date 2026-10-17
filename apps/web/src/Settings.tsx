@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import type { FreeModel, ProviderQuota, SupportedProvider } from "@cubo/shared";
+import { useCallback, useEffect, useState } from "react";
 import { Icon } from "./Icon";
 import {
   getNotificationPreferences,
@@ -7,26 +8,182 @@ import {
   saveNotificationPreferences,
 } from "./notifications";
 import { getStoredTheme, saveTheme, type Theme } from "./theme";
-import type { Workspace } from "./workspace";
+import { requestApi, type Workspace } from "./workspace";
+
+interface ProviderItem {
+  provider: SupportedProvider;
+  name: string;
+  configured: boolean;
+  encryptionConfigured: boolean;
+  models: FreeModel[];
+  quota: ProviderQuota | null;
+  catalogAvailable: boolean;
+  blockedReason: string | null;
+}
+
+const PROVIDER_METADATA: Record<
+  SupportedProvider,
+  {
+    subtitle: string;
+    placeholder: string;
+    docsUrl: string;
+    docsLabel: string;
+    icon: "terminal" | "cube" | "bolt" | "shield";
+    defaultModel: string;
+  }
+> = {
+  gemini: {
+    subtitle: "Google AI Studio · Modelos Flash y Pro",
+    placeholder: "AIzaSy...",
+    docsUrl: "https://aistudio.google.com/app/apikey",
+    docsLabel: "Obtener clave en Google AI Studio",
+    icon: "cube",
+    defaultModel: "gemini-2.0-flash",
+  },
+  groq: {
+    subtitle: "Groq LPU Inference · Llama 3.3 y Mixtral Ultrarrápidos",
+    placeholder: "gsk_...",
+    docsUrl: "https://console.groq.com/keys",
+    docsLabel: "Obtener clave en Groq Console",
+    icon: "bolt",
+    defaultModel: "llama-3.3-70b-versatile",
+  },
+  nvidia: {
+    subtitle: "NVIDIA NIM / Build · Enterprise Accelerated Inference",
+    placeholder: "nvapi-...",
+    docsUrl: "https://build.nvidia.com/",
+    docsLabel: "Obtener clave en NVIDIA Build",
+    icon: "terminal",
+    defaultModel: "meta/llama-3.3-70b-instruct",
+  },
+  openrouter: {
+    subtitle: "OpenRouter Cloud Pipeline · Acceso a Catálogo Libre",
+    placeholder: "sk-or-v1-...",
+    docsUrl: "https://openrouter.ai/keys",
+    docsLabel: "Obtener clave en OpenRouter",
+    icon: "terminal",
+    defaultModel: "qwen/qwen-2.5-coder-32b-instruct:free",
+  },
+};
 
 export function Settings({ w }: { w: Workspace }) {
   const [currentTheme, setCurrentTheme] = useState<Theme>(() => getStoredTheme());
-  const [apiKey, setApiKey] = useState("••••••••••••••••••••••••••••••••");
+  const [selectedProvider, setSelectedProvider] = useState<SupportedProvider>("gemini");
+  const [providers, setProviders] = useState<Record<SupportedProvider, ProviderItem | null>>({
+    gemini: null,
+    groq: null,
+    nvidia: null,
+    openrouter: null,
+  });
+  const [keyInput, setKeyInput] = useState("");
   const [showKey, setShowKey] = useState(false);
-  const [selectedModel, setSelectedModel] = useState("qwen/qwen-2.5-coder-32b-instruct:free");
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Type-Safe AI State
+  const [typeSafeTesting, setTypeSafeTesting] = useState(false);
+  const [typeSafeResult, setTypeSafeResult] = useState<string | null>(null);
+
+  // Notifications State
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
     const prefs = getNotificationPreferences();
     return prefs.enabled;
   });
   const [notifMessage, setNotifMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const handleStorage = () => {
-      setCurrentTheme(getStoredTheme());
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+  const refreshProviders = useCallback(async () => {
+    try {
+      const res = await requestApi<{ providers: ProviderItem[] }>("providers");
+      if (res?.providers) {
+        const map: Record<SupportedProvider, ProviderItem | null> = {
+          gemini: null,
+          groq: null,
+          nvidia: null,
+          openrouter: null,
+        };
+        for (const item of res.providers) {
+          map[item.provider] = item;
+        }
+        setProviders(map);
+      }
+    } catch {
+      // Fallback single provider fetch
+      try {
+        const item = await requestApi<ProviderItem>("providers/openrouter");
+        setProviders((prev) => ({ ...prev, openrouter: item }));
+      } catch {
+        /* Preservar UI */
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    void refreshProviders();
+  }, [refreshProviders]);
+
+  const handleSaveKey = async () => {
+    if (!keyInput.trim()) return;
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      await requestApi(`providers/${selectedProvider}`, {
+        method: "PUT",
+        body: JSON.stringify({ key: keyInput.trim() }),
+      });
+      setNotice(
+        `Clave para ${selectedProvider.toUpperCase()} guardada y cifrada con éxito (AES-256-GCM).`,
+      );
+      setKeyInput("");
+      setShowKey(false);
+      await refreshProviders();
+      setTimeout(() => setNotice(null), 5000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al guardar la clave del proveedor.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDeleteKey = async () => {
+    if (!confirm(`¿Eliminar la clave configurada para ${selectedProvider.toUpperCase()}?`)) return;
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      await requestApi(`providers/${selectedProvider}`, {
+        method: "DELETE",
+      });
+      setNotice(`Clave de ${selectedProvider.toUpperCase()} eliminada.`);
+      await refreshProviders();
+      setTimeout(() => setNotice(null), 4000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al eliminar la clave.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleTestTypeSafeAi = async () => {
+    setTypeSafeTesting(true);
+    setTypeSafeResult(null);
+    try {
+      const res = await requestApi<{ suggestions: unknown }>("ai/suggest", {
+        method: "POST",
+        body: JSON.stringify({
+          context:
+            "Usuario trabajando en refactorización de middleware y temas de interfaz en Cubo PWA.",
+          provider: selectedProvider,
+        }),
+      });
+      setTypeSafeResult(JSON.stringify(res.suggestions, null, 2));
+    } catch (err) {
+      setTypeSafeResult(`Error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setTypeSafeTesting(false);
+    }
+  };
 
   const handleThemeChange = (newTheme: Theme) => {
     setCurrentTheme(newTheme);
@@ -78,6 +235,9 @@ export function Settings({ w }: { w: Workspace }) {
     }
   };
 
+  const currentProviderData = providers[selectedProvider];
+  const meta = PROVIDER_METADATA[selectedProvider];
+
   return (
     <div className="settings-stitch-canvas">
       {/* 1. Header */}
@@ -85,42 +245,104 @@ export function Settings({ w }: { w: Workspace }) {
         <span className="settings-stitch-breadcrumb">AJUSTES / CONFIGURACIÓN DE ENTORNO</span>
         <h1 className="settings-stitch-title">Ajustes del Sistema y Proveedores</h1>
         <p className="settings-stitch-subtitle">
-          Gestiona claves de cómputo en la nube, límites de modelos, alertas de agente y apariencia
-          de escritorio.
+          Gestiona claves de cómputo en la nube (Gemini, Groq, NVIDIA, OpenRouter), límites de
+          modelos, asistente Type-Safe y apariencia de escritorio.
         </p>
       </div>
 
       <div className="settings-stitch-stack">
-        {/* Card 1: Proveedor de Inferencia LLM */}
+        {/* Card 1: Proveedores de Inferencia LLM y Claves */}
         <section className="settings-stitch-card" aria-labelledby="llm-heading">
           <div className="card-stitch-header">
             <div className="card-stitch-title-group">
               <div className="card-stitch-icon" aria-hidden="true">
-                <Icon name="terminal" size={17} />
+                <Icon name={meta.icon} size={17} />
               </div>
               <div>
                 <h2 id="llm-heading" className="card-stitch-title">
-                  Proveedor de Inferencia LLM
+                  Proveedores de Inferencia LLM
                 </h2>
-                <span className="card-stitch-subtitle">
-                  OpenRouter Cloud Pipeline &amp; Routing
-                </span>
+                <span className="card-stitch-subtitle">{meta.subtitle}</span>
               </div>
             </div>
             <div className="card-stitch-status-pill">
-              <span className="stitch-status-dot" />
-              <span>Conexión Cifrada (AES-256-GCM)</span>
+              <span
+                className={`stitch-status-dot ${currentProviderData?.configured ? "active" : ""}`}
+              />
+              <span>
+                {currentProviderData?.configured
+                  ? "Conexión Cifrada (AES-256-GCM)"
+                  : "Clave Pendiente"}
+              </span>
             </div>
           </div>
 
           <div className="card-stitch-body">
-            {/* API Key Row */}
+            {/* Tabs selector for Providers */}
+            <div className="settings-provider-tabs">
+              {(["gemini", "groq", "nvidia", "openrouter"] as SupportedProvider[]).map((p) => {
+                const isConf = Boolean(providers[p]?.configured);
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    className={`settings-provider-tab-btn ${selectedProvider === p ? "active" : ""}`}
+                    onClick={() => {
+                      setSelectedProvider(p);
+                      setKeyInput("");
+                      setShowKey(false);
+                      setError(null);
+                      setNotice(null);
+                    }}
+                  >
+                    <span className={`tab-status-dot ${isConf ? "configured" : ""}`} />
+                    <span>
+                      {p === "gemini"
+                        ? "Google Gemini"
+                        : p === "groq"
+                          ? "Groq Cloud"
+                          : p === "nvidia"
+                            ? "NVIDIA NIM"
+                            : "OpenRouter"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {notice && (
+              <div className="inline-notice" role="status" style={{ marginBottom: 12 }}>
+                {notice}
+              </div>
+            )}
+            {error && (
+              <div className="inline-notice error" role="alert" style={{ marginBottom: 12 }}>
+                {error}
+              </div>
+            )}
+
+            {/* API Key Form */}
             <div className="settings-field-group">
               <div className="settings-field-label-row">
                 <label htmlFor="api-key-input" className="settings-field-label">
-                  CLAVE DE ACCESO API
+                  CLAVE DE ACCESO API ({selectedProvider.toUpperCase()})
                 </label>
-                <span className="settings-field-status">sk-or-v1-validated</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <a
+                    href={meta.docsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="settings-field-status"
+                    style={{ textDecoration: "underline", cursor: "pointer" }}
+                  >
+                    {meta.docsLabel} ↗
+                  </a>
+                  {currentProviderData?.configured && (
+                    <span className="settings-field-status" style={{ color: "var(--signal)" }}>
+                      ✓ Guardada y cifrada
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="settings-key-input-row">
                 <div className="settings-input-wrapper">
@@ -128,9 +350,14 @@ export function Settings({ w }: { w: Workspace }) {
                     id="api-key-input"
                     type={showKey ? "text" : "password"}
                     className="settings-text-input mono"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="sk-or-v1-..."
+                    value={keyInput}
+                    onChange={(e) => setKeyInput(e.target.value)}
+                    placeholder={
+                      currentProviderData?.configured
+                        ? "•••••••••••••••••••••••••••••••• (Clave configurada)"
+                        : meta.placeholder
+                    }
+                    disabled={busy}
                   />
                   <button
                     type="button"
@@ -144,34 +371,45 @@ export function Settings({ w }: { w: Workspace }) {
                 <button
                   type="button"
                   className="settings-action-btn"
-                  onClick={() => {
-                    alert("Clave guardada y cifrada en el almacén seguro.");
-                  }}
+                  onClick={() => void handleSaveKey()}
+                  disabled={busy || !keyInput.trim()}
                 >
-                  Actualizar Clave
+                  {currentProviderData?.configured ? "Actualizar Clave" : "Guardar Clave"}
                 </button>
+                {currentProviderData?.configured && (
+                  <button
+                    type="button"
+                    className="secondary compact"
+                    style={{ height: 36, padding: "0 12px" }}
+                    onClick={() => void handleDeleteKey()}
+                    disabled={busy}
+                    title="Eliminar clave configurada"
+                  >
+                    Eliminar
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Model & Budget Row */}
+            {/* Models & Budget Row */}
             <div className="settings-grid-two">
               <div className="settings-field-group">
                 <span className="settings-field-label">MODELO PREDETERMINADO</span>
                 <div className="settings-select-wrapper">
                   <select
                     className="settings-select"
-                    value={selectedModel}
-                    onChange={(e) => setSelectedModel(e.target.value)}
+                    defaultValue={meta.defaultModel}
+                    disabled={!currentProviderData?.models?.length}
                   >
-                    <option value="qwen/qwen-2.5-coder-32b-instruct:free">
-                      Qwen 2.5 Coder 32B (Free Tier)
-                    </option>
-                    <option value="google/gemini-2.0-flash-exp:free">
-                      Gemini 2.0 Flash (Free Tier)
-                    </option>
-                    <option value="meta-llama/llama-3.3-70b-instruct:free">
-                      Llama 3.3 70B (Free Tier)
-                    </option>
+                    {currentProviderData?.models && currentProviderData.models.length > 0 ? (
+                      currentProviderData.models.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))
+                    ) : (
+                      <option value={meta.defaultModel}>{meta.defaultModel}</option>
+                    )}
                   </select>
                   <Icon name="chevron" size={14} className="select-chevron" />
                 </div>
@@ -184,9 +422,78 @@ export function Settings({ w }: { w: Workspace }) {
                     <Icon name="check" size={13} className="budget-check" />
                     <span>USD $0.00</span>
                   </div>
-                  <span className="budget-note">Sin fallback de pago</span>
+                  <span className="budget-note">Sin fallback de pago · Free Tier Estricto</span>
                 </div>
               </div>
+            </div>
+
+            {/* Type-Safe AI Assistant Section */}
+            <div className="typesafe-ai-banner">
+              <div className="typesafe-ai-header">
+                <div className="typesafe-ai-title">
+                  <Icon name="cube" size={15} />
+                  <span>Motor Type-Safe de Inteligencia Artificial</span>
+                </div>
+                <span className="typesafe-ai-badge">ZOD TYPE-SAFE VALIDADO</span>
+              </div>
+              <p className="typesafe-ai-desc">
+                Esta IA auxiliar opera bajo contratos fuertemente tipados. Genera exclusivamente
+                salidas estructuradas y validadas en tiempo de ejecución para:
+              </p>
+              <div className="typesafe-capabilities-grid">
+                <div className="typesafe-cap-item">
+                  <span className="typesafe-cap-icon">✦</span>
+                  <div className="typesafe-cap-text">
+                    <strong>Propuestas de Tareas</strong>
+                    <span>
+                      Desglose de refactorizaciones, impacto y pasos estimados para Codex/OpenCode.
+                    </span>
+                  </div>
+                </div>
+                <div className="typesafe-cap-item">
+                  <span className="typesafe-cap-icon">✦</span>
+                  <div className="typesafe-cap-text">
+                    <strong>Síntesis de Memoria</strong>
+                    <span>
+                      Destilación estructurada de decisiones técnicas y arquitectura por proyecto.
+                    </span>
+                  </div>
+                </div>
+                <div className="typesafe-cap-item">
+                  <span className="typesafe-cap-icon">✦</span>
+                  <div className="typesafe-cap-text">
+                    <strong>Sugerencias Contextuales</strong>
+                    <span>
+                      Acciones rápidas y recomendaciones proactivas en el chat de desarrollo.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 8, display: "flex", gap: 10, alignItems: "center" }}>
+                <button
+                  type="button"
+                  className="secondary compact"
+                  onClick={() => void handleTestTypeSafeAi()}
+                  disabled={typeSafeTesting}
+                >
+                  {typeSafeTesting
+                    ? "Ejecutando contrato Type-Safe…"
+                    : "Probar Asistente Type-Safe"}
+                </button>
+                {typeSafeResult && (
+                  <button
+                    type="button"
+                    className="icon-button"
+                    onClick={() => setTypeSafeResult(null)}
+                    title="Cerrar resultado"
+                  >
+                    <Icon name="close" size={12} />
+                  </button>
+                )}
+              </div>
+
+              {typeSafeResult && <pre className="typesafe-test-result">{typeSafeResult}</pre>}
             </div>
           </div>
         </section>
@@ -199,7 +506,7 @@ export function Settings({ w }: { w: Workspace }) {
                 <h2 id="notif-heading" className="card-stitch-title">
                   Notificaciones PWA y Alertas Web
                 </h2>
-                <span className="sw-version-pill">Service Worker v1.4</span>
+                <span className="sw-version-pill">Service Worker v2.0</span>
               </div>
               <p className="card-stitch-desc">
                 Notificar cuando un agente termine, falle o requiera aprobación de diffs en Git
@@ -270,7 +577,7 @@ export function Settings({ w }: { w: Workspace }) {
                   <div className="visual-accent-line green" />
                 </div>
               </div>
-              <span className="theme-preview-sub">Zenith Graphite · Monocromo</span>
+              <span className="theme-preview-sub">Silent Canvas · Monocromo</span>
             </button>
 
             {/* Card Claro */}
