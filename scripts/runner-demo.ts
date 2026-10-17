@@ -1,11 +1,16 @@
-import { OpenRouterProvider, ProviderRequestError } from "../packages/providers/src/openrouter.ts";
-import { executeDemo } from "../packages/runner/src/demo.ts";
-import { importRepository } from "../packages/runner/src/repository-import.ts";
-import type { ChatTurnContext } from "../packages/shared/src/chat-turn.ts";
-import { isChatTurnInput } from "../packages/shared/src/chat-turn-safety.ts";
-import type { RunnerContext, RunnerUpdate } from "../packages/shared/src/index.ts";
-import type { RepositorySnapshot } from "../packages/shared/src/repository.ts";
-import { isImportInput, looksLikeSecret } from "../packages/shared/src/repository-safety.ts";
+import { CodexAgentAdapter, OpenCodeAgentAdapter } from "../packages/agents/src/index.ts";
+import { OpenRouterProvider, ProviderRequestError } from "../packages/providers/src/index.ts";
+import { executeDemo, importRepository } from "../packages/runner/src/index.ts";
+import {
+  type ChatTurnContext,
+  isAgentTaskInput,
+  isChatTurnInput,
+  isImportInput,
+  looksLikeSecret,
+  type RepositorySnapshot,
+  type RunnerContext,
+  type RunnerUpdate,
+} from "../packages/shared/src/index.ts";
 
 async function main(): Promise<void> {
   const executionId = process.env.EXECUTION_ID ?? "";
@@ -115,6 +120,25 @@ async function main(): Promise<void> {
       },
       { contextDocuments: context.protocolVersion === 2 },
     );
+    return;
+  }
+  if (isAgentTaskInput(context.task.input)) {
+    const adapter =
+      context.task.input.agent === "codex" ? new CodexAgentAdapter() : new OpenCodeAgentAdapter();
+    console.log(`Ejecutando adaptador de agente ${adapter.descriptor.name}...`);
+    const result = await adapter.execute({
+      task: context.task,
+      checkpoint: context.checkpoint,
+      signal: AbortSignal.timeout(120000),
+    });
+    const update: RunnerUpdate = {
+      sequence: result.checkpoint.sequence,
+      cursor: result.checkpoint.cursor,
+      sum: result.checkpoint.sum,
+      outcome: result.outcome,
+    };
+    await request("progress", update);
+    console.log(`Agente ${adapter.descriptor.name} guardado con resultado: ${result.outcome}.`);
     return;
   }
   await executeDemo(

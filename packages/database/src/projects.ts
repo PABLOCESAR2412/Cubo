@@ -66,7 +66,7 @@ export class D1ProjectStore {
     if (
       await this.db
         .prepare(
-          "SELECT 1 AS found FROM project_repository_keys WHERE project_id=? UNION ALL SELECT 1 FROM repository_snapshots WHERE project_id=? UNION ALL SELECT 1 FROM tasks WHERE json_extract(input,'$.projectId')=? UNION ALL SELECT 1 FROM project_provider_keys WHERE project_id=? LIMIT 1",
+          "SELECT 1 AS found FROM project_repository_keys WHERE project_id=? UNION ALL SELECT 1 FROM repository_snapshots WHERE project_id=? UNION ALL SELECT 1 FROM tasks WHERE project_id=? UNION ALL SELECT 1 FROM project_provider_keys WHERE project_id=? LIMIT 1",
         )
         .bind(id, id, id, id)
         .first()

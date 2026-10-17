@@ -187,12 +187,29 @@ export function ChatComposer({
             ))}
           </div>
         )}
+        <div className="quick-commands-bar" role="toolbar" aria-label="Comandos rápidos">
+          {["/plan", "/diff", "/test", "/run", "/status"].map((cmd) => (
+            <button
+              key={cmd}
+              type="button"
+              className="quick-command-pill"
+              onClick={() => {
+                const prefix = `${cmd} `;
+                if (!value.startsWith(prefix)) onChange(`${prefix}${value}`);
+              }}
+            >
+              {cmd}
+            </button>
+          ))}
+        </div>
         <label className="sr-only" htmlFor="chat-message">
           Mensaje · máximo 2000 caracteres
         </label>
         <textarea
           id="chat-message"
-          placeholder={drag ? "Suelta tus archivos aquí…" : "Escribe un mensaje…"}
+          placeholder={
+            drag ? "Suelta tus archivos aquí…" : "Escribe un mensaje… (/plan, /diff, /test)"
+          }
           value={value}
           onChange={(e) => onChange(e.target.value)}
           maxLength={2000}
@@ -241,6 +258,13 @@ export function ChatComposer({
                 void onUsageRefresh().catch(() => {});
               }}
             >
+              <div className="cost-meter-bars" title="Nivel de costo: Optimizado (Gratuito)">
+                <span className="cost-bar active" />
+                <span className="cost-bar" />
+                <span className="cost-bar" />
+                <span className="cost-bar" />
+                <span className="cost-bar" />
+              </div>
               <span>
                 {selected?.name ?? "Elegir modelo"}
                 {effort ? ` · ${effortNames[effort] ?? effort}` : ""}

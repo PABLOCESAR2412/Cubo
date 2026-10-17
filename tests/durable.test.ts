@@ -51,7 +51,7 @@ describe("persistencia y checkpoints", () => {
     );
     const recovered = await new D1TaskStore(db).findTask(task.id);
     expect(recovered?.status).toBe("SUCCEEDED");
-    expect(recovered?.result?.sum).toBe(expectedSum(4));
+    expect((recovered?.result as { sum?: number } | null)?.sum).toBe(expectedSum(4));
     sqlite.close();
   });
   test("checkpoint repetido no duplica eventos; orden y resultado se validan", async () => {

@@ -8,14 +8,14 @@ export async function executeDemo(
   if ("type" in input) throw new Error("Ejecutor de demostración incompatible.");
   let cursor = context.checkpoint?.cursor ?? 0;
   let sum = context.checkpoint?.sum ?? 0;
-  while (cursor < context.task.input.steps) {
+  while (cursor < input.steps) {
     await sleep(input.delaySeconds * 1000);
     cursor++;
     sum += cursor * cursor;
     const outcome =
-      cursor === context.task.input.steps
+      cursor === input.steps
         ? "SUCCEEDED"
-        : cursor === context.task.input.pauseAt && context.task.attempt === 1
+        : cursor === input.pauseAt && context.task.attempt === 1
           ? "WAITING_APPROVAL"
           : "RUNNING";
     await persist({ sequence: cursor, cursor, sum, outcome });

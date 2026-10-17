@@ -19,5 +19,5 @@ test("effort-controls no tiene declaracion muerta border-top + border", () => {
   const src = css();
   const block = src.match(/\.effort-controls\s*\{[^}]*\}/);
   expect(block).not.toBeNull();
-  expect(block![0]).not.toMatch(/border-top:[^;]+;\s*border:/);
+  expect(block?.[0]).not.toMatch(/border-top:[^;]+;\s*border:/);
 });

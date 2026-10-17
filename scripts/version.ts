@@ -21,12 +21,19 @@ export function buildVersion(): string {
   const cwd = fileURLToPath(new URL("../", import.meta.url));
   const base = JSON.parse(readFileSync(new URL("../version.json", import.meta.url), "utf8"))
     .version as string;
-  const git = (args: string[]) =>
-    execFileSync("git", args, {
-      cwd,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
+  const git = (args: string[]) => {
+    try {
+      return execFileSync("git", args, {
+        cwd,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }).trim();
+    } catch {
+      return "";
+    }
+  };
+  const isDirty = Boolean(git(["diff", "--name-only", "HEAD", "--", "version.json"]));
+  if (isDirty) return base;
   const start = git(["log", "-1", "--format=%H", "--", "version.json"]);
   if (!start) return base;
   const commits = git(["log", "--reverse", "--format=%B%x00", `${start}..HEAD`])
