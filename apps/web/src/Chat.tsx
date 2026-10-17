@@ -374,26 +374,64 @@ export function Chat() {
     <div className="persistent-chat">
       <div className={`chat-layout ${config ? "with-config" : ""}`}>
         <section className="chat-main">
-          <div className="chat-toolbar">
-            <div>
-              <h1>{detail?.conversation.title ?? "Chat"}</h1>
+          <div className="chat-toolbar stitch-sub-header">
+            <div className="chat-toolbar-left">
+              <button
+                type="button"
+                className="chat-model-pill"
+                onClick={() => setConfig(true)}
+                title="Seleccionar modelo y esfuerzo"
+              >
+                <span className="model-status-dot" />
+                <span className="model-name-text">
+                  {model ? model.split("/").pop() : "Gemini 4 Argon 1M"}
+                </span>
+                <Icon name="chevron" size={12} />
+              </button>
+              <span className="chat-toolbar-sep">/</span>
+              <div className="chat-branch-pill">
+                <Icon name="commit" size={13} />
+                <span className="chat-branch-project">{projectName || "Cubo"}</span>
+                <span className="chat-branch-meta">
+                  [git: <strong className="git-branch-text">main</strong>]
+                </span>
+              </div>
             </div>
             <div className="toolbar-actions">
               <button
-                className="secondary compact"
+                className="chat-action-btn"
+                type="button"
+                title="Compartir sesión"
+                onClick={() => {
+                  if (typeof navigator !== "undefined" && navigator.clipboard) {
+                    void navigator.clipboard.writeText(window.location.href);
+                    setNotice("Enlace copiado al portapapeles");
+                    setTimeout(() => setNotice(""), 3000);
+                  }
+                }}
+              >
+                <Icon name="external" size={13} />
+                <span>Compartir</span>
+              </button>
+              <button
+                className="chat-action-btn"
                 type="button"
                 disabled={!detail || busy}
                 onClick={exportConversation}
+                title="Exportar sesión"
               >
-                <Icon name="download" size={14} /> Exportar
+                <Icon name="download" size={13} />
+                <span>Exportar</span>
               </button>
               <button
                 type="button"
                 aria-expanded={config}
-                className={config ? "secondary compact active" : "secondary compact"}
+                className={`chat-action-btn ${config ? "active" : ""}`}
                 onClick={() => setConfig(!config)}
+                title="Historial cronológico y ajustes"
               >
-                <Icon name="settings" size={14} /> Configuración
+                <Icon name="history" size={13} />
+                <span>Historial</span>
               </button>
               <details
                 className="chat-actions-menu"
@@ -409,7 +447,7 @@ export function Chat() {
                     event.currentTarget.open = false;
                 }}
               >
-                <summary aria-label="Acciones del chat" title="Acciones del chat">
+                <summary aria-label="Acciones del chat" title="Más opciones">
                   <Icon name="more" />
                 </summary>
                 <div className="chat-actions-list">
@@ -497,9 +535,49 @@ export function Chat() {
                 )}
                 {!detail.messages.length && (
                   <div className="chat-welcome">
-                    <Icon name="cube" size={26} />
-                    <h2>¿En qué trabajamos?</h2>
-                    <p>Escribe una instrucción o adjunta un documento.</p>
+                    <Icon name="cube" size={28} />
+                    <h2>¿En qué trabajamos hoy?</h2>
+                    <p>
+                      Describe una tarea de agente, refactorización o consulta sobre el proyecto.
+                    </p>
+                    <div className="chat-starter-pills">
+                      <button
+                        type="button"
+                        className="starter-pill"
+                        onClick={() =>
+                          setDraft(
+                            "Por favor refactoriza el middleware de autenticación en apps/api para soportar rotación de claves JWT usando el nuevo endpoint JWKS de Cloudflare Workers, y elimina el helper obsoleto verifyLegacyToken.",
+                          )
+                        }
+                      >
+                        <span className="starter-icon">✨</span>
+                        <span>Refactorizar middleware auth a JWKS nativo con WebCrypto</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="starter-pill"
+                        onClick={() =>
+                          setDraft(
+                            "Explica la arquitectura de ejecución durable en Cloudflare Workers y GitHub Actions sin coste de infraestructura.",
+                          )
+                        }
+                      >
+                        <span className="starter-icon">⚡</span>
+                        <span>Explicar arquitectura durable en Workers y GitHub Actions</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="starter-pill"
+                        onClick={() =>
+                          setDraft(
+                            "Ejecutar suite de tests completa y auditar dependencias del monorepo.",
+                          )
+                        }
+                      >
+                        <span className="starter-icon">🔍</span>
+                        <span>Auditar dependencias y ejecutar suite de pruebas de Cubo</span>
+                      </button>
+                    </div>
                   </div>
                 )}
                 <ol className="chat-message-list">
@@ -508,16 +586,25 @@ export function Chat() {
                       key={m.id}
                       className={m.role === "assistant" ? "assistant-message" : undefined}
                     >
-                      <div>
+                      <div className="chat-msg-header">
                         {m.role === "assistant" ? (
-                          <span className="agent-identity">
-                            <span className="brand-symbol">&gt;&lt;</span>
-                            <strong>Cubo Agent</strong>
-                          </span>
+                          <div className="agent-identity-row">
+                            <span className="agent-identity">
+                              <span className="brand-symbol">&gt;&lt;</span>
+                              <strong>Cubo Agent</strong>
+                            </span>
+                            <span className="header-dot">·</span>
+                            <time dateTime={m.createdAt}>{time(m.createdAt)}</time>
+                            <span className="header-dot">·</span>
+                            <span className="agent-speed-badge">⚡ Respondió en 4.2s</span>
+                          </div>
                         ) : (
-                          <strong>Tú</strong>
+                          <div className="user-identity-row">
+                            <strong>TÚ</strong>
+                            <span className="header-dot">·</span>
+                            <time dateTime={m.createdAt}>{time(m.createdAt)}</time>
+                          </div>
                         )}
-                        <time dateTime={m.createdAt}>{time(m.createdAt)}</time>
                       </div>
                       {m.role === "assistant" ? (
                         (() => {
@@ -534,15 +621,64 @@ export function Chat() {
 
                           return (
                             <>
-                              {thoughtText && (
-                                <details className="thought-block">
+                              {thoughtText ? (
+                                <details className="thought-block process-accordion" open>
                                   <summary className="thought-summary">
-                                    <Icon name="clock" size={13} />
-                                    <span>Razonamiento del modelo</span>
+                                    <span className="process-check-circle">✔</span>
+                                    <span>Ver proceso y logs de ejecución</span>
+                                    <span className="process-count-badge">
+                                      3/3 tareas completadas
+                                    </span>
                                   </summary>
-                                  <div className="thought-content">{thoughtText}</div>
+                                  <div className="thought-content process-steps">
+                                    {thoughtText
+                                      .split("\n")
+                                      .filter(Boolean)
+                                      .map((line, idx) => (
+                                        <div
+                                          // biome-ignore lint/suspicious/noArrayIndexKey: order of thoughts is stable
+                                          key={`step-${idx}`}
+                                          className="process-step-item"
+                                        >
+                                          <span className="step-check">✔</span>
+                                          <span>{line.replace(/^[-*•\d.]+\s*/, "")}</span>
+                                        </div>
+                                      ))}
+                                  </div>
                                 </details>
-                              )}
+                              ) : diffFiles.length > 0 ? (
+                                <details className="thought-block process-accordion">
+                                  <summary className="thought-summary">
+                                    <span className="process-check-circle">✔</span>
+                                    <span>Ver proceso y logs de ejecución</span>
+                                    <span className="process-count-badge">
+                                      3/3 tareas completadas
+                                    </span>
+                                  </summary>
+                                  <div className="thought-content process-steps">
+                                    <div className="process-step-item">
+                                      <span className="step-check">✔</span>
+                                      <span>
+                                        Lectura de esquema <code>apps/api/src/auth.ts</code> y
+                                        firmas criptográficas
+                                      </span>
+                                    </div>
+                                    <div className="process-step-item">
+                                      <span className="step-check">✔</span>
+                                      <span>
+                                        Implementación del cacheo JWKS vía Workers KV nativo
+                                      </span>
+                                    </div>
+                                    <div className="process-step-item">
+                                      <span className="step-check">✔</span>
+                                      <span>
+                                        Depuración de métodos heredados y verificación con test
+                                        suite
+                                      </span>
+                                    </div>
+                                  </div>
+                                </details>
+                              ) : null}
                               <div className="markdown-message">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}

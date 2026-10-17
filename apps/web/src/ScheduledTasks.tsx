@@ -1,51 +1,73 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./Icon";
-import { StatusBadge } from "./ui";
 
 export interface ScheduledTask {
   id: string;
   title: string;
-  frequency: "hourly" | "daily" | "weekly" | "custom";
-  cronText: string;
-  agent: "opencode" | "codex";
-  prompt: string;
-  projectName?: string;
+  cronExpr: string;
+  scheduleText: string;
+  repo: string;
+  branch: string;
+  runner: string;
   active: boolean;
-  nextRun: string;
-  lastRun?: string;
+  lastRunStatus: "success" | "paused" | "failed";
+  lastRunText: string;
+  duration?: string;
+  prompt: string;
 }
-
-const STORAGE_KEY = "cubo:scheduled-tasks";
 
 const DEFAULT_SCHEDULES: ScheduledTask[] = [
   {
     id: "sched-1",
-    title: "Revisión diaria de dependencias y vulnerabilidades",
-    frequency: "daily",
-    cronText: "Diaria a las 08:00 UTC",
-    agent: "opencode",
-    prompt:
-      "Revisar dependencias desactualizadas en package.json y ejecutar comprobación de seguridad.",
-    projectName: "Cubo",
+    title: "Auditoría nocturna de tipos y linter",
+    cronExpr: "0 2 * * *",
+    scheduleText: "Diario a las 02:00 UTC",
+    repo: "PABLOCESAR2412/Cubo",
+    branch: "rama main",
+    runner: "Cloudflare Worker Local #2",
     active: true,
-    nextRun: "Mañana a las 08:00 UTC",
-    lastRun: "Hoy a las 08:00 UTC",
+    lastRunStatus: "success",
+    lastRunText: "Exitosa (hace 5h)",
+    duration: "14s",
+    prompt: "Ejecutar comprobación estricta de tipos y lint de Biome en todo el monorepo.",
   },
   {
     id: "sched-2",
-    title: "Linteo y formateo preventivo de PRs pendientes",
-    frequency: "hourly",
-    cronText: "Cada 6 horas",
-    agent: "codex",
-    prompt: "Ejecutar bun run lint y verificar que no existan errores de formato.",
-    projectName: "Cubo",
+    title: "Verificación de dependencias y vulnerabilidades (Audit)",
+    cronExpr: "0 0 * * 1",
+    scheduleText: "Semanal los lunes a las 00:00 UTC",
+    repo: "PABLOCESAR2412/Cubo",
+    branch: "rama main",
+    runner: "GitHub Runner Pool",
+    active: true,
+    lastRunStatus: "success",
+    lastRunText: "Exitosa (hace 2d)",
+    prompt: "Comprobar paquetes con vulnerabilidades conocidas y reportar diffs.",
+  },
+  {
+    id: "sched-3",
+    title: "Sincronización y backup de snapshots D1",
+    cronExpr: "*/30 * * * *",
+    scheduleText: "Cada 30 minutos",
+    repo: "cubo-production-db",
+    branch: "main",
+    runner: "Cloudflare Workers CRON",
     active: false,
-    nextRun: "En pausa",
-    lastRun: "Ayer a las 18:00 UTC",
+    lastRunStatus: "paused",
+    lastRunText: "Pausado manualmente · Último backup hace 1h",
+    prompt: "Generar snapshot de respaldo y sincronizar tablas críticas en D1.",
   },
 ];
 
-export function ScheduledTasks({ onRunNow }: { onRunNow?: (sched: ScheduledTask) => void }) {
+const STORAGE_KEY = "cubo:scheduled-tasks-stitch";
+
+export function ScheduledTasks({
+  onRunNow,
+  onSwitchToExecutions,
+}: {
+  onRunNow?: (sched: ScheduledTask) => void;
+  onSwitchToExecutions?: () => void;
+}) {
   const [schedules, setSchedules] = useState<ScheduledTask[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -55,12 +77,11 @@ export function ScheduledTasks({ onRunNow }: { onRunNow?: (sched: ScheduledTask)
   });
 
   const [formOpen, setFormOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [agent, setAgent] = useState<"opencode" | "codex">("opencode");
-  const [frequency, setFrequency] = useState<"hourly" | "daily" | "weekly">("daily");
-  const [prompt, setPrompt] = useState("");
-  const [projectName, setProjectName] = useState("Cubo");
-  const [executedMessage, setExecutedMessage] = useState<string | null>(null);
+  const [newTitle, setNewTitle] = useState("");
+  const [newCron, setNewCron] = useState("0 3 * * *");
+  const [newScheduleText, setNewScheduleText] = useState("Diario a las 03:00 UTC");
+  const [newPrompt, setNewPrompt] = useState("");
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -68,7 +89,7 @@ export function ScheduledTasks({ onRunNow }: { onRunNow?: (sched: ScheduledTask)
     } catch {}
   }, [schedules]);
 
-  const toggleActive = (id: string) => {
+  const toggleTask = (id: string) => {
     setSchedules((prev) =>
       prev.map((s) => {
         if (s.id === id) {
@@ -76,7 +97,8 @@ export function ScheduledTasks({ onRunNow }: { onRunNow?: (sched: ScheduledTask)
           return {
             ...s,
             active: nextActive,
-            nextRun: nextActive ? "En 4 horas" : "En pausa",
+            lastRunStatus: nextActive ? "success" : "paused",
+            lastRunText: nextActive ? "Reanudado" : "Pausado manualmente",
           };
         }
         return s;
@@ -84,205 +106,297 @@ export function ScheduledTasks({ onRunNow }: { onRunNow?: (sched: ScheduledTask)
     );
   };
 
-  const removeSchedule = (id: string) => {
-    setSchedules((prev) => prev.filter((s) => s.id !== id));
-  };
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !prompt.trim()) return;
+    if (!newTitle.trim() || !newPrompt.trim()) return;
 
-    const newSched: ScheduledTask = {
+    const newTask: ScheduledTask = {
       id: `sched-${Date.now()}`,
-      title: title.trim(),
-      frequency,
-      cronText:
-        frequency === "hourly"
-          ? "Cada 4 horas"
-          : frequency === "daily"
-            ? "Diaria a las 09:00 UTC"
-            : "Semanal cada lunes",
-      agent,
-      prompt: prompt.trim(),
-      projectName: projectName.trim() || "Cubo",
+      title: newTitle.trim(),
+      cronExpr: newCron.trim() || "0 0 * * *",
+      scheduleText: newScheduleText.trim() || "Diario",
+      repo: "PABLOCESAR2412/Cubo",
+      branch: "rama main",
+      runner: "Cloudflare Worker Local #2",
       active: true,
-      nextRun: "Próxima ejecución programada",
+      lastRunStatus: "success",
+      lastRunText: "Programado",
+      prompt: newPrompt.trim(),
     };
 
-    setSchedules([newSched, ...schedules]);
-    setTitle("");
-    setPrompt("");
+    setSchedules([newTask, ...schedules]);
+    setNewTitle("");
+    setNewPrompt("");
     setFormOpen(false);
   };
 
-  const runSchedule = (sched: ScheduledTask) => {
-    setExecutedMessage(
-      `Tarea "${sched.title}" despachada al runner con agente ${sched.agent.toUpperCase()}.`,
-    );
-    if (onRunNow) onRunNow(sched);
-    setTimeout(() => setExecutedMessage(null), 5000);
+  const runTaskNow = (task: ScheduledTask) => {
+    setStatusMessage(`Tarea "${task.title}" enviada al runner para ejecución inmediata.`);
+    if (onRunNow) onRunNow(task);
+    setTimeout(() => setStatusMessage(null), 4000);
   };
 
+  const activeCount = schedules.filter((s) => s.active).length;
+  const pausedCount = schedules.filter((s) => !s.active).length;
+
   return (
-    <section className="scheduled-panel" aria-label="Tareas programadas">
-      <div className="panel-heading">
+    <div className="sched-stitch-container">
+      {/* 1. Header with Breadcrumb, Title & Top Controls */}
+      <div className="sched-stitch-header">
         <div>
-          <h2>Tareas Programadas</h2>
-          <p className="hint">
-            Automatizaciones recurrentes que el orquestador dispara en la nube sin mantener pestañas
-            abiertas.
-          </p>
+          <span className="sched-breadcrumb">INFRAESTRUCTURA / PLANIFICADOR</span>
+          <h1 className="sched-title">Automatizaciones y Tareas</h1>
         </div>
-        <button type="button" className="secondary compact" onClick={() => setFormOpen(!formOpen)}>
-          <Icon name={formOpen ? "close" : "plus"} size={14} />
-          {formOpen ? "Cancelar" : "Nueva Programación"}
-        </button>
+
+        <div className="sched-header-actions">
+          <div className="sched-mode-segmented">
+            <button type="button" className="sched-mode-btn" onClick={onSwitchToExecutions}>
+              <span>Ejecuciones Activas</span>
+              <span className="sched-badge">3</span>
+            </button>
+            <button type="button" className="sched-mode-btn active">
+              <span>Tareas Programadas (Cron)</span>
+              <span className="sched-active-dot" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className="sched-new-cron-btn"
+            onClick={() => setFormOpen(!formOpen)}
+          >
+            <Icon name={formOpen ? "close" : "plus"} size={14} />
+            <span>{formOpen ? "Cancelar" : "Nueva Tarea Cron"}</span>
+          </button>
+        </div>
       </div>
 
-      {executedMessage && (
-        <div className="inline-notice" role="status" style={{ borderLeftColor: "var(--signal)" }}>
-          <Icon name="check" size={15} />
-          <span>{executedMessage}</span>
+      {statusMessage && (
+        <div className="inline-notice" role="status" style={{ marginBottom: 16 }}>
+          <Icon name="check" size={14} />
+          <span>{statusMessage}</span>
         </div>
       )}
 
+      {/* Form modal/drawer if open */}
       {formOpen && (
-        <form onSubmit={handleCreate} className="form-stack scheduled-form">
-          <label>
-            Título de la automatización
-            <input
-              required
-              placeholder="Ej: Análisis nocturno de seguridad"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </label>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+        <form onSubmit={handleCreateTask} className="sched-form-card">
+          <h2 className="sched-form-title">Programar Nueva Tarea Cron</h2>
+          <div className="sched-form-grid">
             <label>
-              Agente ejecutor
-              <select
-                value={agent}
-                onChange={(e) => setAgent(e.target.value as "opencode" | "codex")}
-              >
-                <option value="opencode">OpenCode Agent</option>
-                <option value="codex">Codex Agent</option>
-              </select>
+              Título
+              <input
+                required
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="Ej: Análisis de cobertura de pruebas"
+              />
             </label>
-
             <label>
-              Frecuencia de ejecución
-              <select
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value as "hourly" | "daily" | "weekly")}
-              >
-                <option value="hourly">Cada 4 horas</option>
-                <option value="daily">Diaria a las 09:00 UTC</option>
-                <option value="weekly">Semanal los lunes</option>
-              </select>
+              Expresión Cron
+              <input
+                required
+                value={newCron}
+                onChange={(e) => setNewCron(e.target.value)}
+                placeholder="0 2 * * *"
+              />
+            </label>
+            <label>
+              Descripción de Frecuencia
+              <input
+                value={newScheduleText}
+                onChange={(e) => setNewScheduleText(e.target.value)}
+                placeholder="Ej: Diario a las 02:00 UTC"
+              />
+            </label>
+            <label className="span-full">
+              Instrucción para el Agente
+              <textarea
+                required
+                rows={2}
+                value={newPrompt}
+                onChange={(e) => setNewPrompt(e.target.value)}
+                placeholder="Instrucciones automáticas que ejecutará el runner..."
+              />
             </label>
           </div>
-
-          <label>
-            Proyecto asociado
-            <input
-              placeholder="Nombre del proyecto"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-            />
-          </label>
-
-          <label>
-            Instrucción / Prompt para el agente
-            <textarea
-              required
-              rows={3}
-              placeholder="Describe lo que el agente debe hacer en cada ciclo…"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
-          </label>
-
-          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-            <button type="button" className="secondary compact" onClick={() => setFormOpen(false)}>
+          <div className="sched-form-footer">
+            <button
+              type="button"
+              className="sched-btn-secondary"
+              onClick={() => setFormOpen(false)}
+            >
               Descartar
             </button>
-            <button type="submit" className="primary compact">
-              Guardar Programación
+            <button type="submit" className="sched-btn-primary">
+              Guardar Automatización
             </button>
           </div>
         </form>
       )}
 
-      <div className="scheduled-list">
-        {schedules.map((item) => (
-          <article key={item.id} className={`scheduled-card ${item.active ? "active" : "paused"}`}>
-            <div className="scheduled-card-header">
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span className={`event-dot ${item.active ? "running" : "queued"}`} />
-                <h3 style={{ fontSize: "14px", fontWeight: 600, margin: 0 }}>{item.title}</h3>
+      {/* 2. List of Cron Task Cards */}
+      <div className="sched-cards-list">
+        {schedules.map((task) => (
+          <article
+            key={task.id}
+            className={`sched-task-card ${task.active ? "is-active" : "is-paused"}`}
+          >
+            <div className="sched-card-left">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={task.active}
+                className={`stitch-toggle-switch ${task.active ? "active" : ""}`}
+                onClick={() => toggleTask(task.id)}
+                title={task.active ? "Pausar tarea" : "Activar tarea"}
+              >
+                <span className="stitch-toggle-thumb" />
+              </button>
+
+              <div className="sched-card-info">
+                <div className="sched-title-row">
+                  <h2 className="sched-task-title">{task.title}</h2>
+                  <div className="sched-cron-tags">
+                    <span className="cron-expr-pill">{task.cronExpr}</span>
+                    <span className="cron-desc-text">{task.scheduleText}</span>
+                  </div>
+                </div>
+
+                <div className="sched-sub-row">
+                  <span className="sched-repo-tag">
+                    <Icon name="terminal" size={13} />
+                    <span>{task.repo}</span>
+                    {task.branch && <span className="sched-branch-tag">({task.branch})</span>}
+                  </span>
+                  <span className="sched-sep">·</span>
+                  <span className="sched-runner-tag">
+                    <span className="sched-runner-dot" />
+                    <span>{task.runner}</span>
+                  </span>
+                </div>
+
+                <div className="sched-last-run-row">
+                  {task.lastRunStatus === "success" ? (
+                    <div className="last-run-success">
+                      <Icon name="check" size={12} className="check-icon" />
+                      <span>Última ejecución: {task.lastRunText}</span>
+                      {task.duration && (
+                        <>
+                          <span className="sched-sep">·</span>
+                          <span>Duración: {task.duration}</span>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="last-run-paused">
+                      <span className="pause-icon">⏸</span>
+                      <span>{task.lastRunText}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <StatusBadge status={item.active ? "running" : "pending"}>
-                {item.active ? "Activa" : "En pausa"}
-              </StatusBadge>
             </div>
 
-            <p style={{ fontSize: "12px", color: "var(--color-muted)", margin: "4px 0" }}>
-              {item.prompt}
-            </p>
-
-            <div className="scheduled-card-meta">
-              <span>
-                Frecuencia: <strong>{item.cronText}</strong>
-              </span>
-              <span>
-                Agente: <strong>{item.agent.toUpperCase()}</strong>
-              </span>
-              <span>
-                Proyecto: <strong>{item.projectName}</strong>
-              </span>
-              <span>
-                Próxima: <strong>{item.nextRun}</strong>
-              </span>
-              {item.lastRun && (
-                <span>
-                  Última: <strong>{item.lastRun}</strong>
-                </span>
-              )}
-            </div>
-
-            <div className="scheduled-card-actions">
+            <div className="sched-card-right">
               <button
                 type="button"
-                className="secondary compact"
-                onClick={() => toggleActive(item.id)}
+                className={`sched-action-btn ${task.active ? "" : "resume-btn"}`}
+                onClick={() => toggleTask(task.id)}
               >
-                {item.active ? "Pausar" : "Reanudar"}
+                {task.active ? "Pausar" : "Reanudar"}
               </button>
-              <button type="button" className="primary compact" onClick={() => runSchedule(item)}>
-                <Icon name="arrow" size={13} />
-                Ejecutar Ahora
+              <button type="button" className="sched-run-now-btn" onClick={() => runTaskNow(task)}>
+                <span className="play-icon">▶</span>
+                <span>Ejecutar ahora</span>
               </button>
               <button
                 type="button"
-                className="icon-button"
-                onClick={() => removeSchedule(item.id)}
-                title="Eliminar programación"
-                aria-label="Eliminar programación"
+                className="sched-more-btn"
+                title="Más opciones"
+                onClick={() => {
+                  alert(`Opciones de tarea: ${task.title}\nID: ${task.id}`);
+                }}
               >
-                <Icon name="trash" size={15} />
+                •••
               </button>
             </div>
           </article>
         ))}
-        {schedules.length === 0 && (
-          <div className="empty-inline">
-            <Icon name="clock" size={24} />
-            <h2>Sin automatizaciones programadas</h2>
-            <p>Crea una programación para ejecutar tareas automáticas de agentes.</p>
-          </div>
-        )}
       </div>
-    </section>
+
+      {/* 3. Metrics 3-Card Row */}
+      <div className="sched-metrics-grid">
+        {/* Metric 1 */}
+        <div className="sched-metric-card">
+          <div className="metric-header-row">
+            <span className="metric-label">TASA DE CONFIABILIDAD</span>
+            <span className="metric-value-green">99.94%</span>
+          </div>
+          <div className="sched-progress-track">
+            <div className="sched-progress-bar" style={{ width: "99.94%" }} />
+          </div>
+          <span className="metric-sub-text">Últimas 1,420 ejecuciones automatizadas</span>
+        </div>
+
+        {/* Metric 2 */}
+        <div className="sched-metric-card">
+          <div className="metric-header-row">
+            <span className="metric-label">LATENCIA MEDIA DE WORKER</span>
+            <span className="metric-value-white">184 ms</span>
+          </div>
+          <div className="sched-mini-bars">
+            <div className="mini-bar h-1" />
+            <div className="mini-bar h-2" />
+            <div className="mini-bar h-1" />
+            <div className="mini-bar h-2" />
+            <div className="mini-bar h-3 green-bar" />
+            <div className="mini-bar h-1" />
+            <div className="mini-bar h-3 green-bar" />
+          </div>
+          <span className="metric-sub-text">Cloudflare Edge Execution</span>
+        </div>
+
+        {/* Metric 3 */}
+        <div className="sched-metric-card">
+          <div className="metric-header-row">
+            <span className="metric-label">PRESUPUESTO DE CPU</span>
+            <span className="metric-value-white">1.2s / 50s máx</span>
+          </div>
+          <div className="sched-progress-track">
+            <div className="sched-progress-bar dot-bar" style={{ width: "4%" }}>
+              <span className="progress-marker-dot" />
+            </div>
+          </div>
+          <span className="metric-sub-text">Capacidad en reposo al 97.6%</span>
+        </div>
+      </div>
+
+      {/* 4. Footer Status Bar */}
+      <div className="sched-footer-bar">
+        <div className="sched-footer-left">
+          <span className="footer-status-item">
+            <span className="dot-green" />
+            <span>{activeCount} activas</span>
+          </span>
+          <span className="sched-sep">·</span>
+          <span className="footer-status-item">
+            <span className="dot-gray" />
+            <span>
+              {pausedCount} pausada{pausedCount === 1 ? "" : "s"}
+            </span>
+          </span>
+          <span className="sched-sep">·</span>
+          <span className="footer-status-item">
+            <Icon name="clock" size={13} />
+            <span>Próxima ejecución: Hoy 02:00 UTC (Auditoría nocturna)</span>
+          </span>
+        </div>
+        <div className="sched-footer-right">
+          <span className="sync-icon">↻</span>
+          <span>Sincronizado vía Cloudflare Triggers</span>
+        </div>
+      </div>
+    </div>
   );
 }

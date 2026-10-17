@@ -71,6 +71,7 @@ export function Tasks({
       />
       {mainView === "programadas" ? (
         <ScheduledTasks
+          onSwitchToExecutions={() => setMainView("ejecuciones")}
           onRunNow={() => {
             newTask();
           }}

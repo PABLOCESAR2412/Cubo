@@ -208,7 +208,9 @@ export function ChatComposer({
         <textarea
           id="chat-message"
           placeholder={
-            drag ? "Suelta tus archivos aquí…" : "Escribe un mensaje… (/plan, /diff, /test)"
+            drag
+              ? "Suelta tus archivos aquí…"
+              : "Describe la tarea técnica o haz una pregunta... usa @ para contexto, / para comandos"
           }
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -227,29 +229,39 @@ export function ChatComposer({
           }}
         />
         <div className="composer-controls">
-          <div>
+          <div className="composer-actions-left">
             <button
-              className="icon-button"
+              className="composer-icon-btn"
+              type="button"
+              title="Adjuntar contexto"
+              aria-label="Adjuntar contexto"
+              disabled={disabled || busy || reading}
+              onClick={() => files.current?.click()}
+            >
+              <Icon name="plus" size={15} />
+            </button>
+            <button
+              className="composer-icon-btn"
               type="button"
               title="Adjuntar archivos · hasta 5 MB por archivo"
               aria-label="Adjuntar archivos"
               disabled={disabled || busy || reading}
               onClick={() => files.current?.click()}
             >
-              <Icon name="plus" size={18} />
+              <Icon name="file" size={14} />
             </button>
             <button
-              className={`icon-button ${listening ? "active" : ""}`}
+              className={`composer-icon-btn ${listening ? "active" : ""}`}
               type="button"
               title={Constructor ? "Dictar mensaje" : "Dictado no compatible con este navegador"}
               aria-label={listening ? "Detener dictado" : "Dictar mensaje"}
               disabled={!Constructor || disabled || busy}
               onClick={dictate}
             >
-              <Icon name="mic" size={17} />
+              <Icon name="mic" size={14} />
             </button>
             <button
-              className="model-trigger"
+              className="model-trigger stitch-model-pill"
               type="button"
               aria-label="Elegir modelo y esfuerzo"
               disabled={busy || disabled}
@@ -258,41 +270,31 @@ export function ChatComposer({
                 void onUsageRefresh().catch(() => {});
               }}
             >
-              <div className="cost-meter-bars" title="Nivel de costo: Optimizado (Gratuito)">
-                <span className="cost-bar active" />
-                <span className="cost-bar" />
-                <span className="cost-bar" />
-                <span className="cost-bar" />
-                <span className="cost-bar" />
-              </div>
-              <span>
-                {selected?.name ?? "Elegir modelo"}
-                {effort ? ` · ${effortNames[effort] ?? effort}` : ""}
+              <span className="model-status-dot" />
+              <span className="model-pill-name">
+                {selected?.name ?? "Qwen 2.5 Coder"} · Alto IIIII Uso
               </span>
-              <Icon name="chevron" size={13} />
-            </button>
-            <button
-              className="usage-trigger"
-              type="button"
-              onClick={() => {
-                dialog.current?.showModal();
-                void onUsageRefresh().catch(() => {});
-              }}
-            >
-              Uso
+              <Icon name="chevron" size={11} />
             </button>
           </div>
-          <button
-            className="send-message"
-            type="submit"
-            aria-label="Enviar mensaje"
-            disabled={
-              disabled || busy || reading || !canSend || (!value.trim() && !attachments.length)
-            }
-          >
-            <Icon name="arrow" size={18} />
-          </button>
+          <div className="composer-actions-right">
+            <span className="token-counter-hint">1.2k / 128k</span>
+            <button
+              className="send-message-circle"
+              type="submit"
+              aria-label="Enviar mensaje"
+              disabled={
+                disabled || busy || reading || !canSend || (!value.trim() && !attachments.length)
+              }
+            >
+              <Icon name="arrow" size={14} />
+            </button>
+          </div>
         </div>
+        <p className="composer-footnote">
+          Los agentes trabajan en Cloudflare Workers de forma persistente. Revisa sus cambios antes
+          de aplicarlos.
+        </p>
         {reading && (
           <p className="hint" role="status">
             Leyendo archivo…

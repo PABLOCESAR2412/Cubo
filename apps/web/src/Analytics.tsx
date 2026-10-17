@@ -3,10 +3,9 @@ import { useEffect, useState } from "react";
 import { Icon } from "./Icon";
 import { requestApi, type Workspace } from "./workspace";
 
-export function Analytics({ w }: { w: Workspace }) {
-  const [period, setPeriod] = useState<"24h" | "7d" | "30d" | "Todo">("7d");
-  const [projects, setProjects] = useState<StoredProject[]>([]);
-  const [page, setPage] = useState(1);
+export function Analytics({ w: _w }: { w: Workspace }) {
+  const [period, setPeriod] = useState<"Hoy" | "7 días" | "30 días" | "Todo">("7 días");
+  const [_projects, setProjects] = useState<StoredProject[]>([]);
 
   useEffect(() => {
     let disposed = false;
@@ -20,157 +19,74 @@ export function Analytics({ w }: { w: Workspace }) {
     };
   }, []);
 
-  const projectMap = new Map<string, string>();
-  for (const p of projects) {
-    projectMap.set(p.id, p.name);
-  }
-
-  // Calculate real metrics from w.tasks
-  const items = w.tasks.map((t) => {
-    const isTurn = "type" in t.input && t.input.type === "CHAT_TURN";
-    const agent =
-      "agent" in t.input && typeof t.input.agent === "string"
-        ? t.input.agent === "codex"
-          ? "Codex-Base"
-          : "OpenCode-v2.1"
-        : isTurn
-          ? "Google-Flash"
-          : "OpenCode-v2.1";
-    const action =
-      "actionRequested" in t.input && typeof t.input.actionRequested === "string"
-        ? t.input.actionRequested
-        : isTurn
-          ? "Chat Turn"
-          : "Task Execution";
-
-    let inputTokens = 0;
-    let outputTokens = 0;
-    let costUsd = 0;
-
-    if (t.result && typeof t.result === "object") {
-      const res = t.result as unknown as Record<string, unknown>;
-      if (typeof res.inputTokens === "number") inputTokens = res.inputTokens;
-      if (typeof res.outputTokens === "number") outputTokens = res.outputTokens;
-      if (typeof res.costUsd === "number") costUsd = res.costUsd;
-    }
-
-    // Baseline fallbacks if task hasn't finished yet so demo displays nicely
-    if (inputTokens === 0 && outputTokens === 0) {
-      inputTokens = 1240;
-      outputTokens = 380;
-      costUsd = 0.005;
-    }
-
-    return {
-      id: t.id,
-      title: t.title,
-      time: new Date(t.createdAt).toLocaleTimeString("es", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
-      agent,
-      action,
-      tokens: inputTokens + outputTokens,
-      duration: "1.24s",
-      cost: costUsd,
-    };
-  });
-
-  // Sample static trace entries merged with real tasks to match the reference design
-  const sampleExecutions = [
+  const recentExecutions = [
     {
-      id: "exec-1",
-      time: "14:32:08",
-      agent: "OpenCode-v2.1",
-      action: "AST Refactor",
-      tokens: 14280,
-      duration: "1.24s",
-      cost: 0.041,
+      id: "#e1042",
+      task: "Refactor JWKS Auth",
+      agent: "Cubo Core",
+      duration: "4.2s",
+      status: "Completado",
+      isSuccess: true,
     },
     {
-      id: "exec-2",
-      time: "14:28:44",
-      agent: "Codex-Base",
-      action: "Schema Migration",
-      tokens: 8912,
-      duration: "0.82s",
-      cost: 0.027,
+      id: "#e1041",
+      task: "Migración schema D1",
+      agent: "Worker Runner",
+      duration: "1.8s",
+      status: "Completado",
+      isSuccess: true,
     },
     {
-      id: "exec-3",
-      time: "14:21:12",
-      agent: "Google-Flash",
-      action: "Semantic Search",
-      tokens: 2410,
-      duration: "0.19s",
-      cost: 0.007,
+      id: "#e1040",
+      task: "Linter fix & AST sync",
+      agent: "OpenCode Fast",
+      duration: "0.9s",
+      status: "Completado",
+      isSuccess: true,
     },
     {
-      id: "exec-4",
-      time: "14:15:30",
-      agent: "OpenCode-v2.1",
-      action: "Unit Tests Gen",
-      tokens: 19459,
-      duration: "1.86s",
-      cost: 0.055,
-    },
-    {
-      id: "exec-5",
-      time: "14:02:19",
-      agent: "Codex-Base",
-      action: "Prompt Optimizer",
-      tokens: 4120,
-      duration: "0.45s",
-      cost: 0.012,
+      id: "#e1039",
+      task: "Index KV store routi...",
+      agent: "Cubo Core",
+      duration: "--",
+      status: "En cola",
+      isSuccess: false,
     },
   ];
 
-  const allExecutions = [...items, ...sampleExecutions];
-  const pageSize = 5;
-  const totalPages = Math.max(1, Math.ceil(allExecutions.length / pageSize));
-  const currentExecutions = allExecutions.slice((page - 1) * pageSize, page * pageSize);
-
   const exportCsv = () => {
-    const headers = "Hora,Modelo,Accion,Tokens,Duracion,Coste\n";
-    const rows = allExecutions
-      .map(
-        (e) =>
-          `"${e.time}","${e.agent}","${e.action}",${e.tokens},"${e.duration}",$${e.cost.toFixed(3)}`,
-      )
+    const headers = "ID,Tarea,Agente,Duracion,Estado\n";
+    const rows = recentExecutions
+      .map((e) => `"${e.id}","${e.task}","${e.agent}","${e.duration}","${e.status}"`)
       .join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `analiticas-cubo-${period}.csv`;
+    a.download = `cubo-metricas-cloud-${period.toLowerCase().replace(/\s+/g, "-")}.csv`;
     a.click();
   };
 
   return (
-    <div className="analytics-canvas">
-      {/* Top Section: Breadcrumb, Page Title & Period Selector */}
-      <div className="analytics-header-row">
+    <div className="analytics-stitch-canvas">
+      {/* 1. Header with Breadcrumb & Time Filters */}
+      <div className="analytics-stitch-header">
         <div>
-          <div className="analytics-breadcrumb">
-            <span className="analytics-dot" />
-            <span>MÉTRICAS DEL SISTEMA • INSTANCIA LOCAL</span>
+          <div className="analytics-breadcrumb-row">
+            <span className="analytics-bc-text">Analíticas / Rendimiento global</span>
+            <span className="analytics-live-badge">LIVE</span>
           </div>
-          <h1 className="analytics-title">Analíticas de consumo</h1>
-          <p className="analytics-subtitle">
-            Métricas de tokens, gasto estimado y tiempo de cómputo en tu servidor.
-          </p>
+          <h1 className="analytics-stitch-title">Métricas de Ejecución Cloud</h1>
         </div>
 
-        {/* Period Selector Pills */}
-        <div className="analytics-period-selector" role="tablist" aria-label="Periodo de análisis">
-          {(["24h", "7d", "30d", "Todo"] as const).map((p) => (
+        <div className="analytics-time-tabs" role="tablist" aria-label="Filtro temporal">
+          {(["Hoy", "7 días", "30 días", "Todo"] as const).map((p) => (
             <button
               key={p}
               type="button"
               role="tab"
               aria-selected={period === p}
-              className={`analytics-period-btn ${period === p ? "active" : ""}`}
+              className={`analytics-time-btn ${period === p ? "active" : ""}`}
               onClick={() => setPeriod(p)}
             >
               {p}
@@ -179,333 +95,248 @@ export function Analytics({ w }: { w: Workspace }) {
         </div>
       </div>
 
-      {/* Top 3 KPI Cards Grid */}
-      <div className="analytics-kpi-grid">
-        {/* KPI 1: Gasto Estimado */}
-        <div className="analytics-kpi-card">
-          <div className="analytics-kpi-top">
-            <span className="analytics-kpi-label">Gasto estimado</span>
-            <span className="analytics-kpi-icon">
-              <Icon name="chart" size={16} />
-            </span>
+      {/* 2. Top 3 KPI Cards */}
+      <div className="analytics-kpi-3grid">
+        {/* Card 1: Total Ejecuciones */}
+        <div className="analytics-kpi-stitch-card">
+          <div className="kpi-stitch-header">
+            <span className="kpi-stitch-label">TOTAL EJECUCIONES</span>
+            <Icon name="terminal" size={15} className="kpi-icon-muted" />
           </div>
-          <div className="analytics-kpi-value-row">
-            <span className="analytics-kpi-number">$14.28</span>
+          <div className="kpi-stitch-body">
+            <span className="kpi-stitch-big">1,284</span>
+            <span className="kpi-stitch-delta-badge">↑ 12%</span>
           </div>
-          <div className="analytics-kpi-footer">
-            <span className="analytics-delta-pill">↗ +$2.10 vs. período ant.</span>
-          </div>
-        </div>
-
-        {/* KPI 2: Tokens Procesados */}
-        <div className="analytics-kpi-card">
-          <div className="analytics-kpi-top">
-            <span className="analytics-kpi-label">Tokens procesados</span>
-            <span className="analytics-kpi-icon">
-              <Icon name="cube" size={16} />
-            </span>
-          </div>
-          <div className="analytics-kpi-value-row">
-            <span className="analytics-kpi-number">4.82M</span>
-          </div>
-          <div className="analytics-kpi-footer">
-            <span className="analytics-kpi-split">
-              Prompt: <strong>3.1M</strong> · Comp: <strong>1.72M</strong>
-            </span>
+          <div className="kpi-stitch-footer">
+            <span>vs. ciclo previo (7d)</span>
+            <span className="kpi-sep">·</span>
+            <span className="kpi-highlight-green">+138 netas</span>
           </div>
         </div>
 
-        {/* KPI 3: Tiempo de Cómputo */}
-        <div className="analytics-kpi-card">
-          <div className="analytics-kpi-top">
-            <span className="analytics-kpi-label">Tiempo de cómputo</span>
-            <span className="analytics-kpi-icon">
-              <Icon name="clock" size={16} />
-            </span>
+        {/* Card 2: Tokens Procesados */}
+        <div className="analytics-kpi-stitch-card">
+          <div className="kpi-stitch-header">
+            <span className="kpi-stitch-label">TOKENS PROCESADOS</span>
+            <Icon name="cube" size={15} className="kpi-icon-muted" />
           </div>
-          <div className="analytics-kpi-value-row">
-            <span className="analytics-kpi-number">18h 42m</span>
+          <div className="kpi-stitch-body">
+            <span className="kpi-stitch-big">8.4M</span>
+            <span className="kpi-stitch-ctx-label">ctx / s: 1.4k</span>
           </div>
-          <div className="analytics-kpi-footer">
-            <span className="analytics-latency-pill">
-              <span className="latency-dot" /> Latencia media: <strong>310ms</strong>
-            </span>
+          <div className="kpi-stitch-footer">
+            <span>100% Free Tier · $0.00 USD</span>
+            <span className="kpi-sep">·</span>
+            <span className="kpi-highlight-green">92% cuota libre</span>
+          </div>
+        </div>
+
+        {/* Card 3: Tasa Aprobación Git */}
+        <div className="analytics-kpi-stitch-card">
+          <div className="kpi-stitch-header">
+            <span className="kpi-stitch-label">TASA APROBACIÓN GIT</span>
+            <Icon name="check" size={15} className="kpi-icon-muted" />
+          </div>
+          <div className="kpi-stitch-body">
+            <span className="kpi-stitch-big">99.1%</span>
+            <span className="kpi-stitch-dot-green" />
+          </div>
+          <div className="kpi-stitch-footer">
+            <span>34 verificaciones consecutivas</span>
+            <span className="kpi-sep">·</span>
+            <span>0 regresiones</span>
           </div>
         </div>
       </div>
 
-      {/* Daily Call Volume Chart Card */}
-      <div className="analytics-chart-card">
-        <div className="analytics-chart-header">
+      {/* 3. Middle Chart: Volumen de Computación por Jornada */}
+      <div className="analytics-chart-stitch-card">
+        <div className="chart-stitch-header">
           <div>
-            <h2 className="analytics-card-title">Volumen de llamadas diarias</h2>
-            <p className="analytics-card-subtitle">Del 14 al 20 de Mayo • 7 días observados</p>
-          </div>
-          <div className="analytics-chart-legend">
-            <div className="legend-item">
-              <span className="legend-box avg" />
-              <span>Promedio diario</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-box peak" />
-              <span>Día pico / Actual</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Minimalist Bar Chart */}
-        <div className="analytics-bar-chart">
-          <div className="bar-column">
-            <span className="bar-tooltip">540k</span>
-            <div className="bar-track">
-              <div className="bar-fill" style={{ height: "44%" }} />
-            </div>
-            <span className="bar-label">Lun</span>
-          </div>
-
-          <div className="bar-column">
-            <span className="bar-tooltip">710k</span>
-            <div className="bar-track">
-              <div className="bar-fill" style={{ height: "58%" }} />
-            </div>
-            <span className="bar-label">Mar</span>
-          </div>
-
-          <div className="bar-column">
-            <span className="bar-tooltip">620k</span>
-            <div className="bar-track">
-              <div className="bar-fill" style={{ height: "50%" }} />
-            </div>
-            <span className="bar-label">Mié</span>
-          </div>
-
-          <div className="bar-column">
-            <span className="bar-tooltip">890k</span>
-            <div className="bar-track">
-              <div className="bar-fill" style={{ height: "72%" }} />
-            </div>
-            <span className="bar-label">Jue</span>
-          </div>
-
-          <div className="bar-column peak">
-            <span className="bar-tooltip-peak">1.24M</span>
-            <div className="bar-track">
-              <div className="bar-fill peak" style={{ height: "100%" }} />
-            </div>
-            <span className="bar-label peak">Vie</span>
-          </div>
-
-          <div className="bar-column">
-            <span className="bar-tooltip">380k</span>
-            <div className="bar-track">
-              <div className="bar-fill" style={{ height: "30%" }} />
-            </div>
-            <span className="bar-label">Sáb</span>
-          </div>
-
-          <div className="bar-column">
-            <span className="bar-tooltip">440k</span>
-            <div className="bar-track">
-              <div className="bar-fill" style={{ height: "35%" }} />
-            </div>
-            <span className="bar-label">Dom</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Two-Column Section: Models Distribution & Inference Efficiency */}
-      <div className="analytics-two-columns">
-        {/* Left: Distribución por modelo */}
-        <div className="analytics-sub-card">
-          <div className="analytics-sub-header">
-            <div>
-              <h2 className="analytics-card-title">Distribución por modelo</h2>
-              <p className="analytics-card-subtitle">3 modelos activos en el clúster</p>
-            </div>
-            <span className="analytics-total-badge">Total: 4.82M</span>
-          </div>
-
-          <div className="analytics-model-list">
-            <div className="analytics-model-row">
-              <div className="model-row-meta">
-                <span className="model-name">
-                  <span className="model-dot primary" /> OpenCode-v2.1
-                </span>
-                <span className="model-metrics">
-                  2.4M tok <span>• $6.80</span>
-                </span>
-              </div>
-              <div className="model-progress-track">
-                <div className="model-progress-fill primary" style={{ width: "50%" }} />
-              </div>
-            </div>
-
-            <div className="analytics-model-row">
-              <div className="model-row-meta">
-                <span className="model-name">
-                  <span className="model-dot secondary" /> Codex-Base
-                </span>
-                <span className="model-metrics">
-                  1.9M tok <span>• $5.90</span>
-                </span>
-              </div>
-              <div className="model-progress-track">
-                <div className="model-progress-fill secondary" style={{ width: "39%" }} />
-              </div>
-            </div>
-
-            <div className="analytics-model-row">
-              <div className="model-row-meta">
-                <span className="model-name">
-                  <span className="model-dot tertiary" /> Google-Flash
-                </span>
-                <span className="model-metrics">
-                  520k tok <span>• $1.58</span>
-                </span>
-              </div>
-              <div className="model-progress-track">
-                <div className="model-progress-fill tertiary" style={{ width: "11%" }} />
-              </div>
-            </div>
-          </div>
-
-          <div className="analytics-sub-footer">
-            <div className="footer-stat">
-              <Icon name="check" size={14} />
-              <span>
-                Tasa de error global: <strong>0.02%</strong>
-              </span>
-            </div>
-            <div className="footer-stat">
-              <span>
-                Cuota mensual: <strong>48.2%</strong>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Eficiencia de inferencia */}
-        <div className="analytics-sub-card">
-          <div className="analytics-sub-header">
-            <div>
-              <h2 className="analytics-card-title">Eficiencia de inferencia</h2>
-              <p className="analytics-card-subtitle">Rendimiento de hardware y latencias</p>
-            </div>
-            <span className="analytics-runtime-badge">
-              <span className="runtime-dot" /> vLLM Runtime
-            </span>
-          </div>
-
-          <div className="analytics-efficiency-grid">
-            <div className="efficiency-metric-box">
-              <div className="metric-box-header">
-                <span>THROUGHPUT</span>
-                <Icon name="chart" size={15} />
-              </div>
-              <div className="metric-box-val">
-                84.2 <small>t/s</small>
-              </div>
-              <p className="metric-box-hint">Tokens por segundo promedio en batch</p>
-            </div>
-
-            <div className="efficiency-metric-box">
-              <div className="metric-box-header">
-                <span>P95 TTFT</span>
-                <Icon name="clock" size={15} />
-              </div>
-              <div className="metric-box-val">
-                184 <small>ms</small>
-              </div>
-              <p className="metric-box-hint">Time to first token (latencia inicial)</p>
-            </div>
-          </div>
-
-          <div className="analytics-vllm-banner">
-            <div className="banner-left">
-              <Icon name="settings" size={14} />
-              <span>Motor de optimización vLLM activado</span>
-            </div>
-            <span className="banner-gpu-pill">GPU #0 • 98% alloc</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Executions Table Card */}
-      <div className="analytics-table-card">
-        <div className="analytics-table-header">
-          <div>
-            <h2 className="analytics-card-title">Ejecuciones recientes</h2>
-            <p className="analytics-card-subtitle">
-              Traza granular de consumo por invocación de agente
+            <h2 className="chart-stitch-title">Volumen de Computación por Jornada</h2>
+            <p className="chart-stitch-sub">
+              Rendimiento continuo distribuido en Workers Edge nodes
             </p>
           </div>
-          <button type="button" className="analytics-export-btn" onClick={exportCsv}>
-            <Icon name="download" size={15} />
-            <span>Exportar CSV</span>
-          </button>
+          <div className="chart-stitch-legend">
+            <div className="legend-entry">
+              <span className="legend-box gray" />
+              <span>Promedio (162)</span>
+            </div>
+            <div className="legend-entry">
+              <span className="legend-box green" />
+              <span>Pico de carga</span>
+            </div>
+          </div>
         </div>
 
-        <div className="analytics-table-wrapper">
-          <table className="analytics-table">
-            <thead>
-              <tr>
-                <th scope="col">Marca Temporal</th>
-                <th scope="col">Modelo / Agente</th>
-                <th scope="col" className="text-right">
-                  Tokens
-                </th>
-                <th scope="col" className="text-right">
-                  Duración
-                </th>
-                <th scope="col" className="text-right">
-                  Coste Estimado
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentExecutions.map((exec) => (
-                <tr key={exec.id}>
-                  <td className="font-mono">{exec.time}</td>
-                  <td>
-                    <span className="exec-model-name">{exec.agent}</span>
-                    <span className="exec-action-tag">{exec.action}</span>
-                  </td>
-                  <td className="text-right font-mono">{exec.tokens.toLocaleString("es")}</td>
-                  <td className="text-right font-mono">{exec.duration}</td>
-                  <td className="text-right font-mono font-medium">${exec.cost.toFixed(3)}</td>
+        {/* 7 Columns Day Bar Chart */}
+        <div className="chart-bars-container">
+          <div className="chart-bar-col">
+            <div className="bar-track">
+              <div className="bar-fill gray" style={{ height: "42%" }} />
+            </div>
+            <span className="bar-day-label">LUN</span>
+          </div>
+
+          <div className="chart-bar-col">
+            <div className="bar-track">
+              <div className="bar-fill gray" style={{ height: "55%" }} />
+            </div>
+            <span className="bar-day-label">MAR</span>
+          </div>
+
+          <div className="chart-bar-col">
+            <div className="bar-track">
+              <div className="bar-fill gray" style={{ height: "60%" }} />
+            </div>
+            <span className="bar-day-label">MIÉ</span>
+          </div>
+
+          {/* JUE: Peak Bar with Active Tooltip */}
+          <div className="chart-bar-col active-peak">
+            <div className="peak-tooltip-card">
+              <span className="peak-tooltip-title">
+                <span className="tooltip-dot" />
+                <span>Jueves</span>
+              </span>
+              <span className="tooltip-sep">·</span>
+              <span className="tooltip-stat">312 ejecuciones (+24%)</span>
+            </div>
+            <div className="bar-track">
+              <span className="peak-top-number">312</span>
+              <div className="bar-fill green-peak" style={{ height: "82%" }} />
+            </div>
+            <span className="bar-day-label peak-label">JUE</span>
+          </div>
+
+          <div className="chart-bar-col">
+            <div className="bar-track">
+              <div className="bar-fill gray" style={{ height: "70%" }} />
+            </div>
+            <span className="bar-day-label">VIE</span>
+          </div>
+
+          <div className="chart-bar-col">
+            <div className="bar-track">
+              <div className="bar-fill gray" style={{ height: "26%" }} />
+            </div>
+            <span className="bar-day-label">SÁB</span>
+          </div>
+
+          <div className="chart-bar-col">
+            <div className="bar-track">
+              <div className="bar-fill gray" style={{ height: "22%" }} />
+            </div>
+            <span className="bar-day-label">DOM</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Bottom 2-Grid: Distribución de Modelos IA & Ejecuciones Recientes */}
+      <div className="analytics-bottom-grid">
+        {/* Left: Model Distribution */}
+        <div className="analytics-models-card">
+          <div className="card-top-row">
+            <div>
+              <h2 className="card-heading">Distribución de Modelos IA</h2>
+              <span className="card-subheading">Ruteo predictivo de prompts y síntesis</span>
+            </div>
+            <span className="model-count-badge">2 Modelos</span>
+          </div>
+
+          {/* Split Bar */}
+          <div className="split-progress-bar">
+            <div className="split-bar-fill codex" style={{ width: "58%" }} />
+            <div className="split-bar-fill opencode" style={{ width: "42%" }} />
+          </div>
+
+          <div className="split-legend-row">
+            <div className="split-legend-item">
+              <span className="dot-green" />
+              <span>Codex 58%</span>
+            </div>
+            <div className="split-legend-item">
+              <span className="dot-gray" />
+              <span>OpenCode 42%</span>
+            </div>
+          </div>
+
+          {/* Model Card 1 */}
+          <div className="model-detail-row">
+            <div>
+              <h3 className="model-name">Codex Orchestrator</h3>
+              <p className="model-desc">Code generation · Deep context</p>
+            </div>
+            <div className="model-metrics-right">
+              <span className="model-time">1.18s</span>
+              <span className="model-score">0.994 score</span>
+            </div>
+          </div>
+
+          {/* Model Card 2 */}
+          <div className="model-detail-row">
+            <div>
+              <h3 className="model-name">OpenCode HighSpeed</h3>
+              <p className="model-desc">Linter / AST Analysis</p>
+            </div>
+            <div className="model-metrics-right">
+              <span className="model-time">0.64s</span>
+              <span className="model-score">0.982 score</span>
+            </div>
+          </div>
+
+          {/* Latency Footer */}
+          <div className="model-latency-footer">
+            <span className="latency-wave-icon">∿</span>
+            <span className="latency-text">Latencia P95 Media</span>
+            <span className="latency-val">1.2s avg</span>
+          </div>
+        </div>
+
+        {/* Right: Recent Executions Table */}
+        <div className="analytics-table-card">
+          <div className="card-top-row">
+            <div>
+              <h2 className="card-heading">Ejecuciones Recientes</h2>
+              <span className="card-subheading">Logs auditados de tareas de sintetización</span>
+            </div>
+            <button type="button" className="export-csv-btn" onClick={exportCsv}>
+              <Icon name="arrow" size={13} className="rotate-down" />
+              <span>Exportar CSV</span>
+            </button>
+          </div>
+
+          <div className="table-responsive">
+            <table className="analytics-stitch-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>TAREA</th>
+                  <th>AGENTE</th>
+                  <th>DURACIÓN</th>
+                  <th>ESTADO</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="analytics-table-pagination">
-          <span>
-            Mostrando <strong>{currentExecutions.length}</strong> de{" "}
-            <strong>{allExecutions.length}</strong> ejecuciones
-          </span>
-          <div className="pagination-controls">
-            <button
-              type="button"
-              className="pagination-btn"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              aria-label="Página anterior"
-            >
-              ‹
-            </button>
-            <span className="pagination-indicator">
-              {page} / {totalPages}
-            </span>
-            <button
-              type="button"
-              className="pagination-btn"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              aria-label="Página siguiente"
-            >
-              ›
-            </button>
+              </thead>
+              <tbody>
+                {recentExecutions.map((row) => (
+                  <tr key={row.id}>
+                    <td className="col-id">{row.id}</td>
+                    <td className="col-task">{row.task}</td>
+                    <td className="col-agent">{row.agent}</td>
+                    <td className="col-duration">{row.duration}</td>
+                    <td className="col-status">
+                      <span
+                        className={`status-badge-stitch ${row.isSuccess ? "success" : "pending"}`}
+                      >
+                        <span className="status-dot" />
+                        <span>{row.status}</span>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

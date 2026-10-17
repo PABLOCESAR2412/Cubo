@@ -32,8 +32,16 @@ export type IconName =
   | "terminal"
   | "diff"
   | "command"
-  | "git-branch";
+  | "git-branch"
+  | "bolt"
+  | "bell"
+  | "shield"
+  | "eye";
 const paths: Record<IconName, string> = {
+  bolt: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+  bell: "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0",
+  shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+  eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6",
   sun: "M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z",
   moon: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
   monitor: "M4 4h16v12H4zM8 20h8M12 16v4",

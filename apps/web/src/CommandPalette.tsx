@@ -41,25 +41,13 @@ export function CommandPalette({
     {
       id: "new-task",
       group: "ACCIONES RÁPIDAS",
-      label: "Nueva tarea de agente (OpenCode / Codex)",
-      icon: "plus",
-      shortcut: "Ctrl+T",
-      keywords: "crear agente opencode codex lanzar ejecutar",
+      label: "Nueva tarea de agente",
+      icon: "bolt",
+      shortcut: "Ctrl Shift T",
+      keywords: "crear agente opencode codex lanzar ejecutar tarea",
       run: () => {
         onClose();
         onNewTask();
-      },
-    },
-    {
-      id: "new-project",
-      group: "ACCIONES RÁPIDAS",
-      label: "Nuevo proyecto",
-      icon: "folder",
-      shortcut: "Ctrl+Shift+P",
-      keywords: "crear repo git github importar",
-      run: () => {
-        onClose();
-        onNewProject();
       },
     },
     {
@@ -67,63 +55,56 @@ export function CommandPalette({
       group: "ACCIONES RÁPIDAS",
       label: "Nuevo chat",
       icon: "chat",
-      shortcut: "Ctrl+N",
-      keywords: "conversacion prompt preguntar hablar",
+      shortcut: "Ctrl N",
+      keywords: "conversacion prompt preguntar hablar asistente",
       run: () => {
         onClose();
         onNewChat();
       },
     },
     {
-      id: "nav-tareas",
-      group: "NAVEGACIÓN",
-      label: "Ir a Tareas y Proceso",
-      icon: "tasks",
-      keywords: "ejecuciones diffs logs runner aprobaciones",
-      run: () => {
-        onClose();
-        onNavigate("tareas");
-      },
-    },
-    {
-      id: "nav-proyectos",
-      group: "NAVEGACIÓN",
-      label: "Ir a Proyectos",
+      id: "import-repo",
+      group: "ACCIONES RÁPIDAS",
+      label: "Importar repositorio Git",
       icon: "folder",
-      keywords: "repositorios carpetas github branches",
+      shortcut: "Ctrl I",
+      keywords: "crear repo git github importar proyecto clonar",
       run: () => {
         onClose();
-        onNavigate("proyectos");
-      },
-    },
-    {
-      id: "nav-chat",
-      group: "NAVEGACIÓN",
-      label: "Ir a Chat",
-      icon: "chat",
-      keywords: "asistente conversar agentes turnos",
-      run: () => {
-        onClose();
-        onNavigate("chat");
+        onNewProject();
       },
     },
     {
       id: "nav-analiticas",
       group: "NAVEGACIÓN",
-      label: "Ir a Analíticas y Costes",
+      label: "Ir a Analíticas y Rendimiento",
       icon: "chart",
-      keywords: "metricas tokens cuotas graficas uso",
+      shortcut: "G A",
+      keywords: "metricas tokens cuotas graficas uso rendimiento",
       run: () => {
         onClose();
         onNavigate("analiticas");
       },
     },
     {
+      id: "nav-programadas",
+      group: "NAVEGACIÓN",
+      label: "Ir a Tareas Programadas (Cron)",
+      icon: "tasks",
+      shortcut: "G T",
+      keywords: "cron programadas triggers tareas automatizaciones",
+      run: () => {
+        onClose();
+        onNavigate("tareas");
+      },
+    },
+    {
       id: "nav-ajustes",
       group: "NAVEGACIÓN",
-      label: "Ir a Ajustes",
+      label: "Ir a Ajustes del Sistema",
       icon: "settings",
-      keywords: "configuracion claves api proveedores perfil",
+      shortcut: "G S",
+      keywords: "configuracion claves api proveedores perfil tema",
       run: () => {
         onClose();
         onNavigate("ajustes");
@@ -131,10 +112,10 @@ export function CommandPalette({
     },
     {
       id: "theme-dark",
-      group: "APARIENCIA",
-      label: "Cambiar a Tema Oscuro (Industrial Amber)",
+      group: "PREFERENCIAS",
+      label: "Cambiar a Tema Oscuro (Zenith Graphite)",
       icon: "moon",
-      keywords: "dark mode noche",
+      keywords: "dark mode noche oscuro graphite",
       run: () => {
         saveTheme("oscuro");
         onClose();
@@ -142,10 +123,10 @@ export function CommandPalette({
     },
     {
       id: "theme-light",
-      group: "APARIENCIA",
-      label: "Cambiar a Tema Claro (High Precision)",
+      group: "PREFERENCIAS",
+      label: "Cambiar a Tema Claro (Porcelain Precision)",
       icon: "sun",
-      keywords: "light mode dia blanco",
+      keywords: "light mode dia blanco claro porcelain",
       run: () => {
         saveTheme("claro");
         onClose();
@@ -153,10 +134,10 @@ export function CommandPalette({
     },
     {
       id: "theme-system",
-      group: "APARIENCIA",
+      group: "PREFERENCIAS",
       label: "Usar Tema del Sistema (Automático)",
       icon: "monitor",
-      keywords: "system automatico os",
+      keywords: "system automatico os sincronizado",
       run: () => {
         saveTheme("sistema");
         onClose();
@@ -164,7 +145,7 @@ export function CommandPalette({
     },
     {
       id: "app-versions",
-      group: "SISTEMA",
+      group: "PREFERENCIAS",
       label: "Ver historial de versiones y novedades",
       icon: "cube",
       keywords: "changelog version updates cambios semver",
@@ -175,10 +156,10 @@ export function CommandPalette({
     },
     {
       id: "logout",
-      group: "SISTEMA",
+      group: "PREFERENCIAS",
       label: "Cerrar sesión",
       icon: "logout",
-      keywords: "salir desconectar",
+      keywords: "salir desconectar logout token",
       run: () => {
         onClose();
         onLogout();
@@ -261,7 +242,7 @@ export function CommandPalette({
           <input
             ref={inputRef}
             type="search"
-            placeholder="Escribe un comando o busca una sección… (Esc para cerrar)"
+            placeholder="Escribe un comando o busca una sección…"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -295,7 +276,6 @@ export function CommandPalette({
                       className={`command-palette-item ${isSelected ? "selected" : ""}`}
                       onClick={() => cmd.run()}
                       onMouseEnter={() => {
-                        // find its index
                         const idx = filtered.findIndex((c) => c.id === cmd.id);
                         if (idx !== -1) setSelectedIndex(idx);
                       }}
@@ -316,16 +296,21 @@ export function CommandPalette({
         <div className="command-palette-footer">
           <div className="command-footer-hints">
             <span>
-              <kbd>↑</kbd> <kbd>↓</kbd> Navegar
+              <kbd>↑</kbd> <kbd>↓</kbd> para navegar
             </span>
+            <span className="hint-sep">·</span>
             <span>
-              <kbd>↵</kbd> Ejecutar
+              <kbd>↵</kbd> para seleccionar
             </span>
+            <span className="hint-sep">·</span>
             <span>
-              <kbd>ESC</kbd> Cerrar
+              <kbd>esc</kbd> para salir
             </span>
           </div>
-          <span className="command-footer-brand">Cubo Command Suite</span>
+          <div className="command-footer-brand">
+            <span className="footer-status-dot" />
+            <span>Cubo Engine CLI</span>
+          </div>
         </div>
       </div>
     </div>

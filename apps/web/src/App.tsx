@@ -16,6 +16,7 @@ import { requestApi, taskIdFromHash, useWorkspace } from "./workspace";
 
 type View = "chat" | "tareas" | "proyectos" | "analiticas" | "ajustes";
 const navigation: Array<{ id: View; label: string; icon: IconName }> = [
+  { id: "chat", label: "Chat", icon: "chat" },
   { id: "tareas", label: "Tareas", icon: "tasks" },
   { id: "proyectos", label: "Proyectos", icon: "folder" },
   { id: "analiticas", label: "Analíticas", icon: "chart" },
@@ -272,13 +273,21 @@ export default function App() {
               navigationDialog.current.close();
               toggle.current?.focus();
             }
-            openProjects(true);
+            if (view === "proyectos") {
+              openProjects(true);
+            } else {
+              navigate("chat");
+              const url = new URL(location.href);
+              url.searchParams.delete("chat");
+              history.replaceState(null, "", url);
+              window.dispatchEvent(new Event("cubo-chat-selected"));
+            }
             setDrawer(false);
           }}
         >
           <div className="sidebar-create-inner">
             <Icon name="plus" size={16} />
-            <span>+ Nuevo proyecto</span>
+            <span>{view === "proyectos" ? "+ Nuevo proyecto" : "+ Nuevo Chat"}</span>
           </div>
           <kbd className="sidebar-kbd">Ctrl+N</kbd>
         </button>
