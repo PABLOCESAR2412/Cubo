@@ -72,12 +72,33 @@ export async function persistentSession(c: AuthContext): Promise<string | null> 
   });
   return payload.jti ? cookie : sessionToken(c.env);
 }
-export async function passwordMatches(value: string, expected: string): Promise<boolean> {
-  const [a, b] = await Promise.all(
-    [value, expected].map((v) => crypto.subtle.digest("SHA-256", new TextEncoder().encode(v))),
+async function derivePasswordBits(secret: string): Promise<Uint8Array> {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"],
   );
-  const left = new Uint8Array(a);
-  const right = new Uint8Array(b);
+  const bits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: enc.encode("cubo-owner-auth-v1"),
+      iterations: 100000,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    256,
+  );
+  return new Uint8Array(bits);
+}
+
+export async function passwordMatches(value: string, expected: string): Promise<boolean> {
+  const [left, right] = await Promise.all([
+    derivePasswordBits(value),
+    derivePasswordBits(expected),
+  ]);
   let difference = 0;
   for (let i = 0; i < left.length; i++) difference |= (left[i] ?? 0) ^ (right[i] ?? 0);
   return difference === 0;

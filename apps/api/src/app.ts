@@ -1,5 +1,6 @@
 import { D1ChatExecutionStore, D1RepositoryStore, D1TaskStore, StoreError } from "@cubo/database";
 import {
+  agentTaskInputSchema,
   chatTurnResultSchema,
   demoInputSchema,
   importUpdateSchema,
@@ -130,7 +131,7 @@ app.use("/api/tasks", async (c, next) => {
 app.get("/api/tasks", async (c) => c.json({ tasks: await new D1TaskStore(c.env.DB).listTasks() }));
 app.post("/api/tasks", async (c) => {
   const key = z.uuid().safeParse(c.req.header("Idempotency-Key"));
-  const input = demoInputSchema.safeParse(await c.req.json());
+  const input = z.union([demoInputSchema, agentTaskInputSchema]).safeParse(await c.req.json());
   if (!key.success || !input.success)
     return c.json({ error: "Datos de tarea o clave de creación inválidos." }, 400);
   const task = await new D1TaskStore(c.env.DB).createTask(key.data, input.data);

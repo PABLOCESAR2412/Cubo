@@ -8,8 +8,37 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ChatComposer } from "./ChatInput";
+import { CodexActionCard, type CodexFileEdit } from "./CodexActionCard";
 import { Icon } from "./Icon";
 import { requestApi, time } from "./workspace";
+
+function parseDiffsFromContent(text: string): CodexFileEdit[] {
+  const diffRegex = /```(?:diff|patch)\n([\s\S]*?)```/g;
+  const files: CodexFileEdit[] = [];
+  let m = diffRegex.exec(text);
+  while (m !== null) {
+    const raw = m[1].trim();
+    const fileMatch = raw.match(
+      /(?:^\+\+\+\s+b\/(.+)$)|(?:^---\s+a\/(.+)$)|(?:^diff\s+--git\s+a\/\S+\s+b\/(.+)$)/m,
+    );
+    const path = fileMatch?.[1] || fileMatch?.[2] || fileMatch?.[3] || "archivo-modificado";
+    let adds = 0;
+    let dels = 0;
+    for (const line of raw.split("\n")) {
+      if (line.startsWith("+") && !line.startsWith("+++")) adds++;
+      else if (line.startsWith("-") && !line.startsWith("---")) dels++;
+    }
+    files.push({
+      path,
+      status: "MODIFICADO",
+      additions: Math.max(1, adds),
+      deletions: dels,
+      diffSnippet: raw,
+    });
+    m = diffRegex.exec(text);
+  }
+  return files;
+}
 
 function api<T>(path: string, init?: RequestInit): Promise<T> {
   const project = new URL(window.location.href).searchParams.get("project");
@@ -19,17 +48,43 @@ function api<T>(path: string, init?: RequestInit): Promise<T> {
 function selectedChat() {
   return new URL(window.location.href).searchParams.get("chat") ?? "";
 }
+function SlowTurnNotice({
+  turn,
+  noticeSeconds = 30,
+}: {
+  turn: NonNullable<ConversationDetail["turns"]>[number];
+  noticeSeconds?: number;
+}) {
+  const [elapsed, setElapsed] = useState(() => {
+    const reference = turn.updatedAt ?? turn.createdAt ?? new Date().toISOString();
+    return Date.now() - Date.parse(reference);
+  });
+  useEffect(() => {
+    const reference = turn.updatedAt ?? turn.createdAt ?? new Date().toISOString();
+    const timer = setInterval(() => {
+      setElapsed(Date.now() - Date.parse(reference));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [turn.updatedAt, turn.createdAt]);
+
+  if (elapsed <= noticeSeconds * 1000) return null;
+
+  return (
+    <p className="slow-turn" role="status">
+      {turn.status === "QUEUED"
+        ? "GitHub Actions aún prepara la ejecución."
+        : "La respuesta está tardando más de lo habitual."}{" "}
+      Puedes detenerla o ajustar el respaldo en <a href="#/ajustes">Ajustes</a>.
+    </p>
+  );
+}
+
 export function Chat() {
   const [selected, setSelected] = useState(selectedChat);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
   const [draft, setDraft] = useState("");
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [effort, setEffort] = useState("");
-  const [clock, setClock] = useState(Date.now);
-  useEffect(() => {
-    const timer = setInterval(() => setClock(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
   const [title, setTitle] = useState("");
   const [config, setConfig] = useState(false);
   const projectId = new URL(window.location.href).searchParams.get("project");
@@ -454,26 +509,67 @@ export function Chat() {
                       className={m.role === "assistant" ? "assistant-message" : undefined}
                     >
                       <div>
-                        <strong>{m.role === "assistant" ? "Asistente" : "Tú"}</strong>
+                        {m.role === "assistant" ? (
+                          <span className="agent-identity">
+                            <span className="brand-symbol">&gt;&lt;</span>
+                            <strong>Cubo Agent</strong>
+                          </span>
+                        ) : (
+                          <strong>Tú</strong>
+                        )}
                         <time dateTime={m.createdAt}>{time(m.createdAt)}</time>
                       </div>
                       {m.role === "assistant" ? (
-                        <div className="markdown-message">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            skipHtml
-                            components={{
-                              a: ({ children, href }) => (
-                                <a href={href} target="_blank" rel="noreferrer">
-                                  {children}
-                                </a>
-                              ),
-                              img: () => null,
-                            }}
-                          >
-                            {m.content}
-                          </ReactMarkdown>
-                        </div>
+                        (() => {
+                          const thoughtMatch = m.content.match(
+                            /<(?:thought|think)>([\s\S]*?)<\/(?:thought|think)>/i,
+                          );
+                          const thoughtText = thoughtMatch ? thoughtMatch[1].trim() : null;
+                          const cleanContent = thoughtMatch
+                            ? m.content
+                                .replace(/<(?:thought|think)>[\s\S]*?<\/(?:thought|think)>/i, "")
+                                .trim()
+                            : m.content;
+                          const diffFiles = parseDiffsFromContent(cleanContent);
+
+                          return (
+                            <>
+                              {thoughtText && (
+                                <details className="thought-block">
+                                  <summary className="thought-summary">
+                                    <Icon name="clock" size={13} />
+                                    <span>Razonamiento del modelo</span>
+                                  </summary>
+                                  <div className="thought-content">{thoughtText}</div>
+                                </details>
+                              )}
+                              <div className="markdown-message">
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  skipHtml
+                                  components={{
+                                    a: ({ children, href }) => (
+                                      <a href={href} target="_blank" rel="noreferrer">
+                                        {children}
+                                      </a>
+                                    ),
+                                    img: () => null,
+                                  }}
+                                >
+                                  {cleanContent}
+                                </ReactMarkdown>
+                              </div>
+                              {diffFiles.length > 0 && (
+                                <CodexActionCard
+                                  files={diffFiles}
+                                  onViewInInspector={() => {
+                                    window.location.hash = "#/tareas";
+                                  }}
+                                />
+                              )}
+                            </>
+                          );
+                        })()
                       ) : (
                         <p>{m.content}</p>
                       )}
@@ -536,17 +632,12 @@ export function Chat() {
                     </button>
                   </div>
                 )}
-                {turn &&
-                  clock -
-                    Date.parse(turn.updatedAt ?? turn.createdAt ?? new Date(clock).toISOString()) >
-                    (provider?.status.preferences?.noticeSeconds ?? 30) * 1000 && (
-                    <p className="slow-turn" role="status">
-                      {turn.status === "QUEUED"
-                        ? "GitHub Actions aún prepara la ejecución."
-                        : "La respuesta está tardando más de lo habitual."}{" "}
-                      Puedes detenerla o ajustar el respaldo en <a href="#/ajustes">Ajustes</a>.
-                    </p>
-                  )}
+                {turn && (
+                  <SlowTurnNotice
+                    turn={turn}
+                    noticeSeconds={provider?.status.preferences?.noticeSeconds ?? 30}
+                  />
+                )}
                 {lastTurn?.status === "FAILED" && (
                   <p className="inline-notice error" role="alert">
                     El último turno falló: {lastTurn.error ?? "Error de ejecución"}. No se usó un

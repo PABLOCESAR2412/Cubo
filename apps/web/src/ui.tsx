@@ -1,4 +1,4 @@
-import type { Task, TaskEvent } from "@cubo/shared";
+import { isDemoInput, type Task, type TaskEvent } from "@cubo/shared";
 import { type ReactNode, type RefObject, useEffect, useRef } from "react";
 import { Icon, type IconName } from "./Icon";
 import { labels, time } from "./workspace";
@@ -180,12 +180,20 @@ export function TaskRow({
                 "type" in task.input
                   ? task.input.type === "CHAT_TURN"
                     ? "OpenRouter · API"
-                    : "Importador de repositorio"
+                    : task.input.type === "AGENT_TASK"
+                      ? `${task.input.agent === "codex" ? "Codex" : "OpenCode"} · Agente`
+                      : "Importador de repositorio"
                   : "Runner de validación"
               }
             />
-            <span>{task.input.steps} pasos</span>
-            {task.input.pauseAt && <span>Pausa con aprobación</span>}
+            {isDemoInput(task.input) ? (
+              <>
+                <span>{task.input.steps} pasos</span>
+                {task.input.pauseAt && <span>Pausa con aprobación</span>}
+              </>
+            ) : "actionRequested" in task.input ? (
+              <span>Acción: {task.input.actionRequested}</span>
+            ) : null}
           </div>
         </div>
         <div className="task-row-side">
@@ -200,10 +208,10 @@ export function TaskRow({
           <div className="task-row-controls">
             <div className="task-row-progress">
               <span>
-                {task.progress}/{task.input.steps}
+                {task.progress}/{isDemoInput(task.input) ? task.input.steps : 4}
               </span>
               <progress
-                max={task.input.steps}
+                max={isDemoInput(task.input) ? task.input.steps : 4}
                 value={task.progress}
                 aria-label={`Progreso de ${task.id.slice(0, 8)}`}
               />

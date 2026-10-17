@@ -1,12 +1,17 @@
-import type { Conversation } from "@cubo/shared";
+import type { Conversation, TaskStatus } from "@cubo/shared";
 import { useEffect, useRef, useState } from "react";
+import { CommandPalette } from "./CommandPalette";
+import { GlobalTopBar } from "./GlobalTopBar";
 import { Icon, type IconName } from "./Icon";
 import { NewTask } from "./NewTask";
+import { notifyTaskStatus } from "./notifications";
 import { Analytics, Chat, Projects, Settings } from "./PreparedViews";
 import { PwaControls } from "./PwaControls";
 import { RecentChat } from "./RecentChat";
 import { Tasks } from "./Tasks";
+import { initTheme } from "./theme";
 import { AppShell, Sidebar } from "./ui";
+import { VersionHistoryDialog } from "./VersionHistory";
 import { requestApi, taskIdFromHash, useWorkspace } from "./workspace";
 
 type View = "chat" | "tareas" | "proyectos" | "analiticas" | "ajustes";
@@ -45,8 +50,48 @@ export default function App() {
   const [activeChat, setActiveChat] = useState(() =>
     new URL(window.location.href).searchParams.get("chat"),
   );
+  const [showVersions, setShowVersions] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const navigationDialog = useRef<HTMLDialogElement>(null);
   const toggle = useRef<HTMLButtonElement>(null);
+  const previousTasksRef = useRef<Map<string, TaskStatus>>(new Map());
+
+  useEffect(() => {
+    initTheme();
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((prev) => !prev);
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "t" && !e.shiftKey) {
+        const target = e.target as HTMLElement | null;
+        if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
+        e.preventDefault();
+        setComposer(true);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (!w.tasks.length) return;
+    for (const task of w.tasks) {
+      const prev = previousTasksRef.current.get(task.id);
+      if (prev && prev !== task.status) {
+        if (
+          task.status === "WAITING_APPROVAL" ||
+          task.status === "SUCCEEDED" ||
+          task.status === "FAILED"
+        ) {
+          notifyTaskStatus(task);
+        }
+      }
+      previousTasksRef.current.set(task.id, task.status);
+    }
+  }, [w.tasks]);
   useEffect(() => {
     if (!w.authenticated) return;
     let disposed = false;
@@ -206,10 +251,10 @@ export default function App() {
             aria-label="Cubo, proyectos"
             onClick={() => openProjects()}
           >
-            <Icon name="cube" size={26} />
-            <span>Cubo</span>
+            <span className="brand-symbol">&gt;&lt;</span>
+            <span className="brand-title">cubo</span>
           </button>
-          <span className="personal-label">personal</span>
+          <span className="personal-label">workspace</span>
           <button
             type="button"
             className="icon-button mobile-only"
@@ -231,8 +276,11 @@ export default function App() {
             setDrawer(false);
           }}
         >
-          <Icon name="plus" size={17} />
-          Nuevo proyecto
+          <div className="sidebar-create-inner">
+            <Icon name="plus" size={16} />
+            <span>+ Nuevo proyecto</span>
+          </div>
+          <kbd className="sidebar-kbd">Ctrl+N</kbd>
         </button>
         <nav className="main-nav" aria-label="Navegación principal">
           {navigation.map((item) => (
@@ -274,15 +322,41 @@ export default function App() {
           {!recentChats.length && <p className="hint">Sin chats todavía</p>}
         </div>
         <div className="sidebar-system">
+          <div className="sidebar-server-status">
+            <div className="server-status-left">
+              <span className={`runner-led-pulse ${w.online ? "is-online" : "is-offline"}`} />
+              <span className="server-status-text">
+                SERVIDOR: {w.online ? "Listo · Cloudflare" : "Desconectado"}
+              </span>
+            </div>
+            <span className="sidebar-version-pill">
+              v{import.meta.env.VITE_CUBO_VERSION ?? "2.0.0"}
+            </span>
+          </div>
           <PwaControls />
           <button type="button" className="sign-out" onClick={() => void w.logout()}>
             <Icon name="logout" size={15} />
             Cerrar sesión
           </button>
-          <span className="app-version">Cubo {import.meta.env.VITE_CUBO_VERSION ?? "1.0.0"}</span>
+          <button
+            type="button"
+            className="app-version-btn"
+            onClick={() => setShowVersions(true)}
+            title="Ver historial de versiones y novedades"
+          >
+            <Icon name="cube" size={13} />
+            <span>Cubo v{import.meta.env.VITE_CUBO_VERSION ?? "2.0.0"}</span>
+            <span className="version-pill">Novedades</span>
+          </button>
         </div>
       </Sidebar>
       <div className="workspace-main">
+        <GlobalTopBar
+          onOpenCommandPalette={() => setPaletteOpen(true)}
+          onNewTask={() => setComposer(true)}
+          onOpenMenu={() => setDrawer(true)}
+          online={w.online}
+        />
         <main id="workspace-content" className={view === "chat" ? "chat-workspace" : undefined}>
           {(w.error || w.pollError) && (
             <div className="workspace-alert error" role="alert">
@@ -330,6 +404,17 @@ export default function App() {
           }}
         />
       )}
+      <VersionHistoryDialog open={showVersions} onClose={() => setShowVersions(false)} />
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onNavigate={(target) => navigate(target)}
+        onNewTask={() => setComposer(true)}
+        onNewProject={() => openProjects(true)}
+        onNewChat={() => navigate("chat")}
+        onShowVersions={() => setShowVersions(true)}
+        onLogout={() => void w.logout()}
+      />
     </AppShell>
   );
 }
