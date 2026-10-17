@@ -36,8 +36,12 @@ export type IconName =
   | "bolt"
   | "bell"
   | "shield"
-  | "eye";
+  | "eye"
+  | "commit"
+  | "history";
 const paths: Record<IconName, string> = {
+  commit: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 12h6M15 12h6",
+  history: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5M12 7v5l4 2",
   bolt: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
   bell: "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0",
   shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
