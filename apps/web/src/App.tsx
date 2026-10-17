@@ -425,7 +425,7 @@ export default function App() {
             title="Ver historial de versiones y novedades"
           >
             <Icon name="cube" size={13} />
-            <span>Cubo v{import.meta.env.VITE_CUBO_VERSION ?? "2.0.0"}</span>
+            <span>Cubo v{import.meta.env.VITE_CUBO_VERSION ?? "2.2.0"}</span>
             <span className="version-pill">Novedades</span>
           </button>
           <PwaControls />

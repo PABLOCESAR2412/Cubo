@@ -926,18 +926,28 @@ progress::-moz-progress-bar {
 }
 .right-panel {
   position: fixed;
-  inset: 42px 0 0 auto;
-  width: min(480px, 100vw);
-  height: calc(100dvh - 42px);
-  max-height: none;
-  max-width: none;
-  margin: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inset-inline-start: auto;
+  width: min(520px, 100vw);
+  height: 100dvh;
+  max-height: 100dvh;
+  max-width: 100vw;
+  margin: 0 0 0 auto;
   padding: 0;
   color: var(--color-ink);
   background: var(--color-surface);
   border: 0;
   border-left: 1px solid var(--color-line);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 1050;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
 }
 .right-panel::backdrop,
 .new-task-dialog::backdrop,
@@ -951,7 +961,75 @@ progress::-moz-progress-bar {
   top: 0;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-line);
-  z-index: 1;
+  z-index: 10;
+  padding: 14px 20px;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.right-panel > .panel-heading h2 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-ink);
+}
+.right-panel .tabs {
+  margin: 0 20px 16px;
+  background: var(--color-base);
+  border: 1px solid var(--color-line);
+  padding: 4px;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+.right-panel .tabs button {
+  text-align: center;
+  padding: 7px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 6px;
+  color: var(--color-muted);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.15s ease;
+}
+.right-panel .tabs button.active,
+.right-panel .tabs button[aria-pressed="true"] {
+  background: #20292b;
+  color: #f1f5f9;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+:root[data-theme="claro"] .right-panel .tabs,
+:root[data-theme="light"] .right-panel .tabs {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+:root[data-theme="claro"] .right-panel .tabs button,
+:root[data-theme="light"] .right-panel .tabs button {
+  color: #64748b;
+}
+:root[data-theme="claro"] .right-panel .tabs button.active,
+:root[data-theme="claro"] .right-panel .tabs button[aria-pressed="true"],
+:root[data-theme="light"] .right-panel .tabs button.active,
+:root[data-theme="light"] .right-panel .tabs button[aria-pressed="true"] {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 600;
+}
+.right-panel .inspector-summary {
+  padding: 20px 20px 14px;
+}
+.right-panel .inspector-content {
+  padding: 0 20px 24px;
+  flex: 1;
 }
 .inspector-summary,
 .inspector-content {
@@ -1220,16 +1298,39 @@ label,
   flex-direction: column;
 }
 .conversation-empty {
-  display: grid;
-  gap: 12px;
-  text-align: left;
-  max-width: 65ch;
-  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: auto;
+  max-width: 480px;
+  width: 100%;
+  padding: 44px 28px;
+  gap: 14px;
   color: var(--color-muted);
+  border-radius: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 .conversation-empty :where(h2) {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 600;
   color: var(--color-ink);
+  margin: 0;
+}
+.conversation-empty :where(p) {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+.conversation-empty svg {
+  color: var(--color-accent);
+}
+.conversation-empty button.primary {
+  margin-top: 4px;
 }
 .conversation-icon {
   color: var(--color-accent);
@@ -1769,11 +1870,11 @@ label,
   }
   .config-panel {
     position: fixed;
-    inset: 42px 0 0;
+    inset: 0;
     margin: 0;
     padding: 0;
     width: 100vw;
-    height: calc(100dvh - 42px);
+    height: 100dvh;
     max-height: none;
     max-width: none;
     border: 0;
@@ -1781,6 +1882,8 @@ label,
   }
   .right-panel {
     width: 100vw;
+    height: 100dvh;
+    inset: 0;
   }
   .activity-chart {
     height: 180px;
@@ -7832,4 +7935,136 @@ label,
   background: #ffffff;
   border-color: #cbd5e1;
   color: #0f172a;
+}
+
+/* ==========================================================================
+   Precision Light Mode Overrides (Eliminación de residuos oscuros)
+   ========================================================================== */
+:root[data-theme="claro"] .workspace-alert,
+:root[data-theme="light"] .workspace-alert {
+  background: var(--surface-2, #f3f4f6);
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-line);
+}
+
+:root[data-theme="claro"] .workspace-alert.error,
+:root[data-theme="claro"] .inline-notice.error,
+:root[data-theme="light"] .workspace-alert.error,
+:root[data-theme="light"] .inline-notice.error {
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #b91c1c;
+}
+
+:root[data-theme="claro"] .workspace-alert.error button,
+:root[data-theme="claro"] .inline-notice.error button,
+:root[data-theme="light"] .workspace-alert.error button,
+:root[data-theme="light"] .inline-notice.error button {
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+:root[data-theme="claro"] .inline-notice,
+:root[data-theme="claro"] .approval,
+:root[data-theme="light"] .inline-notice,
+:root[data-theme="light"] .approval {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+:root[data-theme="claro"] .status-badge.failed,
+:root[data-theme="light"] .status-badge.failed {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+:root[data-theme="claro"] .status-badge.pending,
+:root[data-theme="claro"] .status-badge.waiting_approval,
+:root[data-theme="light"] .status-badge.pending,
+:root[data-theme="light"] .status-badge.waiting_approval {
+  color: #b45309;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+:root[data-theme="claro"] .status-badge.running,
+:root[data-theme="claro"] .status-badge.succeeded,
+:root[data-theme="light"] .status-badge.running,
+:root[data-theme="light"] .status-badge.succeeded {
+  color: #047857;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+:root[data-theme="claro"] .status.failed,
+:root[data-theme="light"] .status.failed {
+  color: #dc2626;
+}
+
+:root[data-theme="claro"] .event-dot.failed,
+:root[data-theme="light"] .event-dot.failed {
+  background: #ef4444;
+}
+
+:root[data-theme="claro"] .error,
+:root[data-theme="light"] .error {
+  color: #dc2626;
+}
+
+:root[data-theme="claro"] .model-count-badge,
+:root[data-theme="light"] .model-count-badge {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+
+:root[data-theme="claro"] .split-progress-bar,
+:root[data-theme="light"] .split-progress-bar {
+  background: #e2e8f0;
+}
+
+:root[data-theme="claro"] .split-bar-fill.opencode,
+:root[data-theme="light"] .split-bar-fill.opencode {
+  background: #94a3b8;
+}
+
+:root[data-theme="claro"] .card-subheading,
+:root[data-theme="light"] .card-subheading {
+  color: #64748b;
+}
+
+:root[data-theme="claro"] .agent-tabs :where(button.active),
+:root[data-theme="light"] .agent-tabs :where(button.active) {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+:root[data-theme="claro"] .secondary.active,
+:root[data-theme="light"] .secondary.active {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+:root[data-theme="claro"] .chat-actions-list .chat-delete-action,
+:root[data-theme="light"] .chat-actions-list .chat-delete-action {
+  color: #dc2626;
+}
+
+:root[data-theme="claro"] .task-item.selected,
+:root[data-theme="light"] .task-item.selected {
+  border-color: var(--color-accent);
+}
+
+:root[data-theme="claro"] .tabs :where(button.active),
+:root[data-theme="claro"] .tabs :where(button[aria-pressed="true"]),
+:root[data-theme="light"] .tabs :where(button.active),
+:root[data-theme="light"] .tabs :where(button[aria-pressed="true"]) {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }

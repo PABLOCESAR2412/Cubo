@@ -18,6 +18,88 @@ export interface VersionRelease {
 
 export const versionHistory: VersionRelease[] = [
   {
+    version: "2.2.0",
+    type: "minor",
+    typeLabel: "Cambio Mediano (Minor)",
+    date: "2026-10-17",
+    title: "Refinamiento Visual Stitch, Modo Claro de Precisión y Drawer de Tareas Full-Height",
+    summary:
+      "Corrección completa de contraste en el modo claro eliminando residuos oscuros en alertas, insignias de estado fallido, pestañas y barras de progreso. Rediseño del inspector de proceso de tareas en pantalla completa (full-height 100dvh) con navegación equilibrada, centrado de vista en Chat para proyectos sin conversación y optimización de la barra superior sin botones redundantes.",
+    changes: [
+      {
+        category: "feature",
+        label: "Inspector de Tareas Full-Height (100dvh)",
+        description:
+          "El panel de proceso de tarea ahora aprovecha el 100% de la altura de pantalla tanto en escritorio como en móvil, con cabecera fija, navegación por pestañas (Actividad, Diff, Checkpoint, Datos) y jerarquía visual nítida.",
+      },
+      {
+        category: "feature",
+        label: "Corrección Integral de Contraste en Modo Claro",
+        description:
+          "Eliminación de cajas oscuras y residuos en .workspace-alert, .inline-notice, insignias de estado fallido (.status-badge.failed con fondo suave #fef2f2 y texto #b91c1c), pestañas activas y píldoras de analíticas.",
+      },
+      {
+        category: "refactor",
+        label: "Centrado de Vista de Chat para Proyectos",
+        description:
+          "La vista de conversación vacía cuando se abre un proyecto ahora se presenta perfectamente centrada vertical y horizontalmente con tarjeta de bienvenida sobria y acciones directas.",
+      },
+      {
+        category: "refactor",
+        label: "Barra Superior Despejada",
+        description:
+          "Retiro del botón redundante 'Nueva Tarea' en la barra superior para concentrar las acciones de creación exclusivamente en el selector '+ Nuevo' de la barra lateral.",
+      },
+      {
+        category: "refactor",
+        label: "Documentación Detallada de Versiones",
+        description:
+          "Historial de versiones y registro de cambios exhaustivo con clasificación semántica (Major, Minor, Patch) integrado en la PWA.",
+      },
+    ],
+  },
+  {
+    version: "2.1.0",
+    type: "minor",
+    typeLabel: "Cambio Mediano (Minor)",
+    date: "2026-10-17",
+    title: "Multi-Proveedores de IA, Asistente Autónomo TypeSafe y Migración D1",
+    summary:
+      "Soporte para múltiples proveedores de IA (Google Gemini, Groq, NVIDIA NIM y OpenRouter) con credenciales cifradas mediante AES-256-GCM y AAD por proyecto. Incorporación del motor TypeSafe AI para salidas estructuradas y tipadas con Zod (/api/ai/*), y submenús contextuales flotantes en chats.",
+    changes: [
+      {
+        category: "feature",
+        label: "Multi-Proveedores de Modelos (Gemini, Groq, NVIDIA, OpenRouter)",
+        description:
+          "Adaptadores modulares y almacenamiento en base de datos D1 para conectar modelos gratuitos de Google Gemini (2.5 Flash, 2.5 Pro), Groq (Llama 3.3 70B, Llama 3.1 8B), NVIDIA NIM y OpenRouter con cifrado seguro y verificación de formato.",
+      },
+      {
+        category: "feature",
+        label: "Motor Type-Safe AI Asistencial (/api/ai/*)",
+        description:
+          "Endpoints de asistencia basados en esquemas Zod en TypeScript para sintetizar memoria de proyecto, generar propuestas de tareas reproducibles y listar sugerencias de siguientes pasos de forma tipada y determinista.",
+      },
+      {
+        category: "infra",
+        label: "Migración D1 0008_multi_providers.sql",
+        description:
+          "Esquema relacional en Cloudflare D1 para persistir el estado de proveedores multi-modelo y configuración de cuotas de inferencia.",
+      },
+      {
+        category: "feature",
+        label: "Submenú Contextual Flotante en Barra Lateral",
+        description:
+          "Al pasar el cursor (hover) sobre cualquier conversación reciente, se despliega un menú flotante para anclar, renombrar o eliminar el chat de forma intuitiva.",
+      },
+      {
+        category: "feature",
+        label: "Selector '+ Nuevo' Tripartito",
+        description:
+          "Botón desplegable en el sidebar para iniciar un Chat Libre (sin proyecto), crear un Nuevo Proyecto, o lanzar una Nueva Tarea de ejecución.",
+      },
+    ],
+  },
+  {
     version: "2.0.0",
     type: "major",
     typeLabel: "Cambio Grande (Major)",

@@ -3,13 +3,13 @@ import { ThemeButton } from "./ThemeButton";
 
 export function GlobalTopBar({
   onOpenCommandPalette,
-  onNewTask,
+  onNewTask: _onNewTask,
   onOpenMenu,
   activeRepo,
   activeBranch,
 }: {
   onOpenCommandPalette: () => void;
-  onNewTask: () => void;
+  onNewTask?: () => void;
   onOpenMenu: () => void;
   online: boolean;
   activeRepo?: string;
@@ -68,16 +68,6 @@ export function GlobalTopBar({
 
       <div className="topbar-right">
         <ThemeButton className="icon-button topbar-theme-btn" />
-
-        <button
-          type="button"
-          className="primary compact desktop-only"
-          onClick={onNewTask}
-          title="Lanzar nueva tarea de agente"
-        >
-          <Icon name="plus" size={14} />
-          <span>Nueva Tarea</span>
-        </button>
       </div>
     </header>
   );
