@@ -265,32 +265,107 @@ export default function App() {
             <Icon name="close" />
           </button>
         </div>
-        <button
-          className="sidebar-create"
-          type="button"
-          onClick={() => {
-            if (mobile && navigationDialog.current?.open) {
-              navigationDialog.current.close();
-              toggle.current?.focus();
-            }
-            if (view === "proyectos") {
-              openProjects(true);
-            } else {
-              navigate("chat");
-              const url = new URL(location.href);
-              url.searchParams.delete("chat");
-              history.replaceState(null, "", url);
-              window.dispatchEvent(new Event("cubo-chat-selected"));
-            }
-            setDrawer(false);
-          }}
-        >
-          <div className="sidebar-create-inner">
-            <Icon name="plus" size={16} />
-            <span>{view === "proyectos" ? "+ Nuevo proyecto" : "+ Nuevo Chat"}</span>
+        <div className="sidebar-new-container">
+          <div className="sidebar-new-trigger-wrapper">
+            <button
+              className="sidebar-create"
+              type="button"
+              onClick={() => {
+                const el = document.getElementById(
+                  "sidebar-new-menu-details",
+                ) as HTMLDetailsElement | null;
+                if (el) el.open = !el.open;
+              }}
+            >
+              <div className="sidebar-create-inner">
+                <Icon name="plus" size={16} />
+                <span>Nuevo</span>
+              </div>
+              <Icon name="chevron" size={11} className="sidebar-new-chevron" />
+            </button>
+            <details id="sidebar-new-menu-details" className="sidebar-new-dropdown-details">
+              <summary className="visually-hidden">Opciones de Nuevo</summary>
+              <div className="sidebar-new-dropdown-menu" role="menu">
+                <button
+                  type="button"
+                  className="sidebar-new-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    const el = document.getElementById(
+                      "sidebar-new-menu-details",
+                    ) as HTMLDetailsElement | null;
+                    if (el) el.open = false;
+                    if (mobile && navigationDialog.current?.open) navigationDialog.current.close();
+                    const url = new URL(location.href);
+                    url.searchParams.delete("chat");
+                    url.searchParams.delete("project");
+                    history.replaceState(null, "", url);
+                    setActiveChat(null);
+                    navigate("chat");
+                    window.dispatchEvent(new Event("cubo-chat-selected"));
+                    setDrawer(false);
+                  }}
+                >
+                  <Icon name="chat" size={14} />
+                  <div className="item-text">
+                    <span className="item-title">Nuevo chat libre</span>
+                    <span className="item-desc">Sin proyecto asignado</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className="sidebar-new-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    const el = document.getElementById(
+                      "sidebar-new-menu-details",
+                    ) as HTMLDetailsElement | null;
+                    if (el) el.open = false;
+                    if (mobile && navigationDialog.current?.open) navigationDialog.current.close();
+                    openProjects(true);
+                    setDrawer(false);
+                  }}
+                >
+                  <Icon name="folder" size={14} />
+                  <div className="item-text">
+                    <span className="item-title">Nuevo proyecto</span>
+                    <span className="item-desc">Crear o vincular repositorio</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className="sidebar-new-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    const el = document.getElementById(
+                      "sidebar-new-menu-details",
+                    ) as HTMLDetailsElement | null;
+                    if (el) el.open = false;
+                    if (mobile && navigationDialog.current?.open) navigationDialog.current.close();
+                    const url = new URL(location.href);
+                    url.searchParams.delete("chat");
+                    const currentProj = url.searchParams.get("project");
+                    if (!currentProj) {
+                      openProjects(false);
+                    } else {
+                      history.replaceState(null, "", url);
+                      setActiveChat(null);
+                      navigate("chat");
+                      window.dispatchEvent(new Event("cubo-chat-selected"));
+                    }
+                    setDrawer(false);
+                  }}
+                >
+                  <Icon name="commit" size={14} />
+                  <div className="item-text">
+                    <span className="item-title">Nuevo chat de este proyecto</span>
+                    <span className="item-desc">Con contexto de repositorio</span>
+                  </div>
+                </button>
+              </div>
+            </details>
           </div>
-          <kbd className="sidebar-kbd">Ctrl+N</kbd>
-        </button>
+        </div>
         <nav className="main-nav" aria-label="Navegación principal">
           {navigation.map((item) => (
             <a
@@ -312,41 +387,37 @@ export default function App() {
           Recientes<span>{recentChats.length}</span>
         </div>
         <div className="recents">
-          {recentChats.map((chat, index) => (
-            <div key={chat.id}>
-              {(index === 0 ||
-                chatGroup(recentChats[index - 1] as Conversation) !== chatGroup(chat)) && (
-                <span className="recent-group">{chatGroup(chat)}</span>
-              )}
-              <RecentChat
-                chat={chat}
-                active={view === "chat" && activeChat === chat.id}
-                open={() => openChat(chat)}
-                removed={() => {
-                  if (activeChat === chat.id) openProjects();
-                }}
-              />
-            </div>
-          ))}
+          {recentChats.map((chat, index) => {
+            const chatTask = w.tasks.find(
+              (t) => t.input && "conversationId" in t.input && t.input.conversationId === chat.id,
+            );
+            return (
+              <div key={chat.id}>
+                {(index === 0 ||
+                  chatGroup(recentChats[index - 1] as Conversation) !== chatGroup(chat)) && (
+                  <span className="recent-group">{chatGroup(chat)}</span>
+                )}
+                <RecentChat
+                  chat={chat}
+                  active={view === "chat" && activeChat === chat.id}
+                  executionStatus={chatTask?.status}
+                  open={() => openChat(chat)}
+                  removed={() => {
+                    if (activeChat === chat.id) openProjects();
+                  }}
+                />
+              </div>
+            );
+          })}
           {!recentChats.length && <p className="hint">Sin chats todavía</p>}
         </div>
         <div className="sidebar-system">
-          <div className="sidebar-server-status">
-            <div className="server-status-left">
-              <span className={`runner-led-pulse ${w.online ? "is-online" : "is-offline"}`} />
-              <span className="server-status-text">
-                SERVIDOR: {w.online ? "Listo · Cloudflare" : "Desconectado"}
-              </span>
-            </div>
-            <span className="sidebar-version-pill">
-              v{import.meta.env.VITE_CUBO_VERSION ?? "2.0.0"}
+          <div className="sidebar-server-status single-line">
+            <span className={`runner-led-pulse ${w.online ? "is-online" : "is-offline"}`} />
+            <span className="server-status-text">
+              SERVIDOR: {w.online ? "Listo · Cloudflare" : "Desconectado"}
             </span>
           </div>
-          <PwaControls />
-          <button type="button" className="sign-out" onClick={() => void w.logout()}>
-            <Icon name="logout" size={15} />
-            Cerrar sesión
-          </button>
           <button
             type="button"
             className="app-version-btn"
@@ -356,6 +427,11 @@ export default function App() {
             <Icon name="cube" size={13} />
             <span>Cubo v{import.meta.env.VITE_CUBO_VERSION ?? "2.0.0"}</span>
             <span className="version-pill">Novedades</span>
+          </button>
+          <PwaControls />
+          <button type="button" className="sign-out" onClick={() => void w.logout()}>
+            <Icon name="logout" size={15} />
+            Cerrar sesión
           </button>
         </div>
       </Sidebar>

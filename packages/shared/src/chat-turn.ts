@@ -14,7 +14,7 @@ export const chatTurnInputSchema = z
     type: z.literal("CHAT_TURN"),
     steps: z.literal(1).default(1),
     pauseAt: z.null().default(null),
-    projectId: z.uuid(),
+    projectId: z.string().uuid().nullable().optional(),
     conversationId: z.uuid(),
     userMessageId: z.uuid(),
     keyId: z.uuid(),

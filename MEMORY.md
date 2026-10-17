@@ -216,6 +216,14 @@ el control plane. Esa integración Git de escritura sigue pendiente.
   - Composer flotante con selector de modelos, contador de tokens, accesorios de dictado/adjuntos y botón circular de envío.
   - 52 tests pasando, Biome 0 errores, tsc y Vite build aprobados.
 
+- Refinamientos UI y turnos de chat independientes:
+  - Sidebar: Botón neutral "Nuevo" con submenú desplegable (Nuevo chat libre, Nuevo proyecto, Nuevo chat de este proyecto). Recientes con hover en 3 puntos (`...`) para desplegar opciones contextuales (Renombrar, Fijar, Eliminar), spinner de carga en ejecuciones activas (`RUNNING`/`QUEUED`) y punto indicador de estado en revisiones (`WAITING_APPROVAL`/`SUCCEEDED`).
+  - Pie de sidebar reorganizado: Línea 1 `SERVIDOR: Listo · Cloudflare` en línea única, Línea 2 versión y novedades, Línea 3 controles PWA, Línea 4 botón de cerrar sesión.
+  - GlobalTopBar: Removido logo duplicado y badge redundante "Listo"; conservados selector de repositorio/rama, atajo `Ctrl+K`, selector directo de tema (Oscuro, Claro, Sistema) y botón de Nueva Tarea.
+  - Chat Workspace: Removidos badges de rama y modelo del sub-encabezado y menú de 3 puntos duplicado. Añadido modal interactivo de Historial de mensajes de usuario con salto y efecto visual. Mayor espaciado y holgura vertical en conversación y módulos.
+  - Turnos independientes: Soporte para turnos de chat sin proyecto (`projectId: null`) ejecutados mediante la conexión OpenRouter general del usuario, manteniendo aislamiento estricto y claves cifradas.
+  - 55 tests pasando, 0 errores tsc, Biome limpio y desplegado en Cloudflare Workers (`cubo-dev`).
+
 Actualizar esta instantánea al cerrar hitos; conservar decisiones y bloqueos,
 no acumular un log de comandos ni memorias divergentes por agente.
 

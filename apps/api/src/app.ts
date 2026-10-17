@@ -230,7 +230,7 @@ app.post("/api/executions/:id/chat-result", async (c) => {
     );
     return c.json({ ok: true });
   }
-  const key = await providerKey(c.env, task.input.projectId, task.input.keyId);
+  const key = await providerKey(c.env, task.input.projectId ?? null, task.input.keyId);
   if (containsSecret(output.data.content, c.env) || output.data.content.includes(key))
     throw new StoreError(400, "Respuesta bloqueada por contenido sensible.");
   await new D1ChatExecutionStore(c.env.DB).complete(

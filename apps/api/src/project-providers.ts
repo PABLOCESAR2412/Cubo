@@ -15,7 +15,7 @@ interface Connection {
 }
 export async function providerConnection(
   db: D1Database,
-  projectId: string,
+  projectId: string | null,
 ): Promise<Connection | null> {
   const shared = await db
     .prepare(
@@ -23,6 +23,7 @@ export async function providerConnection(
     )
     .first<Connection>();
   if (shared) return shared;
+  if (!projectId) return null;
   return db
     .prepare(
       "SELECT id,project_id,ciphertext,iv,created_at FROM project_provider_keys WHERE project_id=? AND provider='openrouter'",
@@ -30,7 +31,11 @@ export async function providerConnection(
     .bind(projectId)
     .first<Connection>();
 }
-export async function providerKey(env: Env, projectId: string, keyId: string): Promise<string> {
+export async function providerKey(
+  env: Env,
+  projectId: string | null,
+  keyId: string,
+): Promise<string> {
   const row = await providerConnection(env.DB, projectId);
   if (!row || row.id !== keyId || !env.PROJECT_ENCRYPTION_KEY)
     throw new StoreError(403, "Conexión de proveedor no autorizada.");

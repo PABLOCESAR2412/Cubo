@@ -5,7 +5,6 @@ export function GlobalTopBar({
   onOpenCommandPalette,
   onNewTask,
   onOpenMenu,
-  online,
   activeRepo,
   activeBranch,
 }: {
@@ -31,11 +30,6 @@ export function GlobalTopBar({
         >
           <Icon name="menu" size={17} />
         </button>
-
-        <div className="topbar-brand">
-          <span className="brand-symbol">&gt;&lt;</span>
-          <span className="brand-title">cubo</span>
-        </div>
 
         {activeRepo ? (
           <div className="topbar-repo-pill" title={`Repositorio activo: ${activeRepo}`}>
@@ -73,20 +67,6 @@ export function GlobalTopBar({
       </div>
 
       <div className="topbar-right">
-        <div
-          className="topbar-runner-status"
-          role="status"
-          title="Estado de la infraestructura y runner"
-        >
-          <span
-            className={`runner-led-pulse ${online ? "is-online" : "is-offline"}`}
-            aria-hidden="true"
-          />
-          <span className="runner-status-text">
-            {online ? "Listo · Cloudflare Workers" : "Sin conexión"}
-          </span>
-        </div>
-
         <ThemeButton className="icon-button topbar-theme-btn" />
 
         <button

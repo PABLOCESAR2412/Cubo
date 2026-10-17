@@ -17,9 +17,9 @@ export class D1ChatExecutionStore {
       throw new StoreError(403, "Turno no autorizado.");
     const updated = await this.db
       .prepare(
-        "UPDATE chat_turns SET request_started=1 WHERE task_id=? AND project_id=? AND conversation_id=? AND request_started=0 AND EXISTS(SELECT 1 FROM executions WHERE id=? AND cancellation_requested=0 AND status='RUNNING')",
+        "UPDATE chat_turns SET request_started=1 WHERE task_id=? AND project_id IS ? AND conversation_id=? AND request_started=0 AND EXISTS(SELECT 1 FROM executions WHERE id=? AND cancellation_requested=0 AND status='RUNNING')",
       )
-      .bind(task.id, task.input.projectId, task.input.conversationId, executionId)
+      .bind(task.id, task.input.projectId ?? null, task.input.conversationId, executionId)
       .run();
     if (!updated.meta.changes)
       throw new StoreError(409, "La solicitud ya fue entregada; no se repetirá automáticamente.");
@@ -31,7 +31,7 @@ export class D1ChatExecutionStore {
     return {
       context: JSON.parse(row.context),
       keyId: task.input.keyId,
-      projectId: task.input.projectId,
+      projectId: task.input.projectId ?? "",
       model: task.input.model,
     };
   }
@@ -51,9 +51,9 @@ export class D1ChatExecutionStore {
       .join("");
     const turn = await this.db
       .prepare(
-        "SELECT result_digest,request_started FROM chat_turns WHERE task_id=? AND project_id=? AND conversation_id=?",
+        "SELECT result_digest,request_started FROM chat_turns WHERE task_id=? AND project_id IS ? AND conversation_id=?",
       )
-      .bind(task.id, task.input.projectId, task.input.conversationId)
+      .bind(task.id, task.input.projectId ?? null, task.input.conversationId)
       .first<{ result_digest: string | null; request_started: number }>();
     if (!turn) throw new StoreError(404, "Turno desconocido.");
     if (task.status === "SUCCEEDED" && turn.result_digest === digest) return;

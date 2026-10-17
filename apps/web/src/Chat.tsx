@@ -85,8 +85,15 @@ export function Chat() {
   const [draft, setDraft] = useState("");
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [effort, setEffort] = useState("");
-  const [title, setTitle] = useState("");
-  const [config, setConfig] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const historyDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (showHistory && historyDialog.current && !historyDialog.current.open) {
+      historyDialog.current.showModal();
+    } else if (!showHistory && historyDialog.current?.open) {
+      historyDialog.current.close();
+    }
+  }, [showHistory]);
   const projectId = new URL(window.location.href).searchParams.get("project");
   const [projectName, setProjectName] = useState("");
   const [provider, setProvider] = useState<{
@@ -98,20 +105,22 @@ export function Chat() {
     let disposed = false;
     setProvider(null);
     setModel("");
-    if (projectId)
-      void requestApi<ProjectProviderStatus>(`projects/${projectId}/providers/openrouter?summary=1`)
-        .then((status) => {
-          if (!disposed) setProvider({ projectId, status });
-        })
-        .catch(() => {
-          if (!disposed) setProvider(null);
-        });
+    const url = projectId
+      ? `projects/${projectId}/providers/openrouter?summary=1`
+      : "providers/openrouter";
+    void requestApi<ProjectProviderStatus>(url)
+      .then((status) => {
+        if (!disposed) setProvider({ projectId: projectId ?? "", status });
+      })
+      .catch(() => {
+        if (!disposed) setProvider(null);
+      });
     return () => {
       disposed = true;
     };
   }, [projectId]);
-  const configured = provider?.projectId === projectId && provider.status.configured;
-  const models = provider?.projectId === projectId ? provider.status.models : [];
+  const configured = Boolean(provider?.status.configured);
+  const models = provider?.status.models ?? [];
   const ready = Boolean(
     configured && !provider?.status.blockedReason && models.some((m) => m.id === model),
   );
@@ -140,20 +149,6 @@ export function Chat() {
       disposed = true;
     };
   }, [projectId]);
-  const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);
-  const configDialog = useRef<HTMLDialogElement>(null);
-  const Configuration = mobile ? "dialog" : "aside";
-  useEffect(() => {
-    const media = window.matchMedia("(max-width: 767px)");
-    const change = () => setMobile(media.matches);
-    media.addEventListener("change", change);
-    return () => media.removeEventListener("change", change);
-  }, []);
-  useEffect(() => {
-    if (mobile && config && configDialog.current && !configDialog.current.open) {
-      configDialog.current.showModal();
-    }
-  }, [mobile, config]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [syncError, setSyncError] = useState("");
@@ -168,7 +163,6 @@ export function Chat() {
     model?: string;
     signature?: string;
   } | null>(null);
-  const actionsMenu = useRef<HTMLDetailsElement>(null);
   const conversationPane = useRef<HTMLDivElement>(null);
   const lastMessage = detail?.messages.at(-1)?.id;
   useEffect(() => {
@@ -241,9 +235,6 @@ export function Chat() {
   useEffect(() => {
     setEffort(detail?.turns?.[0]?.effort ?? "");
   }, [detail?.turns?.[0]?.effort]);
-  useEffect(() => {
-    setTitle(detail?.conversation.title ?? "");
-  }, [detail?.conversation.title]);
   async function action(operation: () => Promise<void>) {
     if (locked.current) return;
     locked.current = true;
@@ -318,40 +309,6 @@ export function Chat() {
       );
     });
   }
-  async function update(pinned: boolean, rename = false) {
-    const conversation = detailRef.current?.conversation;
-    if (!conversation) return;
-    await action(async () => {
-      await api(`conversations/${conversation.id}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          title: rename ? title.trim() : conversation.title,
-          pinned,
-          version: conversation.version,
-        }),
-      });
-    });
-  }
-  async function remove() {
-    const conversation = detailRef.current?.conversation;
-    if (
-      !conversation ||
-      !window.confirm(
-        `Eliminar «${conversation.title}» y todos sus mensajes guardados? Esta acción no se puede deshacer.`,
-      )
-    )
-      return;
-    await action(async () => {
-      await api(`conversations/${conversation.id}`, {
-        method: "DELETE",
-        body: JSON.stringify({ version: conversation.version }),
-      });
-      active.current = "";
-      setSelected("");
-      setDetail(null);
-      setDraft("");
-    });
-  }
   async function copy(text: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -372,30 +329,13 @@ export function Chat() {
   }
   return (
     <div className="persistent-chat">
-      <div className={`chat-layout ${config ? "with-config" : ""}`}>
+      <div className="chat-layout">
         <section className="chat-main">
           <div className="chat-toolbar stitch-sub-header">
             <div className="chat-toolbar-left">
-              <button
-                type="button"
-                className="chat-model-pill"
-                onClick={() => setConfig(true)}
-                title="Seleccionar modelo y esfuerzo"
-              >
-                <span className="model-status-dot" />
-                <span className="model-name-text">
-                  {model ? model.split("/").pop() : "Gemini 4 Argon 1M"}
-                </span>
-                <Icon name="chevron" size={12} />
-              </button>
-              <span className="chat-toolbar-sep">/</span>
-              <div className="chat-branch-pill">
-                <Icon name="commit" size={13} />
-                <span className="chat-branch-project">{projectName || "Cubo"}</span>
-                <span className="chat-branch-meta">
-                  [git: <strong className="git-branch-text">main</strong>]
-                </span>
-              </div>
+              <span className="chat-toolbar-topic">
+                {detail?.conversation.title || (projectName ? `Proyecto: ${projectName}` : "Chat")}
+              </span>
             </div>
             <div className="toolbar-actions">
               <button
@@ -425,67 +365,77 @@ export function Chat() {
               </button>
               <button
                 type="button"
-                aria-expanded={config}
-                className={`chat-action-btn ${config ? "active" : ""}`}
-                onClick={() => setConfig(!config)}
-                title="Historial cronológico y ajustes"
+                aria-expanded={showHistory}
+                className={`chat-action-btn ${showHistory ? "active" : ""}`}
+                onClick={() => setShowHistory(!showHistory)}
+                title="Historial de mensajes enviados"
               >
                 <Icon name="history" size={13} />
                 <span>Historial</span>
               </button>
-              <details
-                className="chat-actions-menu"
-                ref={actionsMenu}
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") {
-                    event.currentTarget.open = false;
-                    event.currentTarget.querySelector("summary")?.focus();
-                  }
-                }}
-                onBlur={(event) => {
-                  if (!event.currentTarget.contains(event.relatedTarget as Node | null))
-                    event.currentTarget.open = false;
-                }}
-              >
-                <summary aria-label="Acciones del chat" title="Más opciones">
-                  <Icon name="more" />
-                </summary>
-                <div className="chat-actions-list">
-                  <button
-                    type="button"
-                    disabled={!detail || busy}
-                    onClick={() => {
-                      if (actionsMenu.current) actionsMenu.current.open = false;
-                      setConfig(true);
-                    }}
-                  >
-                    Renombrar chat
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!detail || busy}
-                    onClick={() => {
-                      if (actionsMenu.current) actionsMenu.current.open = false;
-                      void update(!detail?.conversation.pinned);
-                    }}
-                  >
-                    {detail?.conversation.pinned ? "Desfijar chat" : "Fijar chat"}
-                  </button>
-                  <button
-                    type="button"
-                    className="chat-delete-action"
-                    disabled={!detail || busy}
-                    onClick={() => {
-                      if (actionsMenu.current) actionsMenu.current.open = false;
-                      void remove();
-                    }}
-                  >
-                    Eliminar conversación
-                  </button>
-                </div>
-              </details>
             </div>
           </div>
+
+          <dialog
+            ref={historyDialog}
+            className="chat-history-dialog"
+            onClose={() => setShowHistory(false)}
+            aria-label="Historial de mensajes del chat"
+          >
+            <div className="chat-history-card">
+              <div className="chat-history-card-header">
+                <div className="chat-history-card-title">
+                  <Icon name="history" size={15} />
+                  <span>Historial de mensajes</span>
+                </div>
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={() => {
+                    historyDialog.current?.close();
+                    setShowHistory(false);
+                  }}
+                  aria-label="Cerrar historial"
+                >
+                  <Icon name="close" size={13} />
+                </button>
+              </div>
+              <div className="chat-history-card-body">
+                {!detail || detail.messages.filter((m) => m.role === "user").length === 0 ? (
+                  <p className="hint">No hay mensajes de usuario en este chat todavía.</p>
+                ) : (
+                  <ol className="chat-user-prompts-list">
+                    {detail.messages
+                      .filter((m) => m.role === "user")
+                      .map((m, idx) => (
+                        <li key={m.id} className="chat-user-prompt-item">
+                          <button
+                            type="button"
+                            className="chat-prompt-jump-btn"
+                            onClick={() => {
+                              historyDialog.current?.close();
+                              setShowHistory(false);
+                              const target = document.getElementById(`msg-${m.id}`);
+                              if (target) {
+                                target.scrollIntoView({ behavior: "smooth", block: "center" });
+                                target.classList.add("highlight-pulse");
+                                setTimeout(() => target.classList.remove("highlight-pulse"), 2000);
+                              }
+                            }}
+                          >
+                            <div className="prompt-header-row">
+                              <span className="prompt-badge">Turno #{idx + 1}</span>
+                              <time className="prompt-time">{time(m.createdAt)}</time>
+                            </div>
+                            <span className="prompt-snippet">{m.content}</span>
+                          </button>
+                        </li>
+                      ))}
+                  </ol>
+                )}
+              </div>
+            </div>
+          </dialog>
           {(error || syncError) && (
             <div className="workspace-alert error" role="alert">
               {error || syncError}
@@ -584,6 +534,7 @@ export function Chat() {
                   {detail.messages.map((m) => (
                     <li
                       key={m.id}
+                      id={`msg-${m.id}`}
                       className={m.role === "assistant" ? "assistant-message" : undefined}
                     >
                       <div className="chat-msg-header">
@@ -808,98 +759,14 @@ export function Chat() {
             setAttachments={setAttachments}
             onError={setError}
             onUsageRefresh={async () => {
-              if (projectId) {
-                const status = await requestApi<ProjectProviderStatus>(
-                  `projects/${projectId}/providers/openrouter`,
-                );
-                if (new URL(location.href).searchParams.get("project") === projectId)
-                  setProvider({ projectId, status });
-              }
+              const url = projectId
+                ? `projects/${projectId}/providers/openrouter`
+                : "providers/openrouter";
+              const status = await requestApi<ProjectProviderStatus>(url);
+              setProvider({ projectId: projectId ?? "", status });
             }}
           />
         </section>
-        {config && (
-          <Configuration
-            ref={configDialog}
-            className="config-panel"
-            aria-label="Configuración del chat"
-            onCancel={() => setConfig(false)}
-            onClose={() => setConfig(false)}
-          >
-            <div className="panel-heading">
-              <strong>Configuración del chat</strong>
-              <button
-                className="icon-button"
-                type="button"
-                aria-label="Cerrar configuración"
-                onClick={() => setConfig(false)}
-              >
-                <Icon name="close" />
-              </button>
-            </div>
-            <div className="form-stack">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void update(detail?.conversation.pinned ?? false, true);
-                }}
-              >
-                <label>
-                  Nombre del chat
-                  <input
-                    maxLength={120}
-                    value={title}
-                    disabled={!detail || busy}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-                </label>
-                <button
-                  className="secondary"
-                  type="submit"
-                  disabled={!detail || busy || !title.trim()}
-                >
-                  Guardar nombre
-                </button>
-              </form>
-              <button
-                className="secondary"
-                type="button"
-                disabled={!detail || busy || !title.trim()}
-                onClick={() => void update(!detail?.conversation.pinned)}
-              >
-                {detail?.conversation.pinned ? "Desfijar chat" : "Fijar chat"}
-              </button>
-              <button
-                className="secondary"
-                type="button"
-                disabled={!detail || busy || Boolean(turn)}
-                onClick={() => void remove()}
-              >
-                Eliminar conversación
-              </button>
-              <a className="back-link" href="#/ajustes">
-                Proveedores, respaldo y tiempo de aviso
-              </a>
-              <label>
-                Proyecto
-                <input
-                  readOnly
-                  value={
-                    projectId
-                      ? projectName || "Cargando proyecto…"
-                      : "Sin proyecto (conversación existente)"
-                  }
-                />
-              </label>
-              <p className="hint">
-                {lastTurn?.result
-                  ? `Último turno: ${lastTurn.result.inputTokens ?? "unavailable"} tokens de entrada, ${lastTurn.result.outputTokens ?? "unavailable"} de salida; USD ${lastTurn.result.costUsd} (${lastTurn.result.costQuality}).`
-                  : "Uso y coste: unavailable hasta recibir una respuesta del proveedor."}{" "}
-                No hay sesión de agente ni herramientas habilitadas.
-              </p>
-            </div>
-          </Configuration>
-        )}
       </div>
     </div>
   );
