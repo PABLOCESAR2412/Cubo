@@ -2,16 +2,10 @@
   "schemaVersion": 1,
   "kind": "installation-snapshot",
   "globalLibrary": "~/.agents/skills",
-  "baseline": [
-    "caveman",
-    "ponytail",
-    "graphify"
-  ],
+  "baseline": ["caveman", "ponytail", "graphify"],
   "policy": {
     "thirdPartyDefaultScope": "global",
-    "localOnly": [
-      "graphify"
-    ],
+    "localOnly": ["graphify"],
     "preserveExistingSkills": true,
     "loadSkillsOnDemand": true,
     "skillsGrantPermissions": false
@@ -532,9 +526,7 @@
       "sourceType": null,
       "skillFileSha256": "f207aef0962817121512de305dd10b00ed2604292f3251bdafc0ae4bd98c3f6f",
       "status": "installed",
-      "agents": [
-        "OpenCode"
-      ]
+      "agents": ["OpenCode"]
     },
     {
       "name": "supabase-postgres-best-practices",
@@ -545,9 +537,7 @@
       "sourceType": null,
       "skillFileSha256": "4d7d1bd60f2ad7fd0d510269279519059dcc630d832f4c241d90735244c70525",
       "status": "installed",
-      "agents": [
-        "OpenCode"
-      ]
+      "agents": ["OpenCode"]
     },
     {
       "name": "graphify",
@@ -558,10 +548,7 @@
       "sourceType": "github",
       "skillFileSha256": "12312b6689de086c3d9e519028c47127d082aa0902e8359ff95b3ee5069f5d49",
       "status": "installed",
-      "agents": [
-        "Codex",
-        "OpenCode"
-      ]
+      "agents": ["Codex", "OpenCode"]
     }
   ]
 }
