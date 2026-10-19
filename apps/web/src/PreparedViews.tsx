@@ -635,7 +635,9 @@ export function Settings({ w }: { w: Workspace }) {
               </select>
             </label>
           </div>
-          <p className="hint">Oscuro por defecto. El modo claro reutiliza los mismos componentes.</p>
+          <p className="hint">
+            Oscuro por defecto. El modo claro reutiliza los mismos componentes.
+          </p>
           <h3>Instalación de Cubo</h3>
           <p className="hint">
             Usa Instalar cuando aparezca en la barra superior. Si no aparece, busca Instalar

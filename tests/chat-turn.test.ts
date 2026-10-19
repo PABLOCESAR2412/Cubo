@@ -1,15 +1,19 @@
-import { expect, spyOn, test } from "bun:test";
+import { afterEach, expect, spyOn, test } from "bun:test";
 import { D1ChatExecutionStore, D1ChatStore, D1ProjectStore, D1TaskStore } from "@cubo/database";
 import type { ExecutionBackend } from "@cubo/runner";
 import { type ChatTurnContext, chatTurnInputSchema, demoInputSchema } from "@cubo/shared";
 import { TaskEngine } from "@cubo/tasks";
 import { app } from "../apps/api/src/app";
 import type { Env } from "../apps/api/src/env";
-import { providerKey } from "../apps/api/src/project-providers";
+import { providerKey, resetCatalogCache } from "../apps/api/src/project-providers";
 import { decryptSecret, encryptSecret } from "../apps/api/src/secret-vault";
 import { OpenRouterProvider } from "../packages/providers/src/openrouter";
 import { repositoryContextRole } from "../packages/shared/src/repository-safety";
 import { database } from "./sqlite";
+
+afterEach(() => {
+  resetCatalogCache();
+});
 
 const context: ChatTurnContext = {
   projectVersion: 1,

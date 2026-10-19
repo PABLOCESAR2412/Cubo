@@ -1,15 +1,19 @@
-import { expect, spyOn, test } from "bun:test";
+import { afterEach, expect, spyOn, test } from "bun:test";
 import { D1ChatStore, D1ProjectStore, D1TaskStore } from "@cubo/database";
 import { chatTurnInputSchema } from "@cubo/shared";
 import { decodeJwt, jwtVerify, SignJWT } from "jose";
 import { app } from "../apps/api/src/app";
 import { sessionToken } from "../apps/api/src/auth";
 import type { Env } from "../apps/api/src/env";
-import { providerBlocked, providerKey } from "../apps/api/src/project-providers";
+import { providerBlocked, providerKey, resetCatalogCache } from "../apps/api/src/project-providers";
 import { encryptSecret } from "../apps/api/src/secret-vault";
 import { OpenRouterProvider } from "../packages/providers/src/openrouter";
 import { advanceVersion } from "../scripts/version";
 import { database } from "./sqlite";
+
+afterEach(() => {
+  resetCatalogCache();
+});
 
 function environment(db: D1Database): Env {
   return {
