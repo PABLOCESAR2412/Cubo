@@ -71,6 +71,9 @@ export async function freeModels() {
   catalog = { models, expires: Date.now() + 60000 };
   return models;
 }
+export function resetCatalogCache(): void {
+  catalog = undefined;
+}
 export const globalProviderRoutes = new Hono<{ Bindings: Env; Variables: { runnerId: string } }>();
 globalProviderRoutes.use("*", async (c, next) => {
   if (!(await ownerAuthorized(c)))
