@@ -130,6 +130,10 @@ export async function freeModels(): Promise<FreeModel[]> {
   return models;
 }
 
+export function resetCatalogCache() {
+  catalog = undefined;
+}
+
 export const globalProviderRoutes = new Hono<{ Bindings: Env; Variables: { runnerId: string } }>();
 
 globalProviderRoutes.use("*", async (c, next) => {
