@@ -129,6 +129,9 @@ export async function freeModels(): Promise<FreeModel[]> {
   catalog = { models, expires: Date.now() + 60000 };
   return models;
 }
+export function resetCatalogCache() {
+  catalog = undefined;
+}
 
 export const globalProviderRoutes = new Hono<{ Bindings: Env; Variables: { runnerId: string } }>();
 
