@@ -1,5 +1,6 @@
 import { D1ChatExecutionStore, D1RepositoryStore, D1TaskStore, StoreError } from "@cubo/database";
 import {
+  agentTaskInputSchema,
   chatTurnResultSchema,
   demoInputSchema,
   importUpdateSchema,
@@ -11,6 +12,7 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { deleteCookie, setCookie } from "hono/cookie";
 import { z } from "zod";
+import { aiRoutes } from "./ai";
 import {
   localAccess,
   ownerAuthorized,
@@ -117,6 +119,7 @@ app.post("/api/logout", async (c) => {
   return c.json({ ok: true });
 });
 app.route("/api/providers", globalProviderRoutes);
+app.route("/api/ai", aiRoutes);
 app.use("/api/tasks/*", async (c, next) => {
   if (!(await ownerAuthorized(c)))
     return c.json({ error: "Inicia sesión para acceder a Cubo." }, 401);
@@ -130,7 +133,7 @@ app.use("/api/tasks", async (c, next) => {
 app.get("/api/tasks", async (c) => c.json({ tasks: await new D1TaskStore(c.env.DB).listTasks() }));
 app.post("/api/tasks", async (c) => {
   const key = z.uuid().safeParse(c.req.header("Idempotency-Key"));
-  const input = demoInputSchema.safeParse(await c.req.json());
+  const input = z.union([demoInputSchema, agentTaskInputSchema]).safeParse(await c.req.json());
   if (!key.success || !input.success)
     return c.json({ error: "Datos de tarea o clave de creación inválidos." }, 400);
   const task = await new D1TaskStore(c.env.DB).createTask(key.data, input.data);
@@ -229,7 +232,7 @@ app.post("/api/executions/:id/chat-result", async (c) => {
     );
     return c.json({ ok: true });
   }
-  const key = await providerKey(c.env, task.input.projectId, task.input.keyId);
+  const key = await providerKey(c.env, task.input.projectId ?? null, task.input.keyId);
   if (containsSecret(output.data.content, c.env) || output.data.content.includes(key))
     throw new StoreError(400, "Respuesta bloqueada por contenido sensible.");
   await new D1ChatExecutionStore(c.env.DB).complete(

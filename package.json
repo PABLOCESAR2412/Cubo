@@ -22,6 +22,7 @@
     "@biomejs/biome": "^2.0.0",
     "@cloudflare/workers-types": "5.20261013.1",
     "@cubo/database": "workspace:*",
+    "@cubo/providers": "workspace:*",
     "@cubo/runner": "workspace:*",
     "@cubo/shared": "workspace:*",
     "@cubo/tasks": "workspace:*",

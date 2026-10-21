@@ -1,4 +1,5 @@
 import {
+  type AgentTaskInput,
   type Approval,
   type ChatTurnContext,
   type ChatTurnInput,
@@ -7,6 +8,7 @@ import {
   type Execution,
   type ExecutionBlockReason,
   expectedSum,
+  isAgentTaskInput,
   isChatTurnInput,
   isImportInput,
   type RepositoryImportInput,
@@ -76,7 +78,7 @@ export class D1TaskStore implements TaskRepository {
       await (projectId
         ? this.db
             .prepare(
-              "SELECT * FROM tasks WHERE json_extract(input,'$.type')='REPOSITORY_IMPORT' AND json_extract(input,'$.projectId')=? ORDER BY created_at DESC LIMIT 100",
+              "SELECT * FROM tasks WHERE project_id=? AND json_extract(input,'$.type')='REPOSITORY_IMPORT' ORDER BY created_at DESC LIMIT 100",
             )
             .bind(projectId)
         : this.db.prepare("SELECT * FROM tasks ORDER BY created_at DESC LIMIT 100")
@@ -85,7 +87,7 @@ export class D1TaskStore implements TaskRepository {
   }
   async createTask(
     id: string,
-    input: DemoInput | RepositoryImportInput | ChatTurnInput,
+    input: DemoInput | RepositoryImportInput | ChatTurnInput | AgentTaskInput,
     chatContext?: ChatTurnContext,
   ): Promise<Task> {
     const existing = await this.findTask(id);
@@ -114,10 +116,17 @@ export class D1TaskStore implements TaskRepository {
     )
       throw new StoreError(400, "Conserva el contexto antes de lanzar el turno.");
     const executionId = `${id}-1`;
+    const projectId =
+      input &&
+      typeof input === "object" &&
+      "projectId" in input &&
+      typeof input.projectId === "string"
+        ? input.projectId
+        : null;
     await this.db.batch([
       this.db
         .prepare(
-          "INSERT INTO tasks(id,title,status,input,execution_id,created_at,updated_at) SELECT ?,?,'QUEUED',?,?,?,? WHERE (SELECT COUNT(*) FROM tasks WHERE created_at>=?)<20 AND (SELECT COUNT(*) FROM tasks WHERE status IN ('QUEUED','RUNNING'))<3 ON CONFLICT(id) DO NOTHING",
+          "INSERT INTO tasks(id,title,status,input,execution_id,created_at,updated_at,project_id) SELECT ?,?,'QUEUED',?,?,?,?,? WHERE (SELECT COUNT(*) FROM tasks WHERE created_at>=?)<20 AND (SELECT COUNT(*) FROM tasks WHERE status IN ('QUEUED','RUNNING'))<3 ON CONFLICT(id) DO NOTHING",
         )
         .bind(
           id,
@@ -125,11 +134,14 @@ export class D1TaskStore implements TaskRepository {
             ? "Responder chat"
             : isImportInput(input)
               ? "Importar repositorio"
-              : "Prueba durable",
+              : isAgentTaskInput(input)
+                ? `Tarea ${input.agent === "codex" ? "Codex" : "OpenCode"}`
+                : "Prueba durable",
           JSON.stringify(input),
           executionId,
           now,
           now,
+          projectId,
           now.slice(0, 10),
         ),
       this.db
@@ -260,18 +272,18 @@ export class D1TaskStore implements TaskRepository {
   }
   async saveProgress(id: string, runId: string, update: RunnerUpdate): Promise<void> {
     const { task, execution, checkpoint } = await this.context(id, runId);
-    if ("type" in task.input)
-      throw new StoreError(400, "Esta ejecución no admite progreso de la demo.");
+    const input = task.input;
+    if ("type" in input) throw new StoreError(400, "Esta ejecución no admite progreso de la demo.");
     if (
-      update.cursor > task.input.steps ||
+      update.cursor > input.steps ||
       update.sequence !== update.cursor ||
       update.sum !== expectedSum(update.cursor)
     )
       throw new StoreError(400, "Checkpoint de demostración inválido.");
     const outcome =
-      update.cursor === task.input.steps
+      update.cursor === input.steps
         ? "SUCCEEDED"
-        : update.cursor === task.input.pauseAt && task.attempt === 1
+        : update.cursor === input.pauseAt && task.attempt === 1
           ? "WAITING_APPROVAL"
           : "RUNNING";
     if (update.outcome !== outcome)

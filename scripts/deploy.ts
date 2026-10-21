@@ -46,7 +46,8 @@ async function github(path: string) {
 const user = await github("/user");
 if (user.login !== "PABLOCESAR2412") throw new Error("El token no pertenece al GitHub personal.");
 const repo = await github("/repos/PABLOCESAR2412/Cubo");
-if (repo.private !== true) throw new Error("Cubo debe permanecer privado.");
+if (repo.full_name !== "PABLOCESAR2412/Cubo")
+  throw new Error("El repositorio no corresponde a PABLOCESAR2412/Cubo.");
 const workflow = await github("/repos/PABLOCESAR2412/Cubo/actions/workflows/cubo-runner.yml");
 if (workflow.state !== "active" || workflow.path !== ".github/workflows/cubo-runner.yml")
   throw new Error("Publica primero el workflow preparado en la rama main.");

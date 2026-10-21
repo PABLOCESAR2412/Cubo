@@ -119,7 +119,7 @@ async function main() {
       if (
         restored.task.id !== task.id ||
         restored.task.status !== "SUCCEEDED" ||
-        restored.task.result?.sum !== 91
+        (restored.task.result as { sum?: number } | null)?.sum !== 91
       )
         throw new Error("Estado/resultado remoto no cumple aceptación");
       if (!restored.events.some((event) => event.createdAt > String(evidence.clientClosedAt)))

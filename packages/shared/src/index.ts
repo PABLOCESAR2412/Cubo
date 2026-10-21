@@ -1,12 +1,15 @@
 import { z } from "zod";
+import type { AgentTaskInput, AgentTaskResult } from "./agent-task";
 import type { ChatTurnInput, ChatTurnResult } from "./chat-turn";
 import type { RepositoryImportInput, RepositoryImportResult } from "./repository";
 
+export * from "./agent-task";
 export * from "./chat";
 export * from "./chat-turn";
 export * from "./chat-turn-safety";
 export * from "./project";
 export * from "./repository";
+export * from "./versions";
 export const taskStatuses = [
   "QUEUED",
   "RUNNING",
@@ -36,11 +39,17 @@ export const demoInputSchema = z
   .strict()
   .refine((v) => v.pauseAt === null || v.pauseAt < v.steps, "La pausa debe preceder al final.");
 export type DemoInput = z.infer<typeof demoInputSchema>;
+export function isDemoInput(input: unknown): input is DemoInput {
+  return typeof input === "object" && input !== null && "steps" in input && !("type" in input);
+}
+export function isDemoResult(result: unknown): result is DemoResult {
+  return typeof result === "object" && result !== null && "sum" in result;
+}
 export interface Task {
   id: string;
   title: string;
   status: TaskStatus;
-  input: DemoInput | RepositoryImportInput | ChatTurnInput;
+  input: DemoInput | RepositoryImportInput | ChatTurnInput | AgentTaskInput;
   executionId: string;
   attempt: number;
   progress: number;
@@ -48,7 +57,7 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
   error: string | null;
-  result: DemoResult | RepositoryImportResult | ChatTurnResult | null;
+  result: DemoResult | RepositoryImportResult | ChatTurnResult | AgentTaskResult | null;
 }
 export interface DemoResult {
   sum: number;

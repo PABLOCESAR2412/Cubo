@@ -4,6 +4,7 @@
   "type": "module",
   "dependencies": {
     "@cubo/shared": "workspace:*",
+    "@cubo/providers": "workspace:*",
     "@cubo/runner": "workspace:*",
     "@cubo/database": "workspace:*",
     "@cubo/tasks": "workspace:*",

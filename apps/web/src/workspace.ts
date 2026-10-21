@@ -1,6 +1,8 @@
 import type {
+  AgentTaskInput,
   Approval,
   Checkpoint,
+  DemoInput,
   RepositorySnapshot,
   Task,
   TaskEvent,
@@ -165,16 +167,13 @@ export function useWorkspace() {
       setBusy(false);
     }
   }
-  async function create() {
+  async function create(customInput?: DemoInput | AgentTaskInput) {
     setBusy(true);
     setError("");
     key.current ??= crypto.randomUUID();
     try {
-      const { task } = await api<{ task: Task }>(
-        "tasks",
-        { steps: 6, delaySeconds: 10, pauseAt: pause ? 3 : null },
-        key.current,
-      );
+      const payload = customInput ?? { steps: 6, delaySeconds: 10, pauseAt: pause ? 3 : null };
+      const { task } = await api<{ task: Task }>("tasks", payload, key.current);
       key.current = null;
       chooseTask(task.id);
       return true;

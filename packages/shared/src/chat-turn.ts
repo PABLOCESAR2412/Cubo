@@ -9,16 +9,19 @@ export const attachmentSchema = z
   .strict();
 export type ChatAttachment = z.infer<typeof attachmentSchema>;
 
+export const supportedProviders = ["openrouter", "gemini", "groq", "nvidia"] as const;
+export type SupportedProvider = (typeof supportedProviders)[number];
+
 export const chatTurnInputSchema = z
   .object({
     type: z.literal("CHAT_TURN"),
     steps: z.literal(1).default(1),
     pauseAt: z.null().default(null),
-    projectId: z.uuid(),
+    projectId: z.string().uuid().nullable().optional(),
     conversationId: z.uuid(),
     userMessageId: z.uuid(),
     keyId: z.uuid(),
-    provider: z.literal("openrouter"),
+    provider: z.enum(supportedProviders).default("openrouter"),
     model: z
       .string()
       .min(1)
@@ -82,7 +85,7 @@ export interface ProviderQuota {
 export interface ProjectProviderStatus {
   preferences?: { fallbackModel: string; noticeSeconds: number };
   blockedReason: string | null;
-  provider: "openrouter";
+  provider: SupportedProvider;
   configured: boolean;
   encryptionConfigured: boolean;
   models: FreeModel[];

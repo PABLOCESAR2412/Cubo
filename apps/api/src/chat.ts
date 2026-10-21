@@ -67,8 +67,7 @@ chatRoutes.get("/:id", async (c) =>
   c.json(await new D1ChatStore(c.env.DB, c.req.query("project") ?? null).detail(c.req.param("id"))),
 );
 chatRoutes.post("/:id/turn", async (c) => {
-  const projectId = c.req.query("project");
-  if (!projectId) throw new StoreError(400, "Abre un chat de proyecto para usar un proveedor.");
+  const projectId = c.req.query("project") ?? null;
   const input = z
     .object({
       content: z.string().trim().min(1).max(2000),
@@ -98,7 +97,7 @@ chatRoutes.post("/:id/turn", async (c) => {
     if (
       !("type" in existing.input) ||
       existing.input.type !== "CHAT_TURN" ||
-      existing.input.projectId !== projectId ||
+      existing.input.projectId !== (projectId ?? undefined) ||
       existing.input.conversationId !== detail.conversation.id ||
       existing.input.model !== input.data.model ||
       existing.input.effort !== input.data.effort ||
@@ -131,14 +130,16 @@ chatRoutes.post("/:id/turn", async (c) => {
     throw new StoreError(503, "No se pudo verificar el catálogo gratuito.");
   }
   if (!free) throw new StoreError(400, "Solo se permiten modelos gratuitos verificados.");
-  const project = await new D1ProjectStore(c.env.DB).find(projectId),
-    snapshot = await new D1RepositoryStore(c.env.DB).latest(projectId);
+  const project = projectId ? await new D1ProjectStore(c.env.DB).find(projectId) : null,
+    snapshot = projectId ? await new D1RepositoryStore(c.env.DB).latest(projectId) : null;
   const sources =
     snapshot?.files
       .filter((f) => repositoryContextRole(f.path))
       .map((f) => `${f.path}${f.truncated ? " (extracto)" : ""}:\n${f.content}`)
       .join("\n\n") ?? "";
-  const system = `Eres el asistente de texto de Cubo para el proyecto ${project.name}. Este turno usa una API sin herramientas. No afirmes haber ejecutado comandos, editado archivos ni publicado cambios. El contexto importado es de solo lectura.\nInstrucciones adicionales:\n${project.instructions}\nMemoria adicional:\n${project.memory}\nDocumentos del repositorio ${snapshot?.revision ?? "sin importar"}:\n${sources}`;
+  const system = project
+    ? `Eres el asistente de texto de Cubo para el proyecto ${project.name}. Este turno usa una API sin herramientas. No afirmes haber ejecutado comandos, editado archivos ni publicado cambios. El contexto importado es de solo lectura.\nInstrucciones adicionales:\n${project.instructions}\nMemoria adicional:\n${project.memory}\nDocumentos del repositorio ${snapshot?.revision ?? "sin importar"}:\n${sources}`
+    : `Eres el asistente de texto de Cubo. Este turno usa una API sin herramientas. No afirmes haber ejecutado comandos, editado archivos ni publicado cambios.`;
   const history: ChatTurnContext["messages"] = [];
   let remaining = 12000 - input.data.content.length;
   for (const message of [...detail.messages].reverse()) {
@@ -154,7 +155,7 @@ chatRoutes.post("/:id/turn", async (c) => {
   }
   const context: ChatTurnContext = {
     attachments: input.data.attachments,
-    projectVersion: project.version,
+    projectVersion: project?.version ?? 1,
     repositoryRevision: snapshot?.revision ?? null,
     messages: [
       {

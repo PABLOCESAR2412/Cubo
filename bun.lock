@@ -8,6 +8,7 @@
         "@biomejs/biome": "^2.0.0",
         "@cloudflare/workers-types": "5.20261013.1",
         "@cubo/database": "workspace:*",
+        "@cubo/providers": "workspace:*",
         "@cubo/runner": "workspace:*",
         "@cubo/shared": "workspace:*",
         "@cubo/tasks": "workspace:*",
@@ -24,6 +25,7 @@
       "name": "@cubo/api",
       "dependencies": {
         "@cubo/database": "workspace:*",
+        "@cubo/providers": "workspace:*",
         "@cubo/runner": "workspace:*",
         "@cubo/shared": "workspace:*",
         "@cubo/tasks": "workspace:*",
@@ -69,6 +71,7 @@
       "name": "@cubo/providers",
       "dependencies": {
         "@cubo/shared": "workspace:*",
+        "zod": "^3.24.0",
       },
     },
     "packages/runner": {
@@ -1369,6 +1372,8 @@
     "@babel/helper-create-regexp-features-plugin/semver": ["semver@6.3.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="],
 
     "@babel/preset-env/semver": ["semver@6.3.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="],
+
+    "@cubo/providers/zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
     "@jridgewell/gen-mapping/@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 

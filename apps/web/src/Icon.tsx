@@ -25,8 +25,36 @@ export type IconName =
   | "logout"
   | "file"
   | "copy"
-  | "chevron";
+  | "chevron"
+  | "sun"
+  | "moon"
+  | "monitor"
+  | "terminal"
+  | "diff"
+  | "command"
+  | "git-branch"
+  | "bolt"
+  | "bell"
+  | "shield"
+  | "eye"
+  | "commit"
+  | "history";
 const paths: Record<IconName, string> = {
+  commit: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 12h6M15 12h6",
+  history: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5M12 7v5l4 2",
+  bolt: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+  bell: "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0",
+  shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+  eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6",
+  sun: "M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z",
+  moon: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
+  monitor: "M4 4h16v12H4zM8 20h8M12 16v4",
+  terminal: "m4 17 6-6-6-6M12 19h8",
+  diff: "M12 3v18M3 12h18M5 19h4M15 19h4",
+  command:
+    "M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z",
+  "git-branch":
+    "M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9",
   external: "M14 3h7v7M21 3l-11 11M10 3H3v18h18v-7",
   mic: "M9 5a3 3 0 0 1 6 0v7a3 3 0 0 1-6 0zM5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8",
   pin: "m9 3 9 9-3 1-3 5-6-6 5-3zM8 16l-5 5",
@@ -55,7 +83,15 @@ const paths: Record<IconName, string> = {
   link: "M9 15l6-6M8 16l-2 2a4 4 0 0 1-6-6l4-4M16 8l2-2a4 4 0 0 1 6 6l-4 4",
   download: "M12 3v12M7 10l5 5 5-5M4 17v4h16v-4",
 };
-export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
+export function Icon({
+  name,
+  size = 18,
+  className,
+}: {
+  name: IconName;
+  size?: number;
+  className?: string;
+}) {
   return (
     <svg
       width={size}
@@ -66,6 +102,7 @@ export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
       strokeWidth="1.6"
       strokeLinecap="round"
       strokeLinejoin="round"
+      className={className}
       aria-hidden="true"
     >
       <path d={paths[name]} />

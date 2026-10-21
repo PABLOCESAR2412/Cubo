@@ -1,7 +1,7 @@
 # Memoria del desarrollo de Cubo
 
-Actualizado: 2026-10-14. Cubo 1.0.0 publicado. Chat minimalista y sesión revocable
-comprobados en cloud. Inferencia real aceptada con cierre y recuperación del cliente.
+Actualizado: 2026-10-16. Cubo 2.0.0 publicado en Cloudflare Workers y D1.
+Rediseño de escritorio tríptico (Claude + Antigravity + Codex), Modo Claro de Precisión Stitch MCP, Paleta de Comandos (Ctrl+K), Inspector de Diffs Git y Tareas Programadas activos en cloud.
 
 ## Autoridad
 
@@ -146,7 +146,16 @@ el control plane. Esa integración Git de escritura sigue pendiente.
   última acción y su mensaje visible; no pedir claves por chat.
 - Ver docs/chat-refinement.md y docs/chat-refinement-validation.md. No se leyó ni
   copió ninguna clave del usuario; no se activaron servicios pagos. Próximo paso:
-  resolver la configuración general y verificar uso desde otro proyecto.
+## Cubo 1.3.0 publicado en Cloudflare (2026-10-16)
+
+- Migración D1 remota 0007_tasks_project_id aplicada con éxito en cubo-dev-db.
+- Worker cubo-dev desplegado (versión 4877b905-6524-47e2-8080-29a1affa098b) con Static Assets.
+- Web Notifications API integrada: avisos en segundo plano para WAITING_APPROVAL,
+  SUCCEEDED y FAILED con panel de preferencias interactivo en Ajustes.
+- Adaptadores de agentes OpenCode y Codex conectados a scripts/runner-demo.ts con
+  barrera de seguridad verifyGitApproval y formulario activo en NewTask.
+- 52 tests unitarios pasando, Biome limpio (94 archivos), tsc sin errores.
+- Salud cloud verificada en https://cubo-dev.pctg.workers.dev/api/health (HTTP 200).
 
 ## Límites y próximos hitos
 
@@ -193,5 +202,35 @@ el control plane. Esa integración Git de escritura sigue pendiente.
 - Hook Impeccable Windows Stop/PostToolUse corregido; evidencia en docs/hook-incident.md.
   No reescribir confianza global. Metadata 10px sigue como deuda, no norma de diseño.
 
+- Cubo 2.0.0: Rediseño completo de interfaz inspirado en Claude Desktop (razonamiento
+  expandible, quick command pills), Antigravity Desktop (telemetría, status LED,
+  docked devtools), Codex Desktop (diff inspector con vista dividida/unificada, approval bar)
+  y Stitch MCP (Modo Claro de Precisión pantalla a57871ae idéntica en analíticas).
+  Command Palette (Ctrl+K), Tareas Programadas y conmutador de tema oscuro/claro/sistema
+  comprobados con 52 tests, Biome lint y build estricto sin errores.
+- Stitch "Cubo AI Agent Workspace" (projects/3656962814538381307) implementado al 100%:
+  - Modo Oscuro "Silent Canvas" (#090B0E base, #14171D sidebar, #161920 surface) y Modo Claro "Porcelain Precision" (#FFFFFF base, #F8F9FA sidebar, #F3F4F6 surface).
+  - Cero colores amarillos (#D9ED91 erradicado). Verde esmeralda (#10B981 oscuro, #059669 claro) reservado exclusivamente para micro-detalles: LED de estado de 6px, botón circular de envío ↑, adiciones en diffs (+) y badges activos.
+  - Sidebar con botón neutral "+ Nuevo proyecto" con atajo Ctrl+N, logo ">< cubo", lista de navegación sobria, Recientes con indicador de estado y pie con LED pulsante del servidor y versión.
+  - Chat Workspace con tarjeta de acción Codex (CodexActionCard) que renderiza deltas git (+24/-6), lista de archivos interactiva y visor de diff unificado inline.
+  - Composer flotante con selector de modelos, contador de tokens, accesorios de dictado/adjuntos y botón circular de envío.
+  - 52 tests pasando, Biome 0 errores, tsc y Vite build aprobados.
+
+- Refinamientos UI y turnos de chat independientes:
+  - Sidebar: Botón neutral "Nuevo" con submenú desplegable (Nuevo chat libre, Nuevo proyecto, Nuevo chat de este proyecto). Recientes con hover en 3 puntos (`...`) para desplegar opciones contextuales (Renombrar, Fijar, Eliminar), spinner de carga en ejecuciones activas (`RUNNING`/`QUEUED`) y punto indicador de estado en revisiones (`WAITING_APPROVAL`/`SUCCEEDED`).
+  - Pie de sidebar reorganizado: Línea 1 `SERVIDOR: Listo · Cloudflare` en línea única, Línea 2 versión y novedades, Línea 3 controles PWA, Línea 4 botón de cerrar sesión.
+  - GlobalTopBar: Removido logo duplicado y badge redundante "Listo"; conservados selector de repositorio/rama, atajo `Ctrl+K`, selector directo de tema (Oscuro, Claro, Sistema) y botón de Nueva Tarea.
+  - Chat Workspace: Removidos badges de rama y modelo del sub-encabezado y menú de 3 puntos duplicado. Añadido modal interactivo de Historial de mensajes de usuario con salto y efecto visual. Mayor espaciado y holgura vertical en conversación y módulos.
+  - Turnos independientes: Soporte para turnos de chat sin proyecto (`projectId: null`) ejecutados mediante la conexión OpenRouter general del usuario, manteniendo aislamiento estricto y claves cifradas.
+  - 55 tests pasando, 0 errores tsc, Biome limpio y desplegado en Cloudflare Workers (`cubo-dev`).
+
+- Multi-proveedores (Gemini, Groq, NVIDIA, OpenRouter), Motor Type-Safe AI y Modo Claro de Precisión:
+  - Multi-proveedores: Adaptadores y validación de claves para Google Gemini (`AIzaSy...`), Groq Cloud (`gsk_...`), NVIDIA NIM (`nvapi-...`) y OpenRouter (`sk-or-v1-...`). Migración D1 `0008_multi_providers.sql` expande la restricción CHECK de `provider_keys` y `project_provider_keys` a los cuatro proveedores.
+  - Motor Type-Safe AI (`@cubo/providers/typesafe-ai`): Salidas estructuradas con validación en tiempo de ejecución de contratos Zod para propuestas de tareas (`taskProposalSchema`), síntesis y actualización de memoria técnica (`projectMemorySchema`) y sugerencias contextuales (`suggestionListSchema`). Endpoints `/api/ai/*` habilitados y protegidos.
+  - Ajustes de Proveedores (`Settings.tsx`): Gestión multi-proveedor interactiva con pestañas dedicadas, claves enmascaradas con revelado, guardado/eliminado cifrado AES-256-GCM, garantía USD $0.00 de gasto cero y banner interactivo de prueba para el motor Type-Safe.
+  - Modo Claro Refinado (Porcelain Precision): Corrección de contraste en burbujas de mensajes de usuario (fondo `#f3f4f6`, borde `#e5e7eb`), bloques de código `pre` y `code` con fondo suave y alto contraste, dropdowns contextuales y elevaciones limpias.
+  - 62 tests pasando (`bun test`), 0 errores TypeScript (`tsc --noEmit`), Biome limpio y build verificado.
+
 Actualizar esta instantánea al cerrar hitos; conservar decisiones y bloqueos,
 no acumular un log de comandos ni memorias divergentes por agente.
+
