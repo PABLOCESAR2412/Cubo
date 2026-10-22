@@ -290,17 +290,34 @@ export default function App() {
                   type="button"
                   className="sidebar-new-dropdown-item"
                   role="menuitem"
-                  onClick={() => {
+                  onClick={async () => {
                     const el = document.getElementById(
                       "sidebar-new-menu-details",
                     ) as HTMLDetailsElement | null;
                     if (el) el.open = false;
                     if (mobile && navigationDialog.current?.open) navigationDialog.current.close();
                     const url = new URL(location.href);
-                    url.searchParams.delete("chat");
                     url.searchParams.delete("project");
                     history.replaceState(null, "", url);
-                    setActiveChat(null);
+                    try {
+                      const res = await requestApi<{ conversation: { id: string } }>(
+                        "conversations",
+                        {
+                          method: "POST",
+                          headers: { "Idempotency-Key": crypto.randomUUID() },
+                          body: JSON.stringify({
+                            title: `Chat libre ${new Date().toLocaleDateString("es")}`,
+                          }),
+                        },
+                      );
+                      url.searchParams.set("chat", res.conversation.id);
+                      history.replaceState(null, "", url);
+                      setActiveChat(res.conversation.id);
+                    } catch {
+                      url.searchParams.delete("chat");
+                      history.replaceState(null, "", url);
+                      setActiveChat(null);
+                    }
                     navigate("chat");
                     window.dispatchEvent(new Event("cubo-chat-selected"));
                     setDrawer(false);

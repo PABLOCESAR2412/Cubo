@@ -1,7 +1,6 @@
 import { isAgentTaskInput, type TaskStatus } from "@cubo/shared";
 import { isImportInput } from "@cubo/shared/repository-safety";
 import { useState } from "react";
-import { DiffInspector } from "./DiffInspector";
 import { Icon } from "./Icon";
 import { ScheduledTasks } from "./ScheduledTasks";
 import { MetricCard, PageHeader, ProcessEvent, RightPanel, StatusBadge, TaskRow } from "./ui";
@@ -34,7 +33,8 @@ export function Tasks({
   );
   const counts = ["RUNNING", "QUEUED", "SUCCEEDED"] as const;
   const task = w.task;
-  const totalSteps = task && "steps" in task.input ? task.input.steps : 4;
+  const hasSteps = Boolean(task && "steps" in task.input);
+  const totalSteps = task && "steps" in task.input ? task.input.steps : 1;
   return (
     <div className="module tasks-module">
       <PageHeader
@@ -70,12 +70,7 @@ export function Tasks({
         }
       />
       {mainView === "programadas" ? (
-        <ScheduledTasks
-          onSwitchToExecutions={() => setMainView("ejecuciones")}
-          onRunNow={() => {
-            newTask();
-          }}
-        />
+        <ScheduledTasks onSwitchToExecutions={() => setMainView("ejecuciones")} />
       ) : (
         <>
           <div className="metric-grid">
@@ -186,7 +181,9 @@ export function Tasks({
             <RightPanel open={inspectorOpen} close={closeInspector} title="Proceso de tarea">
               <p className="sr-only" aria-live="polite" aria-atomic="true">
                 {task
-                  ? `${labels[task.status]}. ${task.progress} de ${totalSteps} pasos guardados.`
+                  ? hasSteps
+                    ? `${labels[task.status]}. ${task.progress} de ${totalSteps} pasos guardados.`
+                    : `${labels[task.status]}. ${task.progress} checkpoint(s) guardados.`
                   : ""}
               </p>
               {!task ? (
@@ -224,15 +221,18 @@ export function Tasks({
                       <div>
                         <dt>Progreso guardado</dt>
                         <dd>
-                          {task.progress} / {totalSteps}
+                          {task.progress}
+                          {hasSteps ? ` / ${totalSteps}` : ""}
                         </dd>
                       </div>
                     </dl>
-                    <progress
-                      value={task.progress}
-                      max={totalSteps}
-                      aria-label="Progreso guardado"
-                    />
+                    {hasSteps && (
+                      <progress
+                        value={task.progress}
+                        max={totalSteps}
+                        aria-label="Progreso guardado"
+                      />
+                    )}
                     {task.error && (
                       <div className="inline-notice error">
                         <span>
@@ -262,23 +262,38 @@ export function Tasks({
                           )}
                       </div>
                     )}
-                    {task.status === "WAITING_APPROVAL" && (
-                      <div className="approval">
-                        <strong>Continuación pendiente</strong>
-                        <p>
-                          Checkpoint guardado en el paso {task.progress}. Tu aprobación inicia otro
-                          runner. No autoriza commit, push ni PR.
-                        </p>
-                        <button
-                          type="button"
-                          className="primary compact"
-                          disabled={w.busy || !w.online}
-                          onClick={() => void w.continueTask()}
-                        >
-                          Aprobar continuación
-                        </button>
-                      </div>
-                    )}
+                    {task.status === "WAITING_APPROVAL" &&
+                      (() => {
+                        const pendingGit = w.detail?.approvals.find(
+                          (a) =>
+                            a.status === "PENDING" &&
+                            ["git.commit", "git.push", "github.pull-request.create"].includes(
+                              a.action,
+                            ),
+                        );
+                        return (
+                          <div className="approval">
+                            <strong>
+                              {pendingGit
+                                ? `Acción Git pendiente: ${pendingGit.action}`
+                                : "Continuación pendiente"}
+                            </strong>
+                            <p>
+                              {pendingGit
+                                ? `Cambios guardados en el paso ${task.progress} con digest ${pendingGit.checkpointDigest.slice(0, 12)}. Tu aprobación registra la acción de Git sobre esa versión exacta del diff.`
+                                : `Checkpoint guardado en el paso ${task.progress}. Tu aprobación inicia otro runner. No autoriza commit, push ni PR.`}
+                            </p>
+                            <button
+                              type="button"
+                              className="primary compact"
+                              disabled={w.busy || !w.online}
+                              onClick={() => void w.continueTask()}
+                            >
+                              Aprobar
+                            </button>
+                          </div>
+                        );
+                      })()}
                     {task.result && (
                       <div className="result-summary">
                         <span>Resultado persistido</span>
@@ -333,59 +348,28 @@ export function Tasks({
                         ))}
                       </ol>
                     )}
-                    {tab === "Diff y Cambios" && (
-                      <DiffInspector
-                        files={[
-                          {
-                            path: "src/task-runner.ts",
-                            additions: 14,
-                            deletions: 3,
-                            diffText: `@@ -1,6 +1,17 @@
--import { executeTask } from "./legacy";
-+import { executeTask, verifyApproval } from "./security";
-+import { OpenCodeAgent, CodexAgent } from "@cubo/agents";
- 
- export async function runAgentWorkflow(task: Task) {
--  return executeTask(task);
-+  const guard = await verifyApproval(task.id);
-+  if (!guard.authorized) {
-+    throw new Error("WAITING_APPROVAL");
-+  }
-+  const agent = task.agent === "codex" ? new CodexAgent() : new OpenCodeAgent();
-+  return agent.execute(task);
- }`,
-                          },
-                          {
-                            path: "config/routing.json",
-                            additions: 5,
-                            deletions: 0,
-                            diffText: `@@ -10,0 +11,5 @@
-+  "providers": {
-+    "groq": { "enabled": true },
-+    "gemini": { "enabled": true },
-+    "nvidia": { "enabled": true }
-+  },`,
-                          },
-                        ]}
-                        commitMessage={task.title}
-                        targetBranch="main"
-                        isPending={w.busy}
-                        onApprove={
-                          task.status === "WAITING_APPROVAL"
-                            ? () => {
-                                void w.continueTask();
-                              }
-                            : undefined
-                        }
-                        onReject={
-                          task.status === "WAITING_APPROVAL"
-                            ? () => {
-                                void w.cancel();
-                              }
-                            : undefined
-                        }
-                      />
-                    )}
+                    {tab === "Diff y Cambios" &&
+                      (task.result && "diff" in task.result && task.result.diff ? (
+                        <div className="diff-honest">
+                          <p className="hint">
+                            Cambios registrados por el agente ({task.result.agent}). No hay acciones
+                            de repositorio pendientes por defecto; la aprobación se pide de forma
+                            explícita en Cubo.
+                          </p>
+                          {task.result.gitAction && (
+                            <p className="hint">
+                              Acción asociada: {task.result.gitAction} · digest{" "}
+                              {task.result.diffDigest}
+                            </p>
+                          )}
+                          <pre>{task.result.diff}</pre>
+                        </div>
+                      ) : (
+                        <p className="muted">
+                          Sin cambios registrados en esta revisión. El diff aparece cuando el agente
+                          reporta cambios o la importación guarda un snapshot.
+                        </p>
+                      ))}
                     {tab === "Checkpoint" &&
                       (isImportInput(task.input) ? (
                         w.detail?.repositoryCheckpoint ? (

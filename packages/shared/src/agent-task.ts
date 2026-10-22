@@ -14,6 +14,21 @@ export const agentTaskInputSchema = z
 
 export type AgentTaskInput = z.infer<typeof agentTaskInputSchema>;
 
+// Resultado final que el runner reporta por tarea de agente. No comparte el
+// checkpoint aritmético de la demo (sin expectedSum: los adaptadores usan
+// cursor=index y el digest del checkpoint ligará el diff cuando exista).
+export const agentProgressSchema = z
+  .object({
+    sequence: z.number().int().min(1).max(12),
+    cursor: z.number().int().min(1).max(12),
+    sum: z.number().int().min(1).max(12),
+    outcome: z.enum(["SUCCEEDED", "WAITING_APPROVAL"]),
+    summary: z.string().min(1).max(2000).optional(),
+    diff: z.string().min(1).max(100000).optional(),
+  })
+  .strict();
+export type AgentProgressUpdate = z.infer<typeof agentProgressSchema>;
+
 export interface AgentTaskResult {
   agent: "opencode" | "codex";
   summary: string;

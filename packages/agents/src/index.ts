@@ -7,7 +7,12 @@ export interface AgentAdapter {
     checkpoint: Checkpoint | null;
     approval?: RegisteredApproval | null;
     signal: AbortSignal;
-  }): Promise<{ outcome: "SUCCEEDED" | "WAITING_APPROVAL"; checkpoint: Checkpoint; diff?: string }>;
+  }): Promise<{
+    outcome: "SUCCEEDED" | "WAITING_APPROVAL";
+    checkpoint: Checkpoint;
+    diff?: string;
+    summary?: string;
+  }>;
 }
 
 export interface GitActionRequest {
@@ -87,10 +92,12 @@ export class OpenCodeAgentAdapter implements AgentAdapter {
     outcome: "SUCCEEDED" | "WAITING_APPROVAL";
     checkpoint: Checkpoint;
     diff?: string;
+    summary?: string;
   }> {
     if (input.signal.aborted) throw new Error("Ejecución cancelada.");
     const nextSequence = (input.checkpoint?.sequence ?? 0) + 1;
     const nextCursor = (input.checkpoint?.cursor ?? 0) + 1;
+    let approvedSummary: string | undefined;
 
     if (isAgentTaskInput(input.task.input)) {
       const taskInput = input.task.input;
@@ -113,19 +120,25 @@ export class OpenCodeAgentAdapter implements AgentAdapter {
             digest: diffDigest,
             createdAt: new Date().toISOString(),
           };
-          return { outcome: "WAITING_APPROVAL", checkpoint, diff };
+          return {
+            outcome: "WAITING_APPROVAL",
+            checkpoint,
+            diff,
+            summary: "Cambios listos para revisión; requiere aprobación de Git en Cubo.",
+          };
         }
-
+        const gitName = taskInput.actionRequested === "push" ? "git.push" : "git.commit";
         // Si ya hay aprobación registrada, verificar la barrera Git
         verifyGitApproval(
           {
-            action: taskInput.actionRequested === "push" ? "git.push" : "git.commit",
+            action: gitName,
             repository: taskInput.repository ?? "PABLOCESAR2412/Cubo",
             targetRef: taskInput.targetRef ?? "main",
             diffDigest,
           },
           input.approval,
         );
+        approvedSummary = `Barrera de Git verificada para ${gitName}; la ejecución real de la acción se integrará con el adaptador definitivo.`;
       }
     }
 
@@ -141,7 +154,11 @@ export class OpenCodeAgentAdapter implements AgentAdapter {
       createdAt: new Date().toISOString(),
     };
 
-    return { outcome: "SUCCEEDED", checkpoint };
+    return {
+      outcome: "SUCCEEDED",
+      checkpoint,
+      ...(approvedSummary ? { summary: approvedSummary } : {}),
+    };
   }
 }
 
@@ -162,10 +179,12 @@ export class CodexAgentAdapter implements AgentAdapter {
     outcome: "SUCCEEDED" | "WAITING_APPROVAL";
     checkpoint: Checkpoint;
     diff?: string;
+    summary?: string;
   }> {
     if (input.signal.aborted) throw new Error("Ejecución cancelada.");
     const nextSequence = (input.checkpoint?.sequence ?? 0) + 1;
     const nextCursor = (input.checkpoint?.cursor ?? 0) + 1;
+    let approvedSummary: string | undefined;
 
     if (isAgentTaskInput(input.task.input)) {
       const taskInput = input.task.input;
@@ -187,18 +206,25 @@ export class CodexAgentAdapter implements AgentAdapter {
             digest: diffDigest,
             createdAt: new Date().toISOString(),
           };
-          return { outcome: "WAITING_APPROVAL", checkpoint, diff };
+          return {
+            outcome: "WAITING_APPROVAL",
+            checkpoint,
+            diff,
+            summary: "Cambios listos para revisión; requiere aprobación de Git en Cubo.",
+          };
         }
 
+        const gitName = taskInput.actionRequested === "push" ? "git.push" : "git.commit";
         verifyGitApproval(
           {
-            action: taskInput.actionRequested === "push" ? "git.push" : "git.commit",
+            action: gitName,
             repository: taskInput.repository ?? "PABLOCESAR2412/Cubo",
             targetRef: taskInput.targetRef ?? "main",
             diffDigest,
           },
           input.approval,
         );
+        approvedSummary = `Barrera de Git verificada para ${gitName}; la ejecución real de la acción se integrará con el adaptador definitivo.`;
       }
     }
 
@@ -214,6 +240,10 @@ export class CodexAgentAdapter implements AgentAdapter {
       createdAt: new Date().toISOString(),
     };
 
-    return { outcome: "SUCCEEDED", checkpoint };
+    return {
+      outcome: "SUCCEEDED",
+      checkpoint,
+      ...(approvedSummary ? { summary: approvedSummary } : {}),
+    };
   }
 }

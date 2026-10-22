@@ -97,7 +97,7 @@ chatRoutes.post("/:id/turn", async (c) => {
     if (
       !("type" in existing.input) ||
       existing.input.type !== "CHAT_TURN" ||
-      existing.input.projectId !== (projectId ?? undefined) ||
+      existing.input.projectId !== (projectId ?? null) ||
       existing.input.conversationId !== detail.conversation.id ||
       existing.input.model !== input.data.model ||
       existing.input.effort !== input.data.effort ||

@@ -1,5 +1,7 @@
 import {
+  type AgentProgressUpdate,
   type AgentTaskInput,
+  type AgentTaskResult,
   type Approval,
   type ChatTurnContext,
   type ChatTurnInput,
@@ -49,6 +51,14 @@ function taskFrom(row: Row): Task {
     error: row.error as string | null,
     result: row.result ? JSON.parse(String(row.result)) : null,
   };
+}
+async function sha256(content: string): Promise<string> {
+  const raw = new Uint8Array(
+    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(content)),
+  );
+  return Array.from(raw)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 function executionFrom(row: Row): Execution {
   return {
@@ -289,11 +299,7 @@ export class D1TaskStore implements TaskRepository {
     if (update.outcome !== outcome)
       throw new StoreError(400, "Estado incompatible con el progreso.");
     const raw = JSON.stringify({ taskId: task.id, executionId: id, ...update });
-    const digest = Array.from(
-      new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw))),
-    )
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+    const digest = await sha256(raw);
     const prior = await this.db
       .prepare("SELECT digest FROM checkpoints WHERE execution_id=? AND sequence=?")
       .bind(id, update.sequence)
@@ -365,6 +371,121 @@ export class D1TaskStore implements TaskRepository {
     if (saved?.digest !== digest)
       throw new StoreError(409, "El estado cambió; reintentar desde el checkpoint persistido.");
   }
+  // Progreso de agentes (OpenCode/Codex): contrato dedicado sin la aritmética de la demo.
+  async saveAgentProgress(id: string, runId: string, update: AgentProgressUpdate): Promise<void> {
+    const { task, execution, checkpoint } = await this.context(id, runId);
+    if (!isAgentTaskInput(task.input)) throw new StoreError(400, "No es una tarea de agente.");
+    if (update.sequence !== update.cursor || update.sum !== update.cursor)
+      throw new StoreError(400, "Checkpoint de agente inválido.");
+    if (
+      execution.status !== "RUNNING" ||
+      task.status !== "RUNNING" ||
+      update.cursor !== (checkpoint?.cursor ?? 0) + 1
+    )
+      throw new StoreError(409, "Checkpoint fuera de orden o ejecución terminada.");
+    // El diff solo es legítimo para acciones de repositorio solicitadas; así el
+    // digest del checkpoint queda ligado a los cambios que aprueba Cubo.
+    const writesGit =
+      task.input.actionRequested === "commit" || task.input.actionRequested === "push";
+    if (update.diff && !writesGit)
+      throw new StoreError(400, "El agente no solicitó una acción de repositorio con diff.");
+    const raw = JSON.stringify({ taskId: task.id, executionId: id, ...update });
+    const digest = update.diff ? await sha256(update.diff) : await sha256(raw);
+    const prior = await this.db
+      .prepare("SELECT digest FROM checkpoints WHERE execution_id=? AND sequence=?")
+      .bind(id, update.sequence)
+      .first<{ digest: string }>();
+    if (prior) {
+      if (prior.digest !== digest)
+        throw new StoreError(409, "Checkpoint repetido con contenido distinto.");
+      return;
+    }
+    const now = new Date().toISOString();
+    const eventId = `${id}:${update.sequence}`;
+    const message =
+      update.outcome === "SUCCEEDED"
+        ? "Resultado del agente guardado."
+        : "Cambios del agente guardados; aprobación Git pendiente.";
+    const gitAction: Approval["action"] | null =
+      update.diff && writesGit
+        ? task.input.actionRequested === "push"
+          ? "git.push"
+          : "git.commit"
+        : null;
+    const result: AgentTaskResult = {
+      agent: task.input.agent,
+      summary:
+        update.summary ??
+        (update.outcome === "SUCCEEDED"
+          ? "Trabajo del agente guardado."
+          : "Cambios listos para revisión."),
+      stepsCompleted: update.cursor,
+      ...(update.diff ? { diff: update.diff, diffDigest: digest } : {}),
+      ...(gitAction ? { gitAction } : {}),
+    };
+    const approvalAction: Approval["action"] = gitAction ?? "continue";
+    await this.db.batch([
+      this.db
+        .prepare(
+          "UPDATE tasks SET status=?,progress=?,version=version+1,updated_at=?,result=? WHERE id=? AND execution_id=? AND version=? AND status='RUNNING'",
+        )
+        .bind(
+          update.outcome,
+          update.cursor,
+          now,
+          JSON.stringify(result),
+          task.id,
+          id,
+          task.version,
+        ),
+      this.db
+        .prepare(
+          "INSERT INTO checkpoints SELECT ?,?,?, ?,?,?,? FROM tasks WHERE id=? AND execution_id=? AND version=? AND progress=? ON CONFLICT(execution_id,sequence) DO NOTHING",
+        )
+        .bind(
+          id,
+          update.sequence,
+          task.id,
+          update.cursor,
+          update.sum,
+          digest,
+          now,
+          task.id,
+          id,
+          task.version + 1,
+          update.cursor,
+        ),
+      this.db
+        .prepare(
+          "UPDATE executions SET status=? WHERE id=? AND EXISTS(SELECT 1 FROM checkpoints WHERE execution_id=? AND sequence=? AND digest=?)",
+        )
+        .bind(update.outcome, id, id, update.sequence, digest),
+      this.db
+        .prepare(
+          "INSERT INTO task_events SELECT ?,task_id,execution_id,sequence,?,?,? FROM checkpoints WHERE execution_id=? AND sequence=? AND digest=? ON CONFLICT(id) DO NOTHING",
+        )
+        .bind(eventId, update.outcome, message, now, id, update.sequence, digest),
+      this.db
+        .prepare(
+          "INSERT INTO approvals SELECT ?,task_id,execution_id,?,digest,'PENDING',?,NULL FROM checkpoints WHERE execution_id=? AND sequence=? AND digest=? AND ?='WAITING_APPROVAL' ON CONFLICT(id) DO NOTHING",
+        )
+        .bind(
+          `${id}:${approvalAction}`,
+          approvalAction,
+          now,
+          id,
+          update.sequence,
+          digest,
+          update.outcome,
+        ),
+    ]);
+    const saved = await this.db
+      .prepare("SELECT digest FROM checkpoints WHERE execution_id=? AND sequence=?")
+      .bind(id, update.sequence)
+      .first<{ digest: string }>();
+    if (saved?.digest !== digest)
+      throw new StoreError(409, "El estado cambió; reintentar desde el checkpoint persistido.");
+  }
   async approvals(taskId: string): Promise<Approval[]> {
     return (
       await this.db
@@ -375,7 +496,12 @@ export class D1TaskStore implements TaskRepository {
       id: String(r.id),
       taskId: String(r.task_id),
       executionId: String(r.execution_id),
-      action: "continue",
+      action:
+        r.action === "git.commit" ||
+        r.action === "git.push" ||
+        r.action === "github.pull-request.create"
+          ? r.action
+          : "continue",
       checkpointDigest: String(r.checkpoint_digest),
       status: r.status as Approval["status"],
       createdAt: String(r.created_at),

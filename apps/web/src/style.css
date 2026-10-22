@@ -3259,7 +3259,6 @@ label,
   color: var(--ink);
   font-size: 14px;
   padding: 0;
-  outline: none;
 }
 .command-palette-search input::placeholder {
   color: var(--ink-3);
@@ -4898,7 +4897,6 @@ label,
   font-size: 12px;
   width: 100%;
   cursor: pointer;
-  outline: none;
 }
 :root[data-theme="claro"] .dispatch-model-select,
 :root[data-theme="light"] .dispatch-model-select {
@@ -4969,7 +4967,6 @@ label,
   font-size: 12px;
   line-height: 1.5;
   resize: none;
-  outline: none;
   box-sizing: border-box;
 }
 :root[data-theme="claro"] .dispatch-textarea,
@@ -5312,7 +5309,6 @@ label,
   border-radius: 6px;
   color: #ffffff;
   font-size: 12px;
-  outline: none;
   box-sizing: border-box;
 }
 :root[data-theme="claro"] .settings-text-input,
@@ -5369,7 +5365,6 @@ label,
   border-radius: 6px;
   color: #ffffff;
   font-size: 12px;
-  outline: none;
   cursor: pointer;
   appearance: none;
 }
@@ -8067,4 +8062,19 @@ label,
   background: #ffffff;
   color: #0f172a;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* Módulos de una columna en pantallas estrechas: evita recortes en 390px */
+@media (max-width: 767px) {
+  .analytics-kpi-3grid,
+  .analytics-bottom-grid,
+  .sched-metrics-grid,
+  .settings-grid-two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 1023px) {
+  .analytics-bottom-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

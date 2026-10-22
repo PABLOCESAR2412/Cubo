@@ -134,6 +134,8 @@ export interface RunnerContext {
   task: Task;
   execution: Execution;
   checkpoint: Checkpoint | null;
+  // Aprobaciones registradas por Cubo; el runner las pasa al adaptador para la barrera Git.
+  approvals?: Approval[];
 }
 export interface TaskRepository {
   beginDispatch?(id: string): Promise<boolean>;

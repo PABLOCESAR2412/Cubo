@@ -256,6 +256,17 @@ export function Chat() {
   function openProject() {
     window.location.hash = "/proyectos";
   }
+  async function createFreeChat() {
+    await action(async () => {
+      const res = await api<{ conversation: { id: string } }>("conversations", {
+        method: "POST",
+        headers: { "Idempotency-Key": crypto.randomUUID() },
+        body: JSON.stringify({ title: `Chat libre ${new Date().toLocaleDateString("es")}` }),
+      });
+      active.current = res.conversation.id;
+      setSelected(res.conversation.id);
+    });
+  }
   async function saveMessage() {
     const content = draft.trim() || (attachments.length ? "Revisa los documentos adjuntos." : ""),
       id = active.current;
@@ -466,15 +477,26 @@ export function Chat() {
             {!detail ? (
               <div className="conversation-empty">
                 <Icon name="chat" size={26} />
-                <h2>{projectName || "Elige un proyecto"}</h2>
+                <h2>{projectName || "Chat libre de Cubo"}</h2>
                 <p>
                   {projectId
                     ? "Abre una conversación de este proyecto desde la barra lateral."
-                    : "Los chats se abren desde cada proyecto o desde Recientes."}{" "}
+                    : "Los chats se abren desde cada proyecto o desde Recientes. También puedes iniciar un chat libre sin proyecto."}{" "}
                 </p>
-                <button className="primary" type="button" disabled={busy} onClick={openProject}>
-                  Abrir proyecto
-                </button>
+                {projectId ? (
+                  <button className="primary" type="button" disabled={busy} onClick={openProject}>
+                    Abrir proyecto
+                  </button>
+                ) : (
+                  <button
+                    className="primary"
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void createFreeChat()}
+                  >
+                    Nuevo chat libre
+                  </button>
+                )}
               </div>
             ) : (
               <>

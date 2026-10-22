@@ -1,6 +1,7 @@
 import {
   generateSuggestions,
   generateTaskProposal,
+  ProviderRequestError,
   synthesizeProjectMemory,
 } from "@cubo/providers";
 import type { SupportedProvider } from "@cubo/shared";
@@ -55,6 +56,31 @@ async function getActiveAiProvider(
   throw new Error("No hay ningún proveedor de IA configurado con clave válida en Ajustes.");
 }
 
+// Los errores del proveedor no se reproducen tal cual: solo se exponen motivos
+// tipados conocidos; cualquier otro detalle queda en un mensaje genérico.
+const providerFailureReasons = [
+  "PROVIDER_QUOTA_EXHAUSTED",
+  "PROVIDER_MODEL_UNAVAILABLE",
+  "PROVIDER_CREDENTIAL_REJECTED",
+  "FREE_MODEL_REQUIRED",
+  "UNEXPECTED_PROVIDER_COST",
+  "PROVIDER_REQUEST_FAILED",
+] as const;
+function providerFailureStatus(reason: string): 402 | 409 | 503 {
+  if (reason === "PROVIDER_QUOTA_EXHAUSTED") return 503;
+  if (reason === "PROVIDER_CREDENTIAL_REJECTED") return 402;
+  return 409;
+}
+function providerFailureMessage(reason: string): string {
+  if (reason === "PROVIDER_QUOTA_EXHAUSTED")
+    return "Cuota gratuita del proveedor agotada. Espera o cambia de proveedor.";
+  if (reason === "PROVIDER_CREDENTIAL_REJECTED")
+    return "La clave del proveedor fue rechazada. Revisa Ajustes.";
+  if (reason === "UNEXPECTED_PROVIDER_COST")
+    return "El proveedor devolvió un coste inesperado. Revisión requerida antes de continuar.";
+  return "El modelo no está disponible en el catálogo gratuito verificado.";
+}
+
 // 1. Endpoint Type-Safe: Sugerencias y siguientes pasos
 aiRoutes.post("/suggest", async (c) => {
   const schema = z.object({
@@ -76,9 +102,18 @@ aiRoutes.post("/suggest", async (c) => {
     });
     return c.json({ suggestions: result });
   } catch (err) {
+    const reason =
+      err instanceof ProviderRequestError &&
+      (providerFailureReasons as readonly string[]).includes(err.reason)
+        ? err.reason
+        : null;
     return c.json(
-      { error: err instanceof Error ? err.message : "Error al generar sugerencias Type-Safe." },
-      500,
+      {
+        error: reason
+          ? providerFailureMessage(reason)
+          : "No se pudo generar sugerencias Type-Safe. Reintenta.",
+      },
+      reason ? providerFailureStatus(reason) : 500,
     );
   }
 });
@@ -106,9 +141,18 @@ aiRoutes.post("/propose-task", async (c) => {
     });
     return c.json({ proposal: result });
   } catch (err) {
+    const reason =
+      err instanceof ProviderRequestError &&
+      (providerFailureReasons as readonly string[]).includes(err.reason)
+        ? err.reason
+        : null;
     return c.json(
-      { error: err instanceof Error ? err.message : "Error al generar propuesta Type-Safe." },
-      500,
+      {
+        error: reason
+          ? providerFailureMessage(reason)
+          : "No se pudo generar propuesta Type-Safe. Reintenta.",
+      },
+      reason ? providerFailureStatus(reason) : 500,
     );
   }
 });
@@ -136,9 +180,18 @@ aiRoutes.post("/synthesize-memory", async (c) => {
     });
     return c.json({ memoryUpdate: result });
   } catch (err) {
+    const reason =
+      err instanceof ProviderRequestError &&
+      (providerFailureReasons as readonly string[]).includes(err.reason)
+        ? err.reason
+        : null;
     return c.json(
-      { error: err instanceof Error ? err.message : "Error al sintetizar memoria Type-Safe." },
-      500,
+      {
+        error: reason
+          ? providerFailureMessage(reason)
+          : "No se pudo sintetizar memoria Type-Safe. Reintenta.",
+      },
+      reason ? providerFailureStatus(reason) : 500,
     );
   }
 });

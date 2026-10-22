@@ -1,5 +1,6 @@
 import { D1ChatExecutionStore, D1RepositoryStore, D1TaskStore, StoreError } from "@cubo/database";
 import {
+  agentProgressSchema,
   agentTaskInputSchema,
   chatTurnResultSchema,
   demoInputSchema,
@@ -50,7 +51,9 @@ export async function dispatchOutbox(env: Env): Promise<void> {
 const app = new Hono<{ Bindings: Env; Variables: { runnerId: string } }>();
 app.use("/api/*", async (c, next) =>
   bodyLimit({
-    maxSize: /^\/api\/executions\/[^/]+\/(?:import-progress|chat-result)$/.test(c.req.path)
+    maxSize: /^\/api\/executions\/[^/]+\/(?:import-progress|chat-result|agent-progress)$/.test(
+      c.req.path,
+    )
       ? 131072
       : /^\/api\/conversations\/[^/]+\/turn$/.test(c.req.path)
         ? 131072
@@ -195,16 +198,32 @@ app.post("/api/executions/:id/claim", async (c) => {
   await new D1TaskStore(c.env.DB).claim(c.req.param("id"), c.get("runnerId"));
   return c.json({ ok: true });
 });
-app.get("/api/executions/:id/context", async (c) =>
-  c.json({
-    ...(await new D1TaskStore(c.env.DB).context(c.req.param("id"), c.get("runnerId"))),
+app.get("/api/executions/:id/context", async (c) => {
+  const store = new D1TaskStore(c.env.DB),
+    context = await store.context(c.req.param("id"), c.get("runnerId"));
+  return c.json({
+    ...context,
+    // El adaptador necesita las aprobaciones registradas para la barrera Git.
+    approvals: await store.approvals(context.task.id),
     protocolVersion: 2,
-  }),
-);
+  });
+});
 app.post("/api/executions/:id/progress", async (c) => {
   const body = runnerUpdateSchema.safeParse(await c.req.json());
   if (!body.success) return c.json({ error: "Checkpoint inválido." }, 400);
   await new D1TaskStore(c.env.DB).saveProgress(c.req.param("id"), c.get("runnerId"), body.data);
+  return c.json({ ok: true });
+});
+app.post("/api/executions/:id/agent-progress", async (c) => {
+  const body = agentProgressSchema.safeParse(await c.req.json());
+  if (!body.success) return c.json({ error: "Resultado de agente inválido." }, 400);
+  if (containsSecret(JSON.stringify(body.data), c.env))
+    return c.json({ error: "Resultado con contenido sensible; no se guardó." }, 400);
+  await new D1TaskStore(c.env.DB).saveAgentProgress(
+    c.req.param("id"),
+    c.get("runnerId"),
+    body.data,
+  );
   return c.json({ ok: true });
 });
 app.get("/api/executions/:id/import-checkpoint", async (c) => {

@@ -80,6 +80,42 @@ export function Settings({ w }: { w: Workspace }) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Respaldo gratuito autorizado de OpenRouter: preferencia real de los turnos de chat.
+  const [fallbackModel, setFallbackModel] = useState("");
+  const fallbackOptions = providers.openrouter?.models ?? [];
+
+  useEffect(() => {
+    let disposed = false;
+    void requestApi<{ preferences?: { fallbackModel?: string } }>("providers/openrouter")
+      .then((res) => {
+        if (!disposed && typeof res.preferences?.fallbackModel === "string")
+          setFallbackModel(res.preferences.fallbackModel);
+      })
+      .catch(() => {});
+    return () => {
+      disposed = true;
+    };
+  }, []);
+
+  const handleSaveFallback = async () => {
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      await requestApi("providers/openrouter/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ fallbackModel }),
+      });
+      setNotice(
+        fallbackModel ? `Respaldo gratuito fijado a ${fallbackModel}.` : "Respaldo desactivado.",
+      );
+      setTimeout(() => setNotice(null), 5000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al guardar el modelo de respaldo.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   // Type-Safe AI State
   const [typeSafeTesting, setTypeSafeTesting] = useState(false);
@@ -394,25 +430,42 @@ export function Settings({ w }: { w: Workspace }) {
             {/* Models & Budget Row */}
             <div className="settings-grid-two">
               <div className="settings-field-group">
-                <span className="settings-field-label">MODELO PREDETERMINADO</span>
+                <label htmlFor="fallback-model-select" className="settings-field-label">
+                  MODELO RESPALDO (FALLBACK) · OPENROUTER
+                </label>
                 <div className="settings-select-wrapper">
                   <select
+                    id="fallback-model-select"
                     className="settings-select"
-                    defaultValue={meta.defaultModel}
-                    disabled={!currentProviderData?.models?.length}
+                    value={fallbackModel}
+                    onChange={(e) => setFallbackModel(e.target.value)}
+                    disabled={busy || !fallbackOptions.length}
+                    aria-describedby="fallback-model-hint"
                   >
-                    {currentProviderData?.models && currentProviderData.models.length > 0 ? (
-                      currentProviderData.models.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name}
-                        </option>
-                      ))
-                    ) : (
-                      <option value={meta.defaultModel}>{meta.defaultModel}</option>
-                    )}
+                    <option value="">
+                      {fallbackOptions.length ? "Sin respaldo" : "Catálogo no disponible"}
+                    </option>
+                    {fallbackOptions.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
                   </select>
                   <Icon name="chevron" size={14} className="select-chevron" />
                 </div>
+                <small id="fallback-model-hint" className="settings-field-status">
+                  Se usa cuando el modelo principal no está disponible gratis. Sin respaldo de pago
+                  nunca.
+                </small>
+                <button
+                  type="button"
+                  className="secondary compact"
+                  style={{ alignSelf: "flex-start" }}
+                  onClick={() => void handleSaveFallback()}
+                  disabled={busy}
+                >
+                  Guardar respaldo
+                </button>
               </div>
 
               <div className="settings-field-group">

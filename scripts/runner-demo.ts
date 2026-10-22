@@ -126,18 +126,29 @@ async function main(): Promise<void> {
     const adapter =
       context.task.input.agent === "codex" ? new CodexAgentAdapter() : new OpenCodeAgentAdapter();
     console.log(`Ejecutando adaptador de agente ${adapter.descriptor.name}...`);
+    // Cubo registra la aprobación cubierta por la barrera Git; sin ella el adaptador
+    // deja el trabajo en espera en lugar de ejecutar acciones de repositorio.
+    const approval =
+      context.approvals?.find(
+        (a) =>
+          a.status === "APPROVED" &&
+          ["git.commit", "git.push", "github.pull-request.create"].includes(a.action),
+      ) ?? null;
     const result = await adapter.execute({
       task: context.task,
       checkpoint: context.checkpoint,
+      approval,
       signal: AbortSignal.timeout(120000),
     });
-    const update: RunnerUpdate = {
+    const update = {
       sequence: result.checkpoint.sequence,
       cursor: result.checkpoint.cursor,
       sum: result.checkpoint.sum,
       outcome: result.outcome,
+      ...(result.summary ? { summary: result.summary } : {}),
+      ...(result.diff ? { diff: result.diff } : {}),
     };
-    await request("progress", update);
+    await request("agent-progress", update);
     console.log(`Agente ${adapter.descriptor.name} guardado con resultado: ${result.outcome}.`);
     return;
   }

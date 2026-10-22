@@ -1,82 +1,75 @@
-import type { StoredProject } from "@cubo/shared";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { Icon } from "./Icon";
-import { requestApi, type Workspace } from "./workspace";
+import { labels, type Workspace } from "./workspace";
 
-export function Analytics({ w: _w }: { w: Workspace }) {
-  const [period, setPeriod] = useState<"Hoy" | "7 días" | "30 días" | "Todo">("7 días");
-  const [_projects, setProjects] = useState<StoredProject[]>([]);
+type Period = "Hoy" | "7 días" | "30 días" | "Todo";
 
-  useEffect(() => {
-    let disposed = false;
-    void requestApi<{ projects: StoredProject[] }>("projects")
-      .then((data) => {
-        if (!disposed && Array.isArray(data.projects)) setProjects(data.projects);
-      })
-      .catch(() => {});
-    return () => {
-      disposed = true;
-    };
-  }, []);
+const dayMs = 86400000;
 
-  const recentExecutions = [
-    {
-      id: "#e1042",
-      task: "Refactor JWKS Auth",
-      agent: "Cubo Core",
-      duration: "4.2s",
-      status: "Completado",
-      isSuccess: true,
-    },
-    {
-      id: "#e1041",
-      task: "Migración schema D1",
-      agent: "Worker Runner",
-      duration: "1.8s",
-      status: "Completado",
-      isSuccess: true,
-    },
-    {
-      id: "#e1040",
-      task: "Linter fix & AST sync",
-      agent: "OpenCode Fast",
-      duration: "0.9s",
-      status: "Completado",
-      isSuccess: true,
-    },
-    {
-      id: "#e1039",
-      task: "Index KV store routi...",
-      agent: "Cubo Core",
-      duration: "--",
-      status: "En cola",
-      isSuccess: false,
-    },
-  ];
+function inPeriod(createdAt: string, period: Period): boolean {
+  if (period === "Todo") return true;
+  const created = new Date(createdAt).getTime();
+  if (Number.isNaN(created)) return false;
+  const now = new Date();
+  if (period === "Hoy") {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    return created >= start;
+  }
+  return created >= now.getTime() - (period === "7 días" ? 7 : 30) * dayMs;
+}
+
+function origin(input: unknown): string {
+  if (typeof input !== "object" || input === null) return "Tarea";
+  if (!("type" in input)) return "Demo";
+  const record = input as { type: string; agent?: string };
+  if (record.type === "CHAT_TURN") return "Chat";
+  if (record.type === "AGENT_TASK") return record.agent === "codex" ? "Codex" : "OpenCode";
+  if (record.type === "REPOSITORY_IMPORT") return "Importación";
+  return "Tarea";
+}
+
+export function Analytics({ w }: { w: Workspace }) {
+  const [period, setPeriod] = useState<Period>("Todo");
+  const tasks = useMemo(
+    () => w.tasks.filter((t) => inPeriod(t.createdAt, period)),
+    [w.tasks, period],
+  );
+  const count = (status: string) => tasks.filter((t) => t.status === status).length;
+  const total = tasks.length;
+  const attention = count("WAITING_APPROVAL") + count("QUEUED") + count("RUNNING");
+  const statuses = ["SUCCEEDED", "FAILED", "CANCELLED", "WAITING_APPROVAL", "RUNNING", "QUEUED"];
 
   const exportCsv = () => {
-    const headers = "ID,Tarea,Agente,Duracion,Estado\n";
-    const rows = recentExecutions
-      .map((e) => `"${e.id}","${e.task}","${e.agent}","${e.duration}","${e.status}"`)
+    const headers = "ID,Tarea,Origen,Estado,Creada,Actualizada\n";
+    const rows = tasks
+      .map((t) =>
+        [t.id, t.title, origin(t.input), labels[t.status], t.createdAt, t.updatedAt]
+          .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+          .join(","),
+      )
       .join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `cubo-metricas-cloud-${period.toLowerCase().replace(/\s+/g, "-")}.csv`;
+    a.download = `cubo-ejecuciones-${period.toLowerCase().replace(/\s+/g, "-")}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
     <div className="analytics-stitch-canvas">
-      {/* 1. Header with Breadcrumb & Time Filters */}
       <div className="analytics-stitch-header">
         <div>
           <div className="analytics-breadcrumb-row">
-            <span className="analytics-bc-text">Analíticas / Rendimiento global</span>
-            <span className="analytics-live-badge">LIVE</span>
+            <span className="analytics-bc-text">Analíticas / Ejecuciones reales</span>
+            <span className="analytics-live-badge">D1</span>
           </div>
-          <h1 className="analytics-stitch-title">Métricas de Ejecución Cloud</h1>
+          <h1 className="analytics-stitch-title">Métricas de ejecución</h1>
+          <p className="chart-stitch-sub">
+            Conteos derivados de las tareas persistidas en D1. Sin telemetría de tokens ni datos
+            simulados.
+          </p>
         </div>
 
         <div className="analytics-time-tabs" role="tablist" aria-label="Filtro temporal">
@@ -95,250 +88,136 @@ export function Analytics({ w: _w }: { w: Workspace }) {
         </div>
       </div>
 
-      {/* 2. Top 3 KPI Cards */}
       <div className="analytics-kpi-3grid">
-        {/* Card 1: Total Ejecuciones */}
         <div className="analytics-kpi-stitch-card">
           <div className="kpi-stitch-header">
             <span className="kpi-stitch-label">TOTAL EJECUCIONES</span>
             <Icon name="terminal" size={15} className="kpi-icon-muted" />
           </div>
           <div className="kpi-stitch-body">
-            <span className="kpi-stitch-big">1,284</span>
-            <span className="kpi-stitch-delta-badge">↑ 12%</span>
+            <span className="kpi-stitch-big">{total}</span>
           </div>
           <div className="kpi-stitch-footer">
-            <span>vs. ciclo previo (7d)</span>
-            <span className="kpi-sep">·</span>
-            <span className="kpi-highlight-green">+138 netas</span>
+            <span>Tareas registradas en D1 en el periodo</span>
           </div>
         </div>
 
-        {/* Card 2: Tokens Procesados */}
         <div className="analytics-kpi-stitch-card">
           <div className="kpi-stitch-header">
-            <span className="kpi-stitch-label">TOKENS PROCESADOS</span>
-            <Icon name="cube" size={15} className="kpi-icon-muted" />
-          </div>
-          <div className="kpi-stitch-body">
-            <span className="kpi-stitch-big">8.4M</span>
-            <span className="kpi-stitch-ctx-label">ctx / s: 1.4k</span>
-          </div>
-          <div className="kpi-stitch-footer">
-            <span>100% Free Tier · $0.00 USD</span>
-            <span className="kpi-sep">·</span>
-            <span className="kpi-highlight-green">92% cuota libre</span>
-          </div>
-        </div>
-
-        {/* Card 3: Tasa Aprobación Git */}
-        <div className="analytics-kpi-stitch-card">
-          <div className="kpi-stitch-header">
-            <span className="kpi-stitch-label">TASA APROBACIÓN GIT</span>
+            <span className="kpi-stitch-label">COMPLETADAS</span>
             <Icon name="check" size={15} className="kpi-icon-muted" />
           </div>
           <div className="kpi-stitch-body">
-            <span className="kpi-stitch-big">99.1%</span>
+            <span className="kpi-stitch-big">{count("SUCCEEDED")}</span>
+            <span className="kpi-highlight-green">
+              {total ? `${Math.round((count("SUCCEEDED") / total) * 100)}%` : "—"}
+            </span>
+          </div>
+          <div className="kpi-stitch-footer">
+            <span>
+              Fallidas: {count("FAILED")} · Canceladas: {count("CANCELLED")}
+            </span>
+          </div>
+        </div>
+
+        <div className="analytics-kpi-stitch-card">
+          <div className="kpi-stitch-header">
+            <span className="kpi-stitch-label">REQUIEREN ATENCIÓN</span>
+            <Icon name="clock" size={15} className="kpi-icon-muted" />
+          </div>
+          <div className="kpi-stitch-body">
+            <span className="kpi-stitch-big">{attention}</span>
             <span className="kpi-stitch-dot-green" />
           </div>
           <div className="kpi-stitch-footer">
-            <span>34 verificaciones consecutivas</span>
-            <span className="kpi-sep">·</span>
-            <span>0 regresiones</span>
+            <span>
+              Pendientes de aprobación: {count("WAITING_APPROVAL")} · En cola/ejecución:{" "}
+              {count("QUEUED") + count("RUNNING")}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* 3. Middle Chart: Volumen de Computación por Jornada */}
       <div className="analytics-chart-stitch-card">
         <div className="chart-stitch-header">
           <div>
-            <h2 className="chart-stitch-title">Volumen de Computación por Jornada</h2>
-            <p className="chart-stitch-sub">
-              Rendimiento continuo distribuido en Workers Edge nodes
-            </p>
-          </div>
-          <div className="chart-stitch-legend">
-            <div className="legend-entry">
-              <span className="legend-box gray" />
-              <span>Promedio (162)</span>
-            </div>
-            <div className="legend-entry">
-              <span className="legend-box green" />
-              <span>Pico de carga</span>
-            </div>
+            <h2 className="chart-stitch-title">Distribución por estado</h2>
+            <p className="chart-stitch-sub">Ejecuciones en el periodo seleccionado</p>
           </div>
         </div>
-
-        {/* 7 Columns Day Bar Chart */}
-        <div className="chart-bars-container">
-          <div className="chart-bar-col">
-            <div className="bar-track">
-              <div className="bar-fill gray" style={{ height: "42%" }} />
-            </div>
-            <span className="bar-day-label">LUN</span>
+        {total ? (
+          <div className="chart-bars-container">
+            {statuses.map((status) => {
+              const value = count(status);
+              if (!value) return null;
+              return (
+                <div className="chart-bar-col" key={status}>
+                  <div className="bar-track">
+                    <span className="peak-top-number">{value}</span>
+                    <div
+                      className="bar-fill gray"
+                      style={{ height: `${Math.round((value / total) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="bar-day-label">{labels[status as keyof typeof labels]}</span>
+                </div>
+              );
+            })}
           </div>
-
-          <div className="chart-bar-col">
-            <div className="bar-track">
-              <div className="bar-fill gray" style={{ height: "55%" }} />
-            </div>
-            <span className="bar-day-label">MAR</span>
-          </div>
-
-          <div className="chart-bar-col">
-            <div className="bar-track">
-              <div className="bar-fill gray" style={{ height: "60%" }} />
-            </div>
-            <span className="bar-day-label">MIÉ</span>
-          </div>
-
-          {/* JUE: Peak Bar with Active Tooltip */}
-          <div className="chart-bar-col active-peak">
-            <div className="peak-tooltip-card">
-              <span className="peak-tooltip-title">
-                <span className="tooltip-dot" />
-                <span>Jueves</span>
-              </span>
-              <span className="tooltip-sep">·</span>
-              <span className="tooltip-stat">312 ejecuciones (+24%)</span>
-            </div>
-            <div className="bar-track">
-              <span className="peak-top-number">312</span>
-              <div className="bar-fill green-peak" style={{ height: "82%" }} />
-            </div>
-            <span className="bar-day-label peak-label">JUE</span>
-          </div>
-
-          <div className="chart-bar-col">
-            <div className="bar-track">
-              <div className="bar-fill gray" style={{ height: "70%" }} />
-            </div>
-            <span className="bar-day-label">VIE</span>
-          </div>
-
-          <div className="chart-bar-col">
-            <div className="bar-track">
-              <div className="bar-fill gray" style={{ height: "26%" }} />
-            </div>
-            <span className="bar-day-label">SÁB</span>
-          </div>
-
-          <div className="chart-bar-col">
-            <div className="bar-track">
-              <div className="bar-fill gray" style={{ height: "22%" }} />
-            </div>
-            <span className="bar-day-label">DOM</span>
-          </div>
-        </div>
+        ) : (
+          <p className="muted">
+            Sin tareas en este periodo. Crea una ejecución desde Tareas o Proyectos.
+          </p>
+        )}
       </div>
 
-      {/* 4. Bottom 2-Grid: Distribución de Modelos IA & Ejecuciones Recientes */}
-      <div className="analytics-bottom-grid">
-        {/* Left: Model Distribution */}
-        <div className="analytics-models-card">
-          <div className="card-top-row">
-            <div>
-              <h2 className="card-heading">Distribución de Modelos IA</h2>
-              <span className="card-subheading">Ruteo predictivo de prompts y síntesis</span>
-            </div>
-            <span className="model-count-badge">2 Modelos</span>
+      <div className="analytics-table-card">
+        <div className="card-top-row">
+          <div>
+            <h2 className="card-heading">Ejecuciones recientes</h2>
+            <span className="card-subheading">
+              Últimas 8 tareas del periodo con estado real en D1
+            </span>
           </div>
-
-          {/* Split Bar */}
-          <div className="split-progress-bar">
-            <div className="split-bar-fill codex" style={{ width: "58%" }} />
-            <div className="split-bar-fill opencode" style={{ width: "42%" }} />
-          </div>
-
-          <div className="split-legend-row">
-            <div className="split-legend-item">
-              <span className="dot-green" />
-              <span>Codex 58%</span>
-            </div>
-            <div className="split-legend-item">
-              <span className="dot-gray" />
-              <span>OpenCode 42%</span>
-            </div>
-          </div>
-
-          {/* Model Card 1 */}
-          <div className="model-detail-row">
-            <div>
-              <h3 className="model-name">Codex Orchestrator</h3>
-              <p className="model-desc">Code generation · Deep context</p>
-            </div>
-            <div className="model-metrics-right">
-              <span className="model-time">1.18s</span>
-              <span className="model-score">0.994 score</span>
-            </div>
-          </div>
-
-          {/* Model Card 2 */}
-          <div className="model-detail-row">
-            <div>
-              <h3 className="model-name">OpenCode HighSpeed</h3>
-              <p className="model-desc">Linter / AST Analysis</p>
-            </div>
-            <div className="model-metrics-right">
-              <span className="model-time">0.64s</span>
-              <span className="model-score">0.982 score</span>
-            </div>
-          </div>
-
-          {/* Latency Footer */}
-          <div className="model-latency-footer">
-            <span className="latency-wave-icon">∿</span>
-            <span className="latency-text">Latencia P95 Media</span>
-            <span className="latency-val">1.2s avg</span>
-          </div>
+          <button type="button" className="export-csv-btn" onClick={exportCsv} disabled={!total}>
+            <Icon name="arrow" size={13} className="rotate-down" />
+            <span>Exportar CSV</span>
+          </button>
         </div>
 
-        {/* Right: Recent Executions Table */}
-        <div className="analytics-table-card">
-          <div className="card-top-row">
-            <div>
-              <h2 className="card-heading">Ejecuciones Recientes</h2>
-              <span className="card-subheading">Logs auditados de tareas de sintetización</span>
-            </div>
-            <button type="button" className="export-csv-btn" onClick={exportCsv}>
-              <Icon name="arrow" size={13} className="rotate-down" />
-              <span>Exportar CSV</span>
-            </button>
-          </div>
-
+        {total ? (
           <div className="table-responsive">
             <table className="analytics-stitch-table">
               <thead>
                 <tr>
-                  <th>ID</th>
                   <th>TAREA</th>
-                  <th>AGENTE</th>
-                  <th>DURACIÓN</th>
+                  <th>ORIGEN</th>
                   <th>ESTADO</th>
+                  <th>CREADA</th>
                 </tr>
               </thead>
               <tbody>
-                {recentExecutions.map((row) => (
-                  <tr key={row.id}>
-                    <td className="col-id">{row.id}</td>
-                    <td className="col-task">{row.task}</td>
-                    <td className="col-agent">{row.agent}</td>
-                    <td className="col-duration">{row.duration}</td>
+                {tasks.slice(0, 8).map((t) => (
+                  <tr key={t.id}>
+                    <td className="col-task">{t.title}</td>
+                    <td className="col-agent">{origin(t.input)}</td>
                     <td className="col-status">
                       <span
-                        className={`status-badge-stitch ${row.isSuccess ? "success" : "pending"}`}
+                        className={`status-badge-stitch ${t.status === "SUCCEEDED" ? "success" : "pending"}`}
                       >
                         <span className="status-dot" />
-                        <span>{row.status}</span>
+                        <span>{labels[t.status]}</span>
                       </span>
                     </td>
+                    <td className="col-duration">{new Date(t.createdAt).toLocaleString("es")}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        ) : (
+          <p className="muted">Sin ejecuciones registradas en el periodo seleccionado.</p>
+        )}
       </div>
     </div>
   );
