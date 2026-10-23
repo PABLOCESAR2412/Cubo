@@ -8,7 +8,101 @@ import {
   NvidiaProvider,
   synthesizeProjectMemory,
   taskProposalSchema,
+  ZenProvider,
 } from "@cubo/providers";
+
+function zenFetcher(
+  modelIds: string[],
+  overrides: Record<string, { status: number; body: unknown }> = {},
+) {
+  return (input: string): Promise<Response> => {
+    const override = Object.entries(overrides).find(([key]) => input.includes(key))?.[1];
+    if (override) {
+      return Promise.resolve(
+        new Response(JSON.stringify(override.body), {
+          status: override.status,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }
+    return Promise.resolve(
+      new Response(JSON.stringify({ object: "list", data: modelIds.map((id) => ({ id })) }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+  };
+}
+
+describe("Adaptador OpenCode Zen (gama gratuita verificada)", () => {
+  it("freeModels solo publica los modelos gratuitos que siguen en el catálogo vivo", async () => {
+    const vivo = ["glm-5.3-flash-free", "big-pickle", "claude-opus-5", "test"];
+    const zen = new ZenProvider(zenFetcher(vivo));
+    const models = await zen.freeModels();
+    expect(models.map((m) => m.id)).toEqual(["glm-5.3-flash-free", "big-pickle"]);
+    // los modelos de pago y las entradas internas nunca aparecen
+    expect(models.some((m) => m.id === "claude-opus-5" || m.id === "test")).toBe(false);
+  });
+
+  it("quota valida la credencial contra la API sin gasto de tokens", async () => {
+    const clave = `sk-${"a".repeat(64)}`;
+    const zenOk = new ZenProvider(zenFetcher(["glm-5.3-flash-free"]));
+    const quota = await zenOk.quota(clave);
+    expect(quota.quality).toBe("unavailable");
+    expect(quota.requestsRemaining).toBeNull();
+
+    const zenRepedido = new ZenProvider(
+      zenFetcher([], { "/v1/models": { status: 401, body: {} } }),
+    );
+    expect(zenRepedido.quota(clave)).rejects.toThrow("PROVIDER_CREDENTIAL_REJECTED");
+
+    const zenNull = new ZenProvider(zenFetcher(["glm-5.3-flash-free"]));
+    expect(zenNull.quota(`sk-${"b".repeat(63)}`)).rejects.toThrow();
+  });
+
+  it("complete rechaza modelos fuera de la gama gratuita y valida la salida", async () => {
+    const clave = `sk-${"c".repeat(64)}`;
+    const zen = new ZenProvider(zenFetcher([]));
+    expect(zen.complete(clave, "claude-opus-5", [])).rejects.toThrow("FREE_MODEL_REQUIRED");
+
+    const zenFt = new ZenProvider(
+      zenFetcher([], {
+        "chat/completions": {
+          status: 403,
+          body: {
+            type: "error",
+            error: {
+              type: "FreeTierError",
+              message: "OpenCode's free tier can only be used from within OpenCode.",
+            },
+          },
+        },
+      }),
+    );
+    expect(
+      zenFt.complete(clave, "glm-5.3-flash-free", [{ role: "user", content: "ping" }]),
+    ).rejects.toThrow("PROVIDER_MODEL_UNAVAILABLE");
+
+    const zenOk = new ZenProvider(
+      zenFetcher([], {
+        "chat/completions": {
+          status: 200,
+          body: {
+            choices: [{ message: { content: "Hola desde Zen" }, finish_reason: "stop" }],
+            usage: { prompt_tokens: 3, completion_tokens: 5 },
+          },
+        },
+      }),
+    );
+    const salida = await zenOk.complete(clave, "glm-5.3-flash-free", [
+      { role: "user", content: "ping" },
+    ]);
+    expect(salida.content).toBe("Hola desde Zen");
+    expect(salida.costUsd).toBe(0);
+    expect(salida.costQuality).toBe("estimated");
+    expect(salida.finishReason).toBe("stop");
+  });
+});
 
 describe("Adaptadores de Proveedores (Gemini, Groq, NVIDIA, OpenRouter)", () => {
   it("GeminiProvider expone modelos gratuitos y valida formato de credencial", async () => {

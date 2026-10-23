@@ -2,13 +2,16 @@ import { expect, test } from "bun:test";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { D1ChatStore, D1TaskStore } from "@cubo/database";
+import { ZEN_FREE_MODELS, ZenProvider } from "@cubo/providers";
 import {
   agentProgressSchema,
   agentTaskInputSchema,
   type ChatTurnContext,
   chatTurnInputSchema,
+  supportedProviders,
 } from "@cubo/shared";
 import { containsSecret } from "../apps/api/src/content-safety";
+import { getProviderAdapter, validateProviderKeyPattern } from "../apps/api/src/project-providers";
 import { OpenCodeAgentAdapter, type RegisteredApproval } from "../packages/agents/src/index.ts";
 import { database } from "./sqlite";
 
@@ -186,13 +189,54 @@ test("containsSecret detecta prefijos de claves oficiales", () => {
     ["gsk_0123456789abcdefghijklmnopqrstuvwxyzABCD", true],
     ["nvapi-0123456789abcdefghijklmnopqrstuvwxyzAB", true],
     ["ghp_0123456789abcdefghijklmnopqrstuvwxyz", true],
+    [`sk-${"z".repeat(64)}`, true],
     ["texto normal sin credenciales", false],
+    ["gtf_0123456789abcdefghijklmnopqrst", false],
     ["ghp_corta", false],
     ["nvapi-corta", false],
   ] as const;
   for (const [text, detected] of cases) {
     expect(containsSecret(`datos: ${text}`, testEnv as never)).toBe(detected);
   }
+});
+
+test("OpenCode Zen registrado como proveedor gratuito under OpenCode", () => {
+  expect(supportedProviders).toContain("opencode-zen");
+  expect(validateProviderKeyPattern("opencode-zen", `sk-${"y".repeat(64)}`)).toBe(true);
+  expect(validateProviderKeyPattern("opencode-zen", `sk-${"y".repeat(63)}`)).toBe(false);
+  expect(validateProviderKeyPattern("opencode-zen", "sk-or-v1-0000000000000000")).toBe(false);
+  const adapter = getProviderAdapter("opencode-zen");
+  expect(adapter).toBeInstanceOf(ZenProvider);
+  expect(new OpenCodeAgentAdapter().descriptor.providers).toContain("opencode-zen");
+  const zen = adapter as ZenProvider;
+  expect(zen.freeModels).toBeTypeOf("function");
+});
+
+test("routing registra la combinación OpenCode/OpenCode Zen sin fallback de pago", () => {
+  const routing = JSON.parse(read("config/routing.json")) as {
+    providers: Array<{ id: string; freeTierOnly?: boolean }>;
+    validatedCompatibility: Array<{ agent: string; provider: string; models: string[] }>;
+  };
+  const zen = routing.providers.find((p) => p.id === "opencode-zen");
+  expect(zen?.freeTierOnly).toBe(true);
+  const combo = routing.validatedCompatibility.find(
+    (c) => c.agent === "opencode" && c.provider === "opencode-zen",
+  );
+  expect(combo).toBeDefined();
+  const libre = combo?.models.every((id) => ZEN_FREE_MODELS.some((m) => m.id === id)) ?? false;
+  expect(libre).toBe(true);
+});
+
+test("el topbar cabe en móvil sin recortar el selector de tema", () => {
+  const css = read("apps/web/src/style.css");
+  const blocks = css.split("@media (max-width: 767px)").slice(1);
+  const ajusta = blocks.some(
+    (block) =>
+      block.includes(".topbar-kbd") &&
+      block.includes(".topbar-center") &&
+      block.includes(".topbar-search-trigger"),
+  );
+  expect(ajusta).toBe(true);
 });
 
 const read = (p: string) => readFileSync(p, "utf8");

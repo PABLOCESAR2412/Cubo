@@ -3166,6 +3166,26 @@ label,
   gap: 10px;
   flex-shrink: 0;
 }
+/* Móvil: el topbar debe caber en 390px sin recortar el botón de tema. */
+@media (max-width: 767px) {
+  .cubo-topbar {
+    padding: 0 10px;
+    gap: 8px;
+  }
+  .topbar-left {
+    gap: 8px;
+  }
+  .topbar-center {
+    min-width: 0;
+  }
+  .topbar-search-trigger {
+    min-width: 0;
+    padding: 5px 8px;
+  }
+  .topbar-kbd {
+    display: none;
+  }
+}
 .topbar-runner-status {
   display: flex;
   align-items: center;

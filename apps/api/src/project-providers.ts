@@ -5,6 +5,7 @@ import {
   GroqProvider,
   NvidiaProvider,
   OpenRouterProvider,
+  ZenProvider,
 } from "@cubo/providers";
 import {
   type FreeModel,
@@ -34,6 +35,8 @@ export function getProviderAdapter(provider: SupportedProvider): ChatProviderAda
       return new GroqProvider();
     case "nvidia":
       return new NvidiaProvider();
+    case "opencode-zen":
+      return new ZenProvider();
     case "openrouter":
     default:
       return new OpenRouterProvider();
@@ -50,6 +53,8 @@ export function validateProviderKeyPattern(provider: SupportedProvider, key: str
       return /^nvapi-[A-Za-z0-9_-]{30,120}$/.test(key);
     case "openrouter":
       return /^sk-or-v1-[A-Za-z0-9_-]{16,200}$/.test(key);
+    case "opencode-zen":
+      return /^sk-[A-Za-z0-9]{64}$/.test(key);
   }
 }
 
@@ -179,7 +184,9 @@ globalProviderRoutes.get("/", async (c) => {
               ? "Groq Cloud"
               : p === "nvidia"
                 ? "NVIDIA NIM"
-                : "OpenRouter",
+                : p === "opencode-zen"
+                  ? "OpenCode Zen"
+                  : "OpenRouter",
         configured: Boolean(row),
         encryptionConfigured: Boolean(c.env.PROJECT_ENCRYPTION_KEY),
         models,
@@ -320,7 +327,9 @@ globalProviderRoutes.get("/:provider", async (c) => {
           ? "Groq Cloud"
           : p === "nvidia"
             ? "NVIDIA NIM"
-            : "OpenRouter",
+            : p === "opencode-zen"
+              ? "OpenCode Zen"
+              : "OpenRouter",
     configured: Boolean(row),
     encryptionConfigured: Boolean(c.env.PROJECT_ENCRYPTION_KEY),
     models,

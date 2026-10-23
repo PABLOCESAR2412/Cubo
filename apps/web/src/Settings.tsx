@@ -64,6 +64,14 @@ const PROVIDER_METADATA: Record<
     icon: "terminal",
     defaultModel: "qwen/qwen-2.5-coder-32b-instruct:free",
   },
+  "opencode-zen": {
+    subtitle: "OpenCode Zen / Console · Modelos curados y verificados para agentes de código",
+    placeholder: "sk-... (64 caracteres)",
+    docsUrl: "https://opencode.ai/console",
+    docsLabel: "Obtener clave en OpenCode Console",
+    icon: "cube",
+    defaultModel: "glm-5.3-flash-free",
+  },
 };
 
 export function Settings({ w }: { w: Workspace }) {
@@ -74,6 +82,7 @@ export function Settings({ w }: { w: Workspace }) {
     groq: null,
     nvidia: null,
     openrouter: null,
+    "opencode-zen": null,
   });
   const [keyInput, setKeyInput] = useState("");
   const [showKey, setShowKey] = useState(false);
@@ -137,6 +146,7 @@ export function Settings({ w }: { w: Workspace }) {
           groq: null,
           nvidia: null,
           openrouter: null,
+          "opencode-zen": null,
         };
         for (const item of res.providers) {
           map[item.provider] = item;
@@ -316,7 +326,9 @@ export function Settings({ w }: { w: Workspace }) {
           <div className="card-stitch-body">
             {/* Tabs selector for Providers */}
             <div className="settings-provider-tabs">
-              {(["gemini", "groq", "nvidia", "openrouter"] as SupportedProvider[]).map((p) => {
+              {(
+                ["gemini", "groq", "nvidia", "openrouter", "opencode-zen"] as SupportedProvider[]
+              ).map((p) => {
                 const isConf = Boolean(providers[p]?.configured);
                 return (
                   <button
@@ -339,7 +351,9 @@ export function Settings({ w }: { w: Workspace }) {
                           ? "Groq Cloud"
                           : p === "nvidia"
                             ? "NVIDIA NIM"
-                            : "OpenRouter"}
+                            : p === "opencode-zen"
+                              ? "OpenCode Zen"
+                              : "OpenRouter"}
                     </span>
                   </button>
                 );

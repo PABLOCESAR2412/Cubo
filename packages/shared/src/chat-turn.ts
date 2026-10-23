@@ -9,7 +9,13 @@ export const attachmentSchema = z
   .strict();
 export type ChatAttachment = z.infer<typeof attachmentSchema>;
 
-export const supportedProviders = ["openrouter", "gemini", "groq", "nvidia"] as const;
+export const supportedProviders = [
+  "openrouter",
+  "gemini",
+  "groq",
+  "nvidia",
+  "opencode-zen",
+] as const;
 export type SupportedProvider = (typeof supportedProviders)[number];
 
 export const chatTurnInputSchema = z

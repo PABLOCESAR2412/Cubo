@@ -8,10 +8,43 @@
   "providers": [
     { "id": "gemini", "adapterStatus": "pending", "models": [] },
     { "id": "groq", "adapterStatus": "pending", "models": [] },
-    { "id": "nvidia", "adapterStatus": "pending", "models": [] }
+    { "id": "nvidia", "adapterStatus": "pending", "models": [] },
+    { "id": "openrouter", "adapterStatus": "registered", "models": [] },
+    {
+      "id": "opencode-zen",
+      "adapterStatus": "registered",
+      "freeTierOnly": true,
+      "catalogUrl": "https://opencode.ai/inference/v1/models",
+      "models": [
+        "glm-5.3-flash-free",
+        "deepseek-v4.1-flash-free",
+        "big-pickle",
+        "beam-free",
+        "flint-40b-free"
+      ]
+    }
   ],
   "preserveExistingProviders": true,
-  "validatedCompatibility": [],
+  "validatedCompatibility": [
+    {
+      "agent": "opencode",
+      "provider": "opencode-zen",
+      "models": [
+        "glm-5.3-flash-free",
+        "deepseek-v4.1-flash-free",
+        "big-pickle",
+        "beam-free",
+        "flint-40b-free",
+        "longcat-2.5-preview-free",
+        "exo-free",
+        "mimo-v2.5-free",
+        "mimo-v2.6-flash-free",
+        "nemotron-3-ultra-free",
+        "nemotron-3.5-lightning-free",
+        "nemotron-3.5-super-vl-free"
+      ]
+    }
+  ],
   "defaults": { "agent": null, "provider": null, "model": null },
   "selection": {
     "requireValidatedCompatibility": true,

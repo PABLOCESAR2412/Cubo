@@ -38,3 +38,4 @@ export {
   TypeSafeAiError,
   taskProposalSchema,
 } from "./typesafe-ai.ts";
+export { ZEN_FREE_MODELS, ZenProvider } from "./zen.ts";

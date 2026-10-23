@@ -4,7 +4,7 @@ import {
   ProviderRequestError,
   synthesizeProjectMemory,
 } from "@cubo/providers";
-import type { SupportedProvider } from "@cubo/shared";
+import { type SupportedProvider, supportedProviders } from "@cubo/shared";
 import { Hono } from "hono";
 import { z } from "zod";
 import { ownerAuthorized } from "./auth";
@@ -30,8 +30,8 @@ async function getActiveAiProvider(
   provider: SupportedProvider;
 }> {
   const candidates: SupportedProvider[] = preferred
-    ? [preferred, "gemini", "groq", "nvidia", "openrouter"]
-    : ["gemini", "groq", "nvidia", "openrouter"];
+    ? [preferred, ...supportedProviders]
+    : [...supportedProviders];
 
   for (const prov of candidates) {
     const conn = await providerConnection(env.DB, null, prov);
@@ -85,7 +85,7 @@ function providerFailureMessage(reason: string): string {
 aiRoutes.post("/suggest", async (c) => {
   const schema = z.object({
     context: z.string().min(1).max(12000),
-    provider: z.enum(["openrouter", "gemini", "groq", "nvidia"]).optional(),
+    provider: z.enum(supportedProviders).optional(),
     model: z.string().optional(),
   });
   const parsed = schema.safeParse(await c.req.json());
@@ -123,7 +123,7 @@ aiRoutes.post("/propose-task", async (c) => {
   const schema = z.object({
     projectContext: z.string().max(8000).default(""),
     userIntent: z.string().min(3).max(4000),
-    provider: z.enum(["openrouter", "gemini", "groq", "nvidia"]).optional(),
+    provider: z.enum(supportedProviders).optional(),
     model: z.string().optional(),
   });
   const parsed = schema.safeParse(await c.req.json());
@@ -162,7 +162,7 @@ aiRoutes.post("/synthesize-memory", async (c) => {
   const schema = z.object({
     currentMemory: z.string().max(6000).default(""),
     recentTurns: z.string().min(1).max(12000),
-    provider: z.enum(["openrouter", "gemini", "groq", "nvidia"]).optional(),
+    provider: z.enum(supportedProviders).optional(),
     model: z.string().optional(),
   });
   const parsed = schema.safeParse(await c.req.json());
