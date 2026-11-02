@@ -1,4 +1,4 @@
-import type { ChatAttachment, FreeModel, ProjectProviderStatus } from "@cubo/shared";
+import type { ChatAttachment, ChatProvider, FreeModel, ProjectProviderStatus } from "@cubo/shared";
 import { useEffect, useRef, useState } from "react";
 import { attachmentAccept, extractAttachment } from "./attachments";
 import { Icon } from "./Icon";
@@ -38,6 +38,9 @@ export function ChatComposer({
   effort,
   setEffort,
   provider,
+  providerId,
+  providerOptions,
+  setProviderId,
   attachments,
   setAttachments,
   onError,
@@ -55,6 +58,9 @@ export function ChatComposer({
   effort: string;
   setEffort: (s: string) => void;
   provider: ProjectProviderStatus | null;
+  providerId: ChatProvider;
+  providerOptions: { id: ChatProvider; name: string }[];
+  setProviderId: (provider: ChatProvider) => void;
   attachments: ChatAttachment[];
   setAttachments: (a: ChatAttachment[]) => void;
   onError: (s: string) => void;
@@ -272,7 +278,8 @@ export function ChatComposer({
             >
               <span className="model-status-dot" />
               <span className="model-pill-name">
-                {selected?.name ?? "Qwen 2.5 Coder"} · Alto IIIII Uso
+                {selected?.name ?? "Elige un modelo"} ·{" "}
+                {providerOptions.find((option) => option.id === providerId)?.name ?? providerId}
               </span>
               <Icon name="chevron" size={11} />
             </button>
@@ -329,10 +336,27 @@ export function ChatComposer({
             />
           </label>
           <div className="model-source">
-            <strong>OpenRouter</strong>
-            <span>API · solo gratuitos</span>
+            <label>
+              Proveedor
+              <select
+                aria-label="Proveedor del chat"
+                value={providerId}
+                onChange={(event) => setProviderId(event.target.value as ChatProvider)}
+                disabled={busy}
+              >
+                {providerOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span>API · solo modelos gratuitos</span>
           </div>
-          <fieldset className="model-options" aria-label="Modelos de OpenRouter">
+          <fieldset
+            className="model-options"
+            aria-label={`Modelos de ${providerOptions.find((option) => option.id === providerId)?.name ?? providerId}`}
+          >
             {models
               .filter((m) => `${m.id} ${m.name}`.toLowerCase().includes(query.toLowerCase()))
               .map((m) => (
@@ -357,7 +381,12 @@ export function ChatComposer({
                   <span>USD 0{model === m.id && <Icon name="check" size={14} />}</span>
                 </button>
               ))}
-            {!models.length && <p className="hint">Conecta OpenRouter desde Ajustes.</p>}
+            {!models.length && (
+              <p className="hint">
+                No hay modelos gratuitos verificados disponibles para este proveedor. Cubo no
+                enviará el turno.
+              </p>
+            )}
           </fieldset>
           {selected?.efforts?.length ? (
             <label>

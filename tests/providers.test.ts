@@ -108,8 +108,7 @@ describe("Adaptadores de Proveedores (Gemini, Groq, NVIDIA, OpenRouter)", () => 
   it("GeminiProvider expone modelos gratuitos y valida formato de credencial", async () => {
     const provider = new GeminiProvider();
     const models = await provider.freeModels();
-    expect(models.length).toBeGreaterThanOrEqual(4);
-    expect(models.some((m) => m.id === "gemini-2.0-flash")).toBe(true);
+    expect(models.map((model) => model.id)).toEqual(["gemini-3.5-flash-lite"]);
 
     // Formato inválido falla cerrado
     expect(provider.quota("clave-invalida")).rejects.toThrow();
@@ -118,8 +117,7 @@ describe("Adaptadores de Proveedores (Gemini, Groq, NVIDIA, OpenRouter)", () => 
   it("GroqProvider expone modelos gratuitos y valida formato de credencial", async () => {
     const provider = new GroqProvider();
     const models = await provider.freeModels();
-    expect(models.length).toBeGreaterThanOrEqual(4);
-    expect(models.some((m) => m.id === "llama-3.3-70b-versatile")).toBe(true);
+    expect(models).toEqual([]);
 
     // Formato inválido falla cerrado
     expect(provider.quota("clave-invalida")).rejects.toThrow();
@@ -128,8 +126,7 @@ describe("Adaptadores de Proveedores (Gemini, Groq, NVIDIA, OpenRouter)", () => 
   it("NvidiaProvider expone modelos gratuitos y valida formato de credencial", async () => {
     const provider = new NvidiaProvider();
     const models = await provider.freeModels();
-    expect(models.length).toBeGreaterThanOrEqual(4);
-    expect(models.some((m) => m.id === "meta/llama-3.3-70b-instruct")).toBe(true);
+    expect(models.map((model) => model.id)).toEqual(["deepseek-ai/deepseek-v4.1-flash"]);
 
     // Formato inválido falla cerrado
     expect(provider.quota("clave-invalida")).rejects.toThrow();

@@ -1,4 +1,5 @@
 import {
+  type ChatProvider,
   type ChatTurnContext,
   type ChatTurnOutput,
   type ChatTurnResult,
@@ -11,7 +12,13 @@ export class D1ChatExecutionStore {
   async acquire(
     executionId: string,
     runId: string,
-  ): Promise<{ context: ChatTurnContext; keyId: string; projectId: string; model: string }> {
+  ): Promise<{
+    context: ChatTurnContext;
+    keyId: string;
+    projectId: string;
+    model: string;
+    provider: ChatProvider;
+  }> {
     const { task, execution } = await new D1TaskStore(this.db).context(executionId, runId);
     if (!isChatTurnInput(task.input) || task.status !== "RUNNING" || execution.status !== "RUNNING")
       throw new StoreError(403, "Turno no autorizado.");
@@ -33,14 +40,12 @@ export class D1ChatExecutionStore {
       keyId: task.input.keyId,
       projectId: task.input.projectId ?? "",
       model: task.input.model,
+      provider: task.input.provider,
     };
   }
   async complete(executionId: string, runId: string, output: ChatTurnOutput): Promise<void> {
     const { task, execution } = await new D1TaskStore(this.db).context(executionId, runId);
-    if (
-      !isChatTurnInput(task.input) ||
-      ![task.input.model, task.input.fallbackModel].includes(output.model)
-    )
+    if (!isChatTurnInput(task.input) || output.model !== task.input.model)
       throw new StoreError(400, "Resultado de turno inválido.");
     const digest = Array.from(
       new Uint8Array(

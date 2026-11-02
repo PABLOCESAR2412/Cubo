@@ -8,10 +8,7 @@ import type { ChatProviderAdapter } from "./openrouter.ts";
 import { ProviderRequestError } from "./openrouter.ts";
 
 export const GEMINI_FREE_MODELS: FreeModel[] = [
-  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", contextLength: 1048576 },
-  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash", contextLength: 1048576 },
-  { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro", contextLength: 2097152 },
-  { id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash Lite", contextLength: 1048576 },
+  { id: "gemini-3.5-flash-lite", name: "Gemini 3.5 Flash-Lite", contextLength: 1048576 },
 ];
 
 export class GeminiProvider implements ChatProviderAdapter {

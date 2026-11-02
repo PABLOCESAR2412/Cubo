@@ -9,6 +9,7 @@ import {
   attachmentSchema,
   type ChatTurnContext,
   chatMessageSchema,
+  chatProviders,
   chatTurnInputSchema,
   conversationInputSchema,
   conversationUpdateSchema,
@@ -23,9 +24,9 @@ import { containsSecret } from "./content-safety";
 import type { Env } from "./env";
 import {
   freeModels,
+  getProviderAdapter,
   providerBlocked,
   providerConnection,
-  providerPreferences,
 } from "./project-providers";
 
 export const chatRoutes = new Hono<{ Bindings: Env; Variables: { runnerId: string } }>();
@@ -71,6 +72,7 @@ chatRoutes.post("/:id/turn", async (c) => {
   const input = z
     .object({
       content: z.string().trim().min(1).max(2000),
+      provider: z.enum(chatProviders).default("openrouter"),
       model: z.string().min(1).max(180),
       effort: z.enum(efforts).optional(),
       attachments: z.array(attachmentSchema).max(4).default([]),
@@ -99,6 +101,7 @@ chatRoutes.post("/:id/turn", async (c) => {
       existing.input.type !== "CHAT_TURN" ||
       existing.input.projectId !== (projectId ?? null) ||
       existing.input.conversationId !== detail.conversation.id ||
+      existing.input.provider !== input.data.provider ||
       existing.input.model !== input.data.model ||
       existing.input.effort !== input.data.effort ||
       JSON.stringify(detail.messages.find((m) => m.id === key.data)?.attachments ?? []) !==
@@ -112,17 +115,27 @@ chatRoutes.post("/:id/turn", async (c) => {
     throw new StoreError(409, "Espera o detén el turno activo.");
   if (detail.messages.length > 198)
     throw new StoreError(429, "El chat alcanzó su límite de mensajes.");
-  const connection = await providerConnection(c.env.DB, projectId);
+  const connection = await providerConnection(c.env.DB, projectId, input.data.provider);
   if (!connection || !c.env.PROJECT_ENCRYPTION_KEY)
-    throw new StoreError(409, "Configura OpenRouter desde Ajustes.");
-  if (await providerBlocked(c.env.DB, connection.project_id === null ? null : projectId))
+    throw new StoreError(409, "Configura el proveedor seleccionado desde Ajustes.");
+  if (
+    await providerBlocked(
+      c.env.DB,
+      connection.project_id === null ? null : projectId,
+      input.data.provider,
+    )
+  )
     throw new StoreError(
       409,
-      "OpenRouter detenido para este proyecto por coste inesperado. Requiere revisión antes de continuar.",
+      "El proveedor seleccionado está detenido por un coste inesperado. Requiere revisión antes de continuar.",
     );
   let free = false;
   try {
-    const selected = (await freeModels()).find((m) => m.id === input.data.model);
+    const selected = (
+      input.data.provider === "openrouter"
+        ? await freeModels()
+        : await getProviderAdapter(input.data.provider).freeModels()
+    ).find((m) => m.id === input.data.model);
     free = Boolean(
       selected && (!input.data.effort || selected.efforts?.includes(input.data.effort)),
     );
@@ -170,7 +183,6 @@ chatRoutes.post("/:id/turn", async (c) => {
       { role: "user", content: input.data.content },
     ],
   };
-  const preferences = await providerPreferences(c.env.DB);
   const task = await tasks.createTask(
     key.data,
     chatTurnInputSchema.parse({
@@ -179,10 +191,9 @@ chatRoutes.post("/:id/turn", async (c) => {
       conversationId: detail.conversation.id,
       userMessageId: key.data,
       keyId: connection.id,
-      provider: "openrouter",
+      provider: input.data.provider,
       model: input.data.model,
       ...(input.data.effort ? { effort: input.data.effort } : {}),
-      ...(preferences.fallbackModel ? { fallbackModel: preferences.fallbackModel } : {}),
     }),
     context,
   );

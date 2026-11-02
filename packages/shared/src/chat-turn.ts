@@ -17,6 +17,8 @@ export const supportedProviders = [
   "opencode-zen",
 ] as const;
 export type SupportedProvider = (typeof supportedProviders)[number];
+export const chatProviders = ["openrouter", "gemini", "groq", "nvidia"] as const;
+export type ChatProvider = SupportedProvider;
 
 export const chatTurnInputSchema = z
   .object({
@@ -72,6 +74,7 @@ export interface ChatTurnState {
   taskId: string;
   status: string;
   model: string;
+  provider: ChatProvider;
   error: string | null;
   result: ChatTurnResult | null;
 }

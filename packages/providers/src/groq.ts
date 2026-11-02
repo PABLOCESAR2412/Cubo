@@ -7,12 +7,9 @@ import type {
 import type { ChatProviderAdapter } from "./openrouter.ts";
 import { ProviderRequestError } from "./openrouter.ts";
 
-export const GROQ_FREE_MODELS: FreeModel[] = [
-  { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B Versatile", contextLength: 128000 },
-  { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B Instant", contextLength: 128000 },
-  { id: "mixtral-8x7b-32768", name: "Mixtral 8x7B 32k", contextLength: 32768 },
-  { id: "gemma2-9b-it", name: "Gemma 2 9B IT", contextLength: 8192 },
-];
+// Groq publishes token prices and its current API does not expose a guard that
+// proves a configured key is restricted to the free plan. Fail closed for Cubo.
+export const GROQ_FREE_MODELS: FreeModel[] = [];
 
 export class GroqProvider implements ChatProviderAdapter {
   private readonly fetcher: (input: string, init?: RequestInit) => Promise<Response>;

@@ -1,4 +1,10 @@
-import type { ChatMessage, ChatTurnResult, Conversation, ConversationDetail } from "@cubo/shared";
+import type {
+  ChatMessage,
+  ChatProvider,
+  ChatTurnResult,
+  Conversation,
+  ConversationDetail,
+} from "@cubo/shared";
 import { StoreError } from "./index";
 
 type Row = Record<string, string | number | null>;
@@ -114,6 +120,7 @@ export class D1ChatStore {
         status: String(row.status),
         error: row.error as string | null,
         model: JSON.parse(String(row.input)).model as string,
+        provider: (JSON.parse(String(row.input)).provider ?? "openrouter") as ChatProvider,
         effort: JSON.parse(String(row.input)).effort ?? "",
         result: row.result ? (JSON.parse(String(row.result)) as ChatTurnResult) : null,
       })),

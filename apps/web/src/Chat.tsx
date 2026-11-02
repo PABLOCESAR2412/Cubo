@@ -1,5 +1,6 @@
 import type {
   ChatAttachment,
+  ChatProvider,
   ConversationDetail,
   ProjectProviderStatus,
   StoredProject,
@@ -9,6 +10,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ChatComposer } from "./ChatInput";
 import { CodexActionCard, type CodexFileEdit } from "./CodexActionCard";
+import { readChatModelSelection, writeChatModelSelection } from "./chat-model-selection";
 import { Icon } from "./Icon";
 import { requestApi, time } from "./workspace";
 
@@ -48,6 +50,12 @@ function api<T>(path: string, init?: RequestInit): Promise<T> {
 function selectedChat() {
   return new URL(window.location.href).searchParams.get("chat") ?? "";
 }
+const chatProviderOptions: { id: ChatProvider; name: string }[] = [
+  { id: "openrouter", name: "OpenRouter" },
+  { id: "gemini", name: "Google Gemini" },
+  { id: "groq", name: "Groq" },
+  { id: "nvidia", name: "NVIDIA" },
+];
 function SlowTurnNotice({
   turn,
   noticeSeconds = 30,
@@ -96,44 +104,89 @@ export function Chat() {
   }, [showHistory]);
   const projectId = new URL(window.location.href).searchParams.get("project");
   const [projectName, setProjectName] = useState("");
-  const [provider, setProvider] = useState<{
+  const [providerStatuses, setProviderStatuses] = useState<{
     projectId: string;
-    status: ProjectProviderStatus;
+    statuses: Partial<Record<ChatProvider, ProjectProviderStatus>>;
   } | null>(null);
+  const [providerId, setProviderId] = useState<ChatProvider>("openrouter");
   const [model, setModel] = useState("");
   useEffect(() => {
     let disposed = false;
-    setProvider(null);
+    setProviderStatuses(null);
+    setProviderId("openrouter");
     setModel("");
-    const url = projectId
-      ? `projects/${projectId}/providers/openrouter?summary=1`
-      : "providers/openrouter";
-    void requestApi<ProjectProviderStatus>(url)
-      .then((status) => {
-        if (!disposed) setProvider({ projectId: projectId ?? "", status });
-      })
-      .catch(() => {
-        if (!disposed) setProvider(null);
-      });
+    void Promise.all(
+      chatProviderOptions.map(async ({ id }) => {
+        const path = projectId
+          ? `projects/${projectId}/providers/${id}?summary=1`
+          : `providers/${id}?summary=1`;
+        try {
+          const status = await requestApi<ProjectProviderStatus>(path);
+          return [id, status] as const;
+        } catch {
+          return null;
+        }
+      }),
+    ).then((results) => {
+      if (!disposed)
+        setProviderStatuses({
+          projectId: projectId ?? "",
+          statuses: Object.fromEntries(results.filter((entry) => entry !== null)),
+        });
+    });
     return () => {
       disposed = true;
     };
   }, [projectId]);
-  const configured = Boolean(provider?.status.configured);
-  const models = provider?.status.models ?? [];
+  const provider = providerStatuses?.statuses[providerId] ?? null;
+  const configured = Boolean(
+    provider?.configured && provider.catalogAvailable && provider.models.length,
+  );
+  const models = provider?.models ?? [];
   const ready = Boolean(
-    configured && !provider?.status.blockedReason && models.some((m) => m.id === model),
+    configured && !provider?.blockedReason && models.some((m) => m.id === model),
   );
   const turn = detail?.turns?.find((t) => t.status === "QUEUED" || t.status === "RUNNING");
   const lastTurn = detail?.turns?.[0];
+  const latestTurnProvider = lastTurn?.provider,
+    latestTurnModel = lastTurn?.model;
   useEffect(() => {
-    if (!selected) {
+    if (!selected || !providerStatuses || providerStatuses.projectId !== (projectId ?? "")) {
       setModel("");
       return;
     }
-    const previous = detail?.turns?.[0]?.model;
-    setModel(previous ?? models[0]?.id ?? "");
-  }, [selected, detail?.turns?.[0]?.model, models[0]?.id]);
+    const localSelection = readChatModelSelection(selected),
+      localStatus = localSelection ? providerStatuses.statuses[localSelection.provider] : undefined,
+      canRestoreLocal = Boolean(
+        localStatus?.configured &&
+          localStatus.catalogAvailable &&
+          localStatus.models.some((m) => m.id === localSelection?.model),
+      ),
+      savedProvider = latestTurnProvider,
+      savedStatus = savedProvider ? providerStatuses.statuses[savedProvider] : undefined,
+      canRestoreTurn = Boolean(
+        savedStatus?.configured &&
+          savedStatus.catalogAvailable &&
+          savedStatus.models.some((m) => m.id === latestTurnModel),
+      ),
+      nextProvider =
+        (canRestoreLocal ? localSelection?.provider : undefined) ??
+        (canRestoreTurn ? savedProvider : undefined) ??
+        chatProviderOptions.find(({ id }) => {
+          const status = providerStatuses.statuses[id];
+          return status?.configured && status.catalogAvailable && status.models.length > 0;
+        })?.id ??
+        "openrouter",
+      nextStatus = providerStatuses.statuses[nextProvider];
+    setProviderId(nextProvider);
+    setModel(
+      canRestoreLocal
+        ? (localSelection?.model ?? "")
+        : canRestoreTurn
+          ? (latestTurnModel ?? "")
+          : (nextStatus?.models[0]?.id ?? ""),
+    );
+  }, [selected, projectId, providerStatuses, latestTurnProvider, latestTurnModel]);
   useEffect(() => {
     let disposed = false;
     setProjectName("");
@@ -281,20 +334,26 @@ export function Chat() {
         pendingMessage.current.chat !== id ||
         pendingMessage.current.content !== content ||
         pendingMessage.current.model !== model ||
-        pendingMessage.current.signature !== JSON.stringify({ effort, attachments })
+        pendingMessage.current.signature !== JSON.stringify({ providerId, effort, attachments })
       ) {
         pendingMessage.current = {
           id: crypto.randomUUID(),
           chat: id,
           content,
           model,
-          signature: JSON.stringify({ effort, attachments }),
+          signature: JSON.stringify({ providerId, effort, attachments }),
         };
       }
       await api(`conversations/${id}/turn`, {
         method: "POST",
         headers: { "Idempotency-Key": pendingMessage.current.id },
-        body: JSON.stringify({ content, model, ...(effort ? { effort } : {}), attachments }),
+        body: JSON.stringify({
+          content,
+          provider: providerId,
+          model,
+          ...(effort ? { effort } : {}),
+          attachments,
+        }),
       });
       pendingMessage.current = null;
       if (active.current === id) {
@@ -467,10 +526,10 @@ export function Chat() {
               {notice}
             </div>
           )}
-          {provider?.status.blockedReason && (
+          {provider?.blockedReason && (
             <p className="workspace-alert error" role="alert">
-              OpenRouter detenido para este proyecto por coste inesperado. Requiere revisión antes
-              de continuar.
+              {chatProviderOptions.find(({ id }) => id === providerId)?.name ?? providerId} está
+              detenido por coste inesperado. Requiere revisión antes de continuar.
             </p>
           )}
           <div ref={conversationPane} className="conversation persistent-messages">
@@ -695,14 +754,17 @@ export function Chat() {
                       {m.role === "assistant" &&
                         detail.turns?.find((t) => t.result?.messageId === m.id)?.result &&
                         (() => {
-                          const usage = detail.turns?.find(
-                            (t) => t.result?.messageId === m.id,
-                          )?.result;
+                          const turn = detail.turns?.find((t) => t.result?.messageId === m.id),
+                            usage = turn?.result,
+                            providerName = chatProviderOptions.find(
+                              (option) => option.id === turn?.provider,
+                            )?.name;
                           return (
                             <p className="message-usage">
-                              {usage?.model} · entrada {usage?.inputTokens ?? "unavailable"} ·
-                              salida {usage?.outputTokens ?? "unavailable"} tokens · USD{" "}
-                              {usage?.costUsd} ({usage?.costQuality})
+                              {providerName ?? turn?.provider} · {usage?.model} · entrada{" "}
+                              {usage?.inputTokens ?? "unavailable"} · salida{" "}
+                              {usage?.outputTokens ?? "unavailable"} tokens · USD {usage?.costUsd} (
+                              {usage?.costQuality})
                               {usage?.finishReason === "length"
                                 ? " · salida alcanzó el límite de tokens"
                                 : ""}
@@ -744,13 +806,16 @@ export function Chat() {
                 {turn && (
                   <SlowTurnNotice
                     turn={turn}
-                    noticeSeconds={provider?.status.preferences?.noticeSeconds ?? 30}
+                    noticeSeconds={provider?.preferences?.noticeSeconds ?? 30}
                   />
                 )}
                 {lastTurn?.status === "FAILED" && (
                   <p className="inline-notice error" role="alert">
-                    El último turno falló: {lastTurn.error ?? "Error de ejecución"}. No se usó un
-                    modelo de pago.
+                    El último turno falló: {lastTurn.error ?? "Error de ejecución"}. No se pudo
+                    confirmar la causa solo desde el chat.{" "}
+                    <a className="back-link" href={`#/tareas/${lastTurn.taskId}`}>
+                      Ver eventos de ejecución
+                    </a>
                   </p>
                 )}
                 {lastTurn?.status === "CANCELLED" && (
@@ -773,19 +838,45 @@ export function Chat() {
             canSend={ready}
             models={models}
             model={model}
-            setModel={setModel}
+            setModel={(next) => {
+              setModel(next);
+              if (selected && models.some((item) => item.id === next))
+                writeChatModelSelection(selected, { provider: providerId, model: next });
+            }}
             effort={effort}
             setEffort={setEffort}
-            provider={provider?.status ?? null}
+            provider={provider}
+            providerId={providerId}
+            providerOptions={chatProviderOptions.flatMap(({ id, name }) => {
+              const status = providerStatuses?.statuses[id];
+              if (!status?.configured || !status.catalogAvailable) return [];
+              return [
+                {
+                  id,
+                  name: status.models.length ? name : `${name} (sin modelos gratuitos verificados)`,
+                },
+              ];
+            })}
+            setProviderId={(next) => {
+              const nextModel = providerStatuses?.statuses[next]?.models[0]?.id ?? "";
+              setProviderId(next);
+              setModel(nextModel);
+              if (selected && nextModel)
+                writeChatModelSelection(selected, { provider: next, model: nextModel });
+              setEffort("");
+            }}
             attachments={attachments}
             setAttachments={setAttachments}
             onError={setError}
             onUsageRefresh={async () => {
-              const url = projectId
-                ? `projects/${projectId}/providers/openrouter`
-                : "providers/openrouter";
-              const status = await requestApi<ProjectProviderStatus>(url);
-              setProvider({ projectId: projectId ?? "", status });
+              const path = projectId
+                ? `projects/${projectId}/providers/${providerId}`
+                : `providers/${providerId}`;
+              const status = await requestApi<ProjectProviderStatus>(path);
+              setProviderStatuses((current) => ({
+                projectId: projectId ?? "",
+                statuses: { ...current?.statuses, [providerId]: status },
+              }));
             }}
           />
         </section>

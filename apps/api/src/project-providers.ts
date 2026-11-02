@@ -1,11 +1,8 @@
 import { D1ProjectStore, StoreError } from "@cubo/database";
 import {
   type ChatProviderAdapter,
-  GeminiProvider,
-  GroqProvider,
-  NvidiaProvider,
+  getChatProviderAdapter,
   OpenRouterProvider,
-  ZenProvider,
 } from "@cubo/providers";
 import {
   type FreeModel,
@@ -28,19 +25,7 @@ interface Connection {
 }
 
 export function getProviderAdapter(provider: SupportedProvider): ChatProviderAdapter {
-  switch (provider) {
-    case "gemini":
-      return new GeminiProvider();
-    case "groq":
-      return new GroqProvider();
-    case "nvidia":
-      return new NvidiaProvider();
-    case "opencode-zen":
-      return new ZenProvider();
-    case "openrouter":
-    default:
-      return new OpenRouterProvider();
-  }
+  return getChatProviderAdapter(provider);
 }
 
 export function validateProviderKeyPattern(provider: SupportedProvider, key: string): boolean {
@@ -218,7 +203,7 @@ globalProviderRoutes.get("/openrouter", async (c) => {
         catalogAvailable = true;
       })
       .catch(() => {}),
-    row && c.env.PROJECT_ENCRYPTION_KEY
+    row && c.env.PROJECT_ENCRYPTION_KEY && c.req.query("summary") !== "1"
       ? providerKey(c.env, "", row.id, "openrouter")
           .then((key) => new OpenRouterProvider().quota(key))
           .then((q) => {
@@ -309,7 +294,7 @@ globalProviderRoutes.get("/:provider", async (c) => {
     // catalog outage
   }
 
-  if (row && c.env.PROJECT_ENCRYPTION_KEY) {
+  if (row && c.env.PROJECT_ENCRYPTION_KEY && c.req.query("summary") !== "1") {
     try {
       const key = await providerKey(c.env, null, row.id, p);
       quota = await adapter.quota(key);
@@ -389,33 +374,36 @@ globalProviderRoutes.delete("/:provider", async (c) => {
 export function registerProviderRoutes(
   routes: Hono<{ Bindings: Env; Variables: { runnerId: string } }>,
 ): void {
-  routes.get("/:id/providers/openrouter", async (c) => {
+  routes.get("/:id/providers/:provider", async (c) => {
     const project = await new D1ProjectStore(c.env.DB).find(c.req.param("id"));
-    const row = await providerConnection(c.env.DB, project.id, "openrouter"),
-      provider = new OpenRouterProvider();
+    const providerId = c.req.param("provider") as SupportedProvider;
+    if (!supportedProviders.includes(providerId))
+      throw new StoreError(404, "Proveedor no soportado.");
+    const row = await providerConnection(c.env.DB, project.id, providerId),
+      provider = getProviderAdapter(providerId);
     const blocked = await providerBlocked(
       c.env.DB,
       row?.project_id === null ? null : project.id,
-      "openrouter",
+      providerId,
     );
     let quota = null,
-      models: Awaited<ReturnType<OpenRouterProvider["freeModels"]>> = [],
+      models: FreeModel[] = [],
       catalogAvailable = false;
     try {
-      models = await freeModels();
+      models = providerId === "openrouter" ? await freeModels() : await provider.freeModels();
       catalogAvailable = true;
     } catch {
       /* Provider outages must not invent model availability. */
     }
     if (row && c.env.PROJECT_ENCRYPTION_KEY && c.req.query("summary") !== "1") {
       try {
-        quota = await provider.quota(await providerKey(c.env, project.id, row.id, "openrouter"));
+        quota = await provider.quota(await providerKey(c.env, project.id, row.id, providerId));
       } catch {
         /* Keep unknown quota explicit. */
       }
     }
     return c.json({
-      provider: "openrouter",
+      provider: providerId,
       blockedReason: blocked ? "UNEXPECTED_PROVIDER_COST" : null,
       configured: Boolean(row),
       encryptionConfigured: Boolean(c.env.PROJECT_ENCRYPTION_KEY),
@@ -423,7 +411,7 @@ export function registerProviderRoutes(
       catalogAvailable,
       quota,
       freeOnly: true,
-      preferences: await providerPreferences(c.env.DB),
+      ...(providerId === "openrouter" ? { preferences: await providerPreferences(c.env.DB) } : {}),
     });
   });
 

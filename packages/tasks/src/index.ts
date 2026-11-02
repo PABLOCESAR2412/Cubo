@@ -85,7 +85,9 @@ export class TaskEngine {
           if (remote === "FAILED" || remote === "CANCELLED") {
             await this.store.failExecution(
               executionId,
-              "El runner terminó sin guardar un resultado válido.",
+              remote === "FAILED"
+                ? "El runner terminó con error antes de guardar una respuesta. Consulta la tarea en Cubo."
+                : "El runner se canceló antes de guardar una respuesta.",
             );
             return true;
           }

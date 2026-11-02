@@ -236,7 +236,10 @@ app.post("/api/executions/:id/chat-request", async (c) => {
     c.req.param("id"),
     c.get("runnerId"),
   );
-  return c.json({ ...request, apiKey: await providerKey(c.env, request.projectId, request.keyId) });
+  return c.json({
+    ...request,
+    apiKey: await providerKey(c.env, request.projectId, request.keyId, request.provider),
+  });
 });
 app.post("/api/executions/:id/chat-result", async (c) => {
   const output = chatTurnResultSchema.safeParse(await c.req.json());
@@ -268,6 +271,7 @@ app.post("/api/executions/:id/chat-error", async (c) => {
         "PROVIDER_QUOTA_EXHAUSTED",
         "PROVIDER_MODEL_UNAVAILABLE",
         "PROVIDER_CREDENTIAL_REJECTED",
+        "PROVIDER_RESPONSE_INVALID",
         "FREE_MODEL_REQUIRED",
         "UNEXPECTED_PROVIDER_COST",
         "PROVIDER_REQUEST_FAILED",

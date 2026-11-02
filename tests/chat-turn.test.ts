@@ -2,7 +2,7 @@ import { afterEach, expect, spyOn, test } from "bun:test";
 import { D1ChatExecutionStore, D1ChatStore, D1ProjectStore, D1TaskStore } from "@cubo/database";
 import type { ExecutionBackend } from "@cubo/runner";
 import { type ChatTurnContext, chatTurnInputSchema, demoInputSchema } from "@cubo/shared";
-import { TaskEngine } from "@cubo/tasks";
+import { type DurableSteps, TaskEngine } from "@cubo/tasks";
 import { app } from "../apps/api/src/app";
 import type { Env } from "../apps/api/src/env";
 import { providerKey, resetCatalogCache } from "../apps/api/src/project-providers";
@@ -64,12 +64,16 @@ test("turno durable conserva usuario, contexto, respuesta y uso sin duplicar", a
       costUsd: 0 as const,
       costQuality: "exact" as const,
     };
+    await expect(
+      turns.complete(task.executionId, "run", { ...response, model: "otro/modelo:free" }),
+    ).rejects.toThrow("Resultado de turno inválido");
     await turns.complete(task.executionId, "run", response);
     await turns.complete(task.executionId, "run", response);
     const detail = await chat.detail(c.id);
     expect(detail.messages.length).toBe(2);
     expect(detail.messages[1].role).toBe("assistant");
     expect(detail.turns?.[0].result?.inputTokens).toBe(10);
+    expect(detail.turns?.[0].provider).toBe("openrouter");
     expect((await store.findTask(id))?.status).toBe("SUCCEEDED");
     await expect(
       turns.complete(task.executionId, "run", { ...response, content: "Distinta" }),
@@ -174,6 +178,93 @@ test("API inicia chat por proyecto con contexto congelado y claves nunca públic
     mock.mockRestore();
     sqlite.close();
   }
+});
+test("turno usa el proveedor elegido y la clave cifrada de ese proveedor", async () => {
+  const { db, sqlite } = database();
+  const master = btoa("a".repeat(32));
+  const env = {
+    DB: db,
+    SESSION_SECRET: "s".repeat(40),
+    OWNER_PASSWORD: "fixture-password",
+    PROJECT_ENCRYPTION_KEY: master,
+    LOCAL_DEV: "true",
+  } as Env;
+  try {
+    const id = crypto.randomUUID(),
+      providerKeyId = crypto.randomUUID();
+    const encrypted = await encryptSecret(
+      "gemini-fixture-key",
+      master,
+      `global:gemini:${providerKeyId}`,
+    );
+    await db
+      .prepare("INSERT INTO provider_keys VALUES(?, 'gemini', ?, ?, ?)")
+      .bind(providerKeyId, encrypted.ciphertext, encrypted.iv, new Date().toISOString())
+      .run();
+    const chat = await new D1ChatStore(db).create(crypto.randomUUID(), "Gemini");
+    const response = await app.request(
+      `http://127.0.0.1/api/conversations/${chat.id}/turn`,
+      {
+        method: "POST",
+        headers: {
+          Origin: "http://127.0.0.1",
+          "Content-Type": "application/json",
+          "Idempotency-Key": id,
+        },
+        body: JSON.stringify({
+          provider: "gemini",
+          model: "gemini-3.5-flash-lite",
+          content: "Hola",
+        }),
+      },
+      env,
+    );
+    expect(response.status).toBe(202);
+    const store = new D1TaskStore(db),
+      task = await store.findTask(id);
+    expect(task?.input).toMatchObject({
+      provider: "gemini",
+      model: "gemini-3.5-flash-lite",
+      keyId: providerKeyId,
+    });
+    if (!task) throw new Error("No se creó el turno.");
+    await store.beginDispatch(task.executionId);
+    await store.claim(task.executionId, "run");
+    const execution = await new D1ChatExecutionStore(db).acquire(task.executionId, "run");
+    expect(execution.provider).toBe("gemini");
+    expect(execution.model).toBe("gemini-3.5-flash-lite");
+    expect(await providerKey(env, null, execution.keyId, execution.provider)).toBe(
+      "gemini-fixture-key",
+    );
+    expect((await new D1ChatStore(db).detail(chat.id)).turns?.[0]).toMatchObject({
+      provider: "gemini",
+      model: "gemini-3.5-flash-lite",
+    });
+  } finally {
+    sqlite.close();
+  }
+});
+test("el error remoto distingue fallo de cancelación sin atribuir una causa no observada", async () => {
+  const { db, sqlite } = database();
+  const store = new D1TaskStore(db),
+    failed = await store.createTask(crypto.randomUUID(), demoInputSchema.parse({})),
+    cancelled = await store.createTask(crypto.randomUUID(), demoInputSchema.parse({}));
+  const steps: DurableSteps = { do: async (_name, action) => action(), sleep: async () => {} };
+  const backend = (status: "FAILED" | "CANCELLED") => ({
+    start: async ({ executionId }: { executionId: string }) => {
+      await store.claim(executionId, "run");
+      const execution = await store.findExecution(executionId);
+      if (!execution) throw new Error("No existe la ejecución de prueba.");
+      return execution;
+    },
+    cancel: async () => {},
+    getStatus: async () => status,
+  });
+  await new TaskEngine(store, backend("FAILED")).run(failed.executionId, steps);
+  await new TaskEngine(store, backend("CANCELLED")).run(cancelled.executionId, steps);
+  expect((await store.findTask(failed.id))?.error).toContain("terminó con error antes de guardar");
+  expect((await store.findTask(cancelled.id))?.error).toContain("se canceló antes de guardar");
+  sqlite.close();
 });
 test("cancelación revoca callbacks y espera confirmación del backend", async () => {
   const { db, sqlite } = database();

@@ -9,20 +9,9 @@ import { ProviderRequestError } from "./openrouter.ts";
 
 export const NVIDIA_FREE_MODELS: FreeModel[] = [
   {
-    id: "meta/llama-3.3-70b-instruct",
-    name: "Llama 3.3 70B Instruct (NVIDIA)",
-    contextLength: 128000,
-  },
-  { id: "deepseek-ai/deepseek-r1", name: "DeepSeek R1 (NVIDIA)", contextLength: 128000 },
-  {
-    id: "nvidia/llama-3.1-nemotron-70b-instruct",
-    name: "Nemotron 70B (NVIDIA)",
-    contextLength: 128000,
-  },
-  {
-    id: "meta/llama-3.1-8b-instruct",
-    name: "Llama 3.1 8B Instruct (NVIDIA)",
-    contextLength: 128000,
+    id: "deepseek-ai/deepseek-v4.1-flash",
+    name: "DeepSeek V4.1 Flash (NVIDIA)",
+    contextLength: 1000000,
   },
 ];
 

@@ -1,5 +1,5 @@
 import { CodexAgentAdapter, OpenCodeAgentAdapter } from "../packages/agents/src/index.ts";
-import { OpenRouterProvider, ProviderRequestError } from "../packages/providers/src/index.ts";
+import { getChatProviderAdapter, ProviderRequestError } from "../packages/providers/src/index.ts";
 import { executeDemo, importRepository } from "../packages/runner/src/index.ts";
 import {
   type ChatTurnContext,
@@ -70,22 +70,22 @@ async function main(): Promise<void> {
       const input = (await (await request("chat-request", {})).json()) as {
         apiKey: string;
         model: string;
+        provider: "openrouter" | "gemini" | "groq" | "nvidia" | "opencode-zen";
         context: ChatTurnContext;
       };
       console.log(`::add-mask::${input.apiKey}`);
       console.log("Turno adquirido; solicitud al modelo gratuito.");
-      const output = await new OpenRouterProvider().completeWithFallback(
+      if (
+        input.provider !== context.task.input.provider ||
+        input.model !== context.task.input.model
+      )
+        throw new Error("La selección del proveedor cambió durante el turno.");
+      const output = await getChatProviderAdapter(input.provider).complete(
         input.apiKey,
         input.model,
         input.context.messages,
-        {
-          ...(context.task.input.effort ? { effort: context.task.input.effort } : {}),
-          ...(context.task.input.fallbackModel
-            ? { fallbackModel: context.task.input.fallbackModel }
-            : {}),
-        },
+        context.task.input.effort,
       );
-      if (output.model !== input.model) console.log("Se utilizó el respaldo gratuito autorizado.");
       if (looksLikeSecret(output.content) || output.content.includes(input.apiKey))
         throw new Error("Contenido sensible.");
       await request("chat-result", output);
@@ -96,6 +96,7 @@ async function main(): Promise<void> {
         "PROVIDER_QUOTA_EXHAUSTED",
         "PROVIDER_MODEL_UNAVAILABLE",
         "PROVIDER_CREDENTIAL_REJECTED",
+        "PROVIDER_RESPONSE_INVALID",
         "FREE_MODEL_REQUIRED",
         "UNEXPECTED_PROVIDER_COST",
       ];

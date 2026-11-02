@@ -26,7 +26,12 @@ function zero(value: unknown): boolean {
 export interface ChatProviderAdapter {
   freeModels(): Promise<FreeModel[]>;
   quota(key: string): Promise<ProviderQuota>;
-  complete(key: string, model: string, messages: ChatProviderMessage[]): Promise<ChatTurnOutput>;
+  complete(
+    key: string,
+    model: string,
+    messages: ChatProviderMessage[],
+    effort?: string,
+  ): Promise<ChatTurnOutput>;
 }
 export class OpenRouterProvider implements ChatProviderAdapter {
   private readonly fetcher: (input: string, init?: RequestInit) => Promise<Response>;
