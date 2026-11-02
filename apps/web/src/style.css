@@ -1995,6 +1995,13 @@ label,
   color: var(--color-ink);
   font-size: 12px;
 }
+.pwa-update-resume {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 10;
+  box-shadow: 0 8px 28px rgb(0 0 0 / 24%);
+}
 .pwa-update-notice p {
   margin-top: 4px;
   color: var(--color-muted);
@@ -2006,6 +2013,10 @@ label,
     bottom: 14px;
     gap: 9px;
     padding: 12px;
+  }
+  .pwa-update-resume {
+    right: 14px;
+    bottom: 14px;
   }
 }
 .project-list-row,

@@ -6,7 +6,7 @@ import { Icon, type IconName } from "./Icon";
 import { NewTask } from "./NewTask";
 import { notifyTaskStatus } from "./notifications";
 import { Analytics, Chat, Projects, Settings } from "./PreparedViews";
-import { PwaControls } from "./PwaControls";
+import { PwaInstallControl, PwaUpdateControl } from "./PwaControls";
 import { RecentChat } from "./RecentChat";
 import { Tasks } from "./Tasks";
 import { initTheme } from "./theme";
@@ -445,13 +445,14 @@ export default function App() {
             <span>Cubo v{import.meta.env.VITE_CUBO_VERSION ?? "2.2.0"}</span>
             <span className="version-pill">Novedades</span>
           </button>
-          <PwaControls />
+          <PwaInstallControl />
           <button type="button" className="sign-out" onClick={() => void w.logout()}>
             <Icon name="logout" size={15} />
             Cerrar sesión
           </button>
         </div>
       </Sidebar>
+      <PwaUpdateControl />
       <div className="workspace-main">
         <GlobalTopBar
           onOpenCommandPalette={() => setPaletteOpen(true)}

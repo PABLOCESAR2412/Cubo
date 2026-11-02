@@ -46,13 +46,14 @@ window.addEventListener("beforeinstallprompt", (event) => {
 });
 window.addEventListener("appinstalled", () => publish({ install: null }));
 
-export function PwaControls() {
-  const current = useSyncExternalStore(subscribe, () => state);
+function usePwaState() {
+  return useSyncExternalStore(subscribe, () => state);
+}
+
+export function PwaInstallControl() {
+  const current = usePwaState();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [later, setLater] = useState(false);
-  const reloadTimer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(reloadTimer.current), []);
   async function install() {
     const prompt = current.install;
     if (!prompt || busy) return;
@@ -68,6 +69,31 @@ export function PwaControls() {
       setBusy(false);
     }
   }
+  return (
+    <>
+      {current.install && (
+        <button
+          className="secondary compact"
+          type="button"
+          disabled={busy}
+          onClick={() => void install()}
+        >
+          <Icon name="download" size={14} />
+          Instalar
+        </button>
+      )}
+      {error && <p role="alert">{error}</p>}
+    </>
+  );
+}
+
+export function PwaUpdateControl() {
+  const current = usePwaState();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [later, setLater] = useState(false);
+  const reloadTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(reloadTimer.current), []);
   async function update() {
     if (
       busy ||
@@ -92,20 +118,9 @@ export function PwaControls() {
   }
   return (
     <>
-      {current.install && (
-        <button
-          className="secondary compact"
-          type="button"
-          disabled={busy}
-          onClick={() => void install()}
-        >
-          <Icon name="download" size={14} />
-          Instalar
-        </button>
-      )}
       {current.update && later && (
         <button
-          className="secondary compact"
+          className="secondary compact pwa-update-resume"
           type="button"
           disabled={busy}
           onClick={() => void update()}
