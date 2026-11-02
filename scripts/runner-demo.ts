@@ -12,6 +12,10 @@ import {
   type RunnerUpdate,
 } from "../packages/shared/src/index.ts";
 
+export function shouldRetryRunnerRequest(status: number): boolean {
+  return status === 429 || status >= 500;
+}
+
 async function main(): Promise<void> {
   const executionId = process.env.EXECUTION_ID ?? "";
   if (!/^[0-9a-f-]{36}-\d+$/.test(executionId)) throw new Error("Identificador inválido.");
@@ -38,20 +42,23 @@ async function main(): Promise<void> {
     // El token nunca se guarda en checkpoints ni se muestra en logs.
     console.log(`::add-mask::${value}`);
     for (let attempt = 0; attempt < 5; attempt++) {
+      let response: Response;
       try {
-        const response = await fetch(new URL(`/api/executions/${executionId}/${path}`, url), {
+        response = await fetch(new URL(`/api/executions/${executionId}/${path}`, url), {
           method: body === undefined ? "GET" : "POST",
           headers: { Authorization: `Bearer ${value}`, "Content-Type": "application/json" },
           ...(body === undefined ? {} : { body: JSON.stringify(body) }),
           signal: AbortSignal.timeout(15000),
           redirect: "error",
         });
-        if (response.ok) return response;
-        if (response.status < 500 && response.status !== 429)
-          throw new Error("Cubo rechazó el callback del runner.");
       } catch (error) {
         if (attempt === 4) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+        continue;
       }
+      if (response.ok) return response;
+      if (!shouldRetryRunnerRequest(response.status))
+        throw new Error("Cubo rechazó el callback del runner.");
       await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
     }
     throw new Error("No se pudo guardar el progreso.");
@@ -161,7 +168,10 @@ async function main(): Promise<void> {
     (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   );
 }
-main().catch(() => {
-  console.error("La ejecución no pudo completar o guardar el trabajo. Consulta Cubo.");
-  process.exitCode = 1;
-});
+const runnerPath = process.argv[1]?.replaceAll("\\", "/");
+if (runnerPath === "scripts/runner-demo.ts" || runnerPath?.endsWith("/scripts/runner-demo.ts")) {
+  main().catch(() => {
+    console.error("La ejecución no pudo completar o guardar el trabajo. Consulta Cubo.");
+    process.exitCode = 1;
+  });
+}

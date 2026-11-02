@@ -4,7 +4,16 @@ import type { ExecutionBackend } from "@cubo/runner";
 import { demoInputSchema, ExecutionBlockedError } from "@cubo/shared";
 import { type DurableSteps, TaskEngine } from "@cubo/tasks";
 import { executeDemo } from "../packages/runner/src/demo.ts";
+import { shouldRetryRunnerRequest } from "../scripts/runner-demo.ts";
 import { database } from "./sqlite.ts";
+
+test("runner solo reintenta respuestas HTTP transitorias", () => {
+  expect(shouldRetryRunnerRequest(401)).toBe(false);
+  expect(shouldRetryRunnerRequest(403)).toBe(false);
+  expect(shouldRetryRunnerRequest(409)).toBe(false);
+  expect(shouldRetryRunnerRequest(429)).toBe(true);
+  expect(shouldRetryRunnerRequest(500)).toBe(true);
+});
 
 test("motor independiente del cliente y del proveedor guarda el resultado remoto", async () => {
   const { db, sqlite } = database();
